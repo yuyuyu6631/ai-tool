@@ -1,0 +1,47 @@
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Node / frontend artifacts
+node_modules/
+dist/
+dist-ssr/
+coverage/
+.next/
+out/
+apps/web/test-results/
+apps/web/src/e2e/visual.spec.ts-snapshots/
+
+# Local env files
+.env
+.env.*
+*.local
+
+# Nested project git metadata
+Next.js AI Tool Demo/.git/
+
+# Python / misc caches
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+*.egg-info/
+
+# Local agent / runtime files
+.agent/
+.claude/
+output/
+*.db
+秘钥.txt
+
+# Non-code assets
+archive/
+apps/web/public/

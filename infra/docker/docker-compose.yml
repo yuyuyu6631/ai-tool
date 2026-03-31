@@ -1,0 +1,50 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: xingdianping-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: xingdianping
+      MYSQL_USER: xingdianping
+      MYSQL_PASSWORD: xingdianping
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ../../infra/sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: xingdianping-redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ../../apps/api
+    container_name: xingdianping-api
+    environment:
+      DATABASE_URL: mysql+pymysql://xingdianping:xingdianping@mysql:3306/xingdianping
+      REDIS_URL: redis://redis:6379/0
+      AI_PROVIDER: stub
+      AI_API_KEY: ""
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ../../
+      dockerfile: apps/web/Dockerfile
+    container_name: xingdianping-web
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://api:8000
+    depends_on:
+      - api
+    ports:
+      - "3000:3000"
+
+volumes:
+  mysql_data:

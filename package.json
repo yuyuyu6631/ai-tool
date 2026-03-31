@@ -1,0 +1,22 @@
+{
+  "name": "xingdianping-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/web",
+    "packages/contracts"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @xingdianping/web --",
+    "dev:full": "python start.py",
+    "start": "python start.py",
+    "dev:web": "npm run dev --workspace @xingdianping/web --",
+    "organize:aitool": "python apps/api/app/scripts/organize_aitool_assets.py",
+    "validate:aitool:preview": "python apps/api/app/scripts/validate_aitool_preview.py",
+    "import:aitool:preview": "python apps/api/app/scripts/import_aitool_preview.py",
+    "import:aitool:all": "python apps/api/app/scripts/import_aitool_preview.py --limit 0 --status-mode payload --featured-mode payload",
+    "build:web": "npm run build --workspace @xingdianping/web",
+    "lint:web": "npm run lint --workspace @xingdianping/web",
+    "test:web": "npm run test --workspace @xingdianping/web"
+  }
+}

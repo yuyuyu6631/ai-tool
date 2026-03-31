@@ -1,0 +1,82 @@
+[
+  {
+    "slug": "ppt",
+    "title": "做 PPT 用什么 AI",
+    "description": "快速生成精美演示文稿，提升工作效率，支持多种模板和风格",
+    "toolCount": 3,
+    "problem": "传统 PPT 制作耗时耗力，需要花费大量时间在排版和设计上。AI 工具可以根据内容自动生成精美的演示文稿，大幅提升效率。",
+    "primaryTools": ["gamma", "canva-ai"],
+    "alternativeTools": ["notion-ai"],
+    "targetAudience": ["产品经理", "销售人员", "教师", "创业者"]
+  },
+  {
+    "slug": "writing",
+    "title": "写公众号文章用什么 AI",
+    "description": "AI 辅助内容创作，生成高质量文章，提升创作效率",
+    "toolCount": 4,
+    "problem": "内容创作需要灵感和时间。AI 工具可以帮助你快速生成文章大纲、扩写内容、优化文案，让创作更高效。",
+    "primaryTools": ["chatgpt", "notion-ai", "jasper"],
+    "alternativeTools": ["claude"],
+    "targetAudience": ["内容运营", "自媒体作者", "营销人员", "编辑"]
+  },
+  {
+    "slug": "data-analysis",
+    "title": "做数据分析用什么 AI",
+    "description": "智能数据分析和可视化工具推荐，快速洞察数据价值",
+    "toolCount": 3,
+    "problem": "数据分析需要专业技能和工具。AI 工具可以通过自然语言查询数据、自动生成可视化图表，让数据分析更简单。",
+    "primaryTools": ["tableau-ai", "chatgpt"],
+    "alternativeTools": ["gemini"],
+    "targetAudience": ["数据分析师", "产品经理", "运营人员", "企业决策者"]
+  },
+  {
+    "slug": "agent-platform",
+    "title": "搭企业智能体用什么平台",
+    "description": "快速构建和部署企业级 AI 应用，无需编程基础",
+    "toolCount": 4,
+    "problem": "企业需要定制化的 AI 应用，但开发成本高、周期长。智能体平台提供无代码/低代码解决方案，让企业快速搭建 AI 应用。",
+    "primaryTools": ["coze", "dify"],
+    "alternativeTools": ["chatgpt"],
+    "targetAudience": ["企业技术团队", "产品经理", "IT 管理者", "创业者"]
+  },
+  {
+    "slug": "video-creation",
+    "title": "短视频创作用什么 AI",
+    "description": "AI 辅助视频剪辑、特效制作和配音，快速产出短视频",
+    "toolCount": 3,
+    "problem": "短视频创作需要剪辑技能和创意。AI 工具可以帮助你快速生成视频、添加特效、自动配音，降低创作门槛。",
+    "primaryTools": ["runway", "heygen"],
+    "alternativeTools": ["suno"],
+    "targetAudience": ["内容创作者", "营销人员", "自媒体从业者", "视频博主"]
+  },
+  {
+    "slug": "email-writing",
+    "title": "写商务邮件用什么 AI",
+    "description": "专业邮件撰写助手，提升沟通效率和专业度",
+    "toolCount": 3,
+    "problem": "商务邮件需要专业的表达和恰当的语气。AI 工具可以帮助你快速生成专业邮件，优化措辞，提升沟通效率。",
+    "primaryTools": ["chatgpt", "jasper"],
+    "alternativeTools": ["claude"],
+    "targetAudience": ["商务人士", "销售人员", "客户经理", "职场人士"]
+  },
+  {
+    "slug": "customer-service",
+    "title": "搭建客服机器人用什么工具",
+    "description": "智能客服解决方案，7x24小时自动回复客户问题",
+    "toolCount": 4,
+    "problem": "客服工作重复性高，人力成本大。智能客服机器人可以自动回复常见问题，提升响应速度，降低人力成本。",
+    "primaryTools": ["coze", "dify"],
+    "alternativeTools": ["chatgpt"],
+    "targetAudience": ["企业客服团队", "电商从业者", "SaaS 企业", "服务行业"]
+  },
+  {
+    "slug": "coding-assistant",
+    "title": "编程辅助用什么 AI",
+    "description": "AI 代码补全、生成和优化，大幅提升开发效率",
+    "toolCount": 4,
+    "problem": "编程工作需要大量的代码编写和调试。AI 编程助手可以智能补全代码、生成函数、修复 bug，大幅提升开发效率。",
+    "primaryTools": ["cursor", "copilot"],
+    "alternativeTools": ["chatgpt"],
+    "targetAudience": ["开发者", "程序员", "技术团队", "计算机学生"]
+  }
+]

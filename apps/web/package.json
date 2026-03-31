@@ -1,0 +1,40 @@
+{
+  "name": "@xingdianping/web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "prebuild": "node -e \"require('node:fs').rmSync('.next',{ recursive: true, force: true })\"",
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "postbuild": "node ./scripts/fix-routes-manifest.cjs",
+    "prestart": "node ./scripts/fix-routes-manifest.cjs",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:visual": "playwright test src/e2e/visual.spec.ts"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.511.0",
+    "next": "^15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "tailwind-merge": "^3.2.0",
+    "tw-animate-css": "^1.3.8"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@tailwindcss/postcss": "^4.1.3",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^22.13.13",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4",
+    "jsdom": "^26.0.0",
+    "tailwindcss": "^4.1.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  }
+}
