@@ -57,7 +57,7 @@ export default function ToolCard({
     : priceLabel;
 
   return (
-    <article className="card-base card-interactive rounded-[28px] p-5">
+    <article className="card-base card-interactive rounded-[28px] p-5" data-testid="tool-card">
       <div className="relative z-10 flex h-full flex-col">
         <div className="flex items-start gap-3">
           <ToolLogo slug={slug} name={name} logoPath={logoPath} />
@@ -77,7 +77,7 @@ export default function ToolCard({
 
         <div className="mt-4 flex flex-wrap gap-2">
           {priceDisplay && (
-            <span className={`rounded-full px-3 py-1 text-xs font-semibold ${PRICE_TYPE_COLORS[priceLabel || "other"]}`}>
+            <span data-testid="price-tag" className={`rounded-full px-3 py-1 text-xs font-semibold ${PRICE_TYPE_COLORS[priceLabel || "other"]}`}>
               {priceDisplay}
             </span>
           )}
