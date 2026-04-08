@@ -235,8 +235,12 @@ def _is_task_style_query(query: str) -> bool:
     return any(chunk in TASK_TERM_EXPANSIONS for chunk in re.split(r"[\s/_-]+", _normalize_query(query)) if chunk)
 
 
-def _matches_query(search_text: str, query: str) -> bool:
-    token_groups = _query_token_groups(query)
+def _matches_query(
+    search_text: str, query: str, token_groups: list[tuple[str, ...]] | None = None
+) -> bool:
+    if token_groups is None:
+        token_groups = _query_token_groups(query)
+
     if not token_groups:
         return True
 
@@ -420,7 +424,12 @@ def _filter_tools(
     filtered = items
 
     if q:
-        filtered = [item for item in filtered if _matches_query(item.search_text, q)]
+        token_groups = _query_token_groups(q)
+        filtered = [
+            item
+            for item in filtered
+            if _matches_query(item.search_text, q, token_groups=token_groups)
+        ]
     if category_slug:
         filtered = [item for item in filtered if _matches_category(item.summary, category_slug)]
     if tag_slug:
