@@ -23,6 +23,10 @@ vi.mock("../../components/ToolCard", () => ({
   default: ({ name }: { name: string }) => <div>{name}</div>,
 }));
 
+vi.mock("../../components/MarkToolUsageButton", () => ({
+  default: () => <div>MarkToolUsageButton</div>,
+}));
+
 const tool: ToolDetail = {
   id: 1,
   slug: "chatgpt",
