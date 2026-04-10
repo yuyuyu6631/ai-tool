@@ -7,13 +7,13 @@ from app.services.cache_service import build_recommendation_cache_key, get_redis
 from app.services.candidate_selector import select_candidates
 
 
-def score_tool(query: str, tool) -> float:
+def score_tool(lowered_query: str, tool) -> float:
+    # ⚡ Bolt 优化: 将 query.lower() 移至循环外，防止大批量数据处理时造成重复字符串分配开销
     score = tool.score
-    lowered = query.lower()
     for tag in tool.tags:
-        if tag.lower() in lowered:
+        if tag.lower() in lowered_query:
             score += 0.2
-    if tool.category.lower() in lowered:
+    if tool.category.lower() in lowered_query:
         score += 0.3
     return round(score, 1)
 
@@ -53,7 +53,8 @@ def recommend(*, db, payload: RecommendRequest) -> list[RecommendItem]:
             pass
 
     candidates = select_candidates(db=db, payload=payload)
-    ranked = sorted(candidates, key=lambda tool: score_tool(payload.query, tool), reverse=True)
+    lowered_query = payload.query.lower()
+    ranked = sorted(candidates, key=lambda tool: score_tool(lowered_query, tool), reverse=True)
     ai_reasons: dict[str, str] = {}
 
     if settings.ai_provider != "stub" and settings.ai_api_key:
@@ -70,7 +71,7 @@ def recommend(*, db, payload: RecommendRequest) -> list[RecommendItem]:
             summary=tool.summary,
             tags=tool.tags,
             reason=build_reason(tool, ai_reasons),
-            score=score_tool(payload.query, tool),
+            score=score_tool(lowered_query, tool),
             logoPath=tool.logoPath,
         )
         for tool in ranked
