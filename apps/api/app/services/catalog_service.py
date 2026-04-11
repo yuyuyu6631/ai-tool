@@ -14,7 +14,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.db.session import SessionLocal
 from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolTag
 from app.schemas.catalog import (
     CategorySummary,
@@ -236,8 +235,7 @@ def _is_task_style_query(query: str) -> bool:
     return any(chunk in TASK_TERM_EXPANSIONS for chunk in re.split(r"[\s/_-]+", _normalize_query(query)) if chunk)
 
 
-def _matches_query(search_text: str, query: str) -> bool:
-    token_groups = _query_token_groups(query)
+def _matches_query(search_text: str, token_groups: list[tuple[str, ...]]) -> bool:
     if not token_groups:
         return True
 
@@ -421,7 +419,9 @@ def _filter_tools(
     filtered = items
 
     if q:
-        filtered = [item for item in filtered if _matches_query(item.search_text, q)]
+        # 预计算 token_groups 避免在循环内部重复计算
+        token_groups = _query_token_groups(q)
+        filtered = [item for item in filtered if _matches_query(item.search_text, token_groups)]
     if category_slug:
         filtered = [item for item in filtered if _matches_category(item.summary, category_slug)]
     if tag_slug:
@@ -436,7 +436,9 @@ def _apply_query_recall(*, db, items: list[SearchableTool], q: str | None) -> li
     if not q:
         return items
 
-    lexical_matches = [item for item in items if _matches_query(item.search_text, q)]
+    # 预计算 token_groups 避免在循环内部重复计算
+    token_groups = _query_token_groups(q)
+    lexical_matches = [item for item in items if _matches_query(item.search_text, token_groups)]
     candidate_tool_ids = [item.summary.id for item in items]
 
     try:
