@@ -5,6 +5,7 @@ Catalog services backed by the application database.
 from __future__ import annotations
 
 import json
+import functools
 import re
 import unicodedata
 from collections import Counter
@@ -14,7 +15,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.db.session import SessionLocal
 from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolTag
 from app.schemas.catalog import (
     CategorySummary,
@@ -112,6 +112,7 @@ def _repair_text(value: str | None) -> str:
         return value
 
 
+@functools.lru_cache(maxsize=1024)
 def _slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", _repair_text(value)).strip().casefold()
     normalized = re.sub(r"[^\w\s-]+", "", normalized, flags=re.UNICODE)
