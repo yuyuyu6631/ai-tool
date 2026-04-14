@@ -1,0 +1,44 @@
+﻿name: jules-autopilot
+
+on:
+  issues:
+    types: [opened, reopened, edited, labeled]
+  pull_request:
+    types: [opened, reopened, ready_for_review, synchronize]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  summon_jules_on_issue:
+    if: github.event_name == 'issues' && github.event.issue.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summon Jules on issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `@jules 请直接接手这个任务并自主完成：\n\n- 阅读整个仓库相关代码\n- 按 issue 目标实现改动\n- 补充必要测试与文档\n- 运行并汇报测试结果\n- 通过 PR 提交可审查改动\n\n执行模式：高自治（high autonomy）。`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body
+            });
+
+  summon_jules_on_pr:
+    if: github.event_name == 'pull_request' && github.event.pull_request.user.type != 'Bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Summon Jules on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `@jules 请对这个 PR 执行自动修复与完善：\n\n- 处理明显问题与回归风险\n- 补齐必要测试\n- 更新说明文档\n- 给出变更摘要`;
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body
+            });

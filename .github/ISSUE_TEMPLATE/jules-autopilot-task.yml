@@ -1,0 +1,47 @@
+﻿name: Jules Autopilot
+
+description: Auto-summon Jules for implementation work
+
+title: "[Jules] "
+labels:
+  - jules
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should be implemented or fixed.
+      placeholder: Describe the target behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Explicit in-scope and out-of-scope boundaries.
+      placeholder: In-scope: ... / Out-of-scope: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Concrete checks that must pass before merge.
+      placeholder: |-
+        - [ ] Criteria 1
+        - [ ] Criteria 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: tests
+    attributes:
+      label: Required Test Commands
+      description: Commands Jules must run and report.
+      placeholder: |-
+        npm run test:web
+        cd apps/api && python -m pytest
+    validations:
+      required: true
