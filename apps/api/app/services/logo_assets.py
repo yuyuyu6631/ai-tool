@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from app.core.paths import WORKSPACE_ROOT
+
 
 LOGO_STATUS_MATCHED = "matched"
 LOGO_STATUS_MISSING = "missing"
@@ -11,8 +13,7 @@ LOGO_SOURCE_IMPORTED = "imported"
 LOGO_SOURCE_MANUAL = "manual"
 LOGO_SOURCE_FALLBACK = "fallback"
 
-_WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
-LOGO_PUBLIC_DIR = _WORKSPACE_ROOT / "apps" / "web" / "public" / "logos"
+LOGO_PUBLIC_DIR = WORKSPACE_ROOT / "apps" / "web" / "public" / "logos"
 
 
 def normalize_logo_path(value: str | None) -> str | None:

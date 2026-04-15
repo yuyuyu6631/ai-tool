@@ -10,22 +10,25 @@ from urllib.parse import urlparse
 
 from sqlalchemy.orm import Session
 
+from app.core.paths import API_ROOT, WORKSPACE_ROOT
 from app.db.session import Base, SessionLocal, engine
 from app.models.models import Category, Source, Tag, Tool, ToolCategory, ToolTag
 from app.services.logo_assets import LOGO_SOURCE_IMPORTED, normalize_logo_path, resolve_logo_status
 
 
 IMPORT_MARKER = "[import-preview]"
-DEFAULT_PAYLOAD_PATH = (
-    Path(__file__).resolve().parents[4]
-    / "archive"
-    / "drawer"
-    / "tooling-assets"
-    / "apigetxlsx"
-    / "aitool"
-    / "manifests"
-    / "db_import_payload.json"
-)
+DEFAULT_PAYLOAD_PATH = API_ROOT / "app" / "data" / "db_import_payload.json"
+if not DEFAULT_PAYLOAD_PATH.exists():
+    DEFAULT_PAYLOAD_PATH = (
+        WORKSPACE_ROOT
+        / "archive"
+        / "drawer"
+        / "tooling-assets"
+        / "apigetxlsx"
+        / "aitool"
+        / "manifests"
+        / "db_import_payload.json"
+    )
 VALID_STATUSES = {"published", "draft", "archived"}
 SLUG_MAX_LENGTH = 120
 

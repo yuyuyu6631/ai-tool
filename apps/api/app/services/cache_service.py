@@ -15,6 +15,8 @@ _redis_client: Redis | None = None
 
 def get_redis_client() -> Redis | None:
     global _redis_pool, _redis_client
+    if not settings.cache_enabled:
+        return None
     if _redis_client is None:
         try:
             _redis_pool = ConnectionPool.from_url(settings.redis_url, decode_responses=True)

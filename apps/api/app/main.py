@@ -6,10 +6,11 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select, text
 
+import app.db.session as session_module
 from app.api.router import api_router
 from app.core.config import settings
-from app.db.session import SessionLocal
 from app.models.models import Tool, UserSession
+from app.services.bootstrap_service import ensure_catalog_bootstrap
 from app.services.crawler_service import build_mock_snapshot
 
 scheduler = BackgroundScheduler()
@@ -27,7 +28,7 @@ def check_backend_readiness() -> tuple[bool, dict[str, object]]:
         },
     }
 
-    db = SessionLocal()
+    db = session_module.SessionLocal()
     try:
         db.execute(text("SELECT 1"))
         payload["checks"]["database"] = "ok"
@@ -63,6 +64,7 @@ def create_app() -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
+        ensure_catalog_bootstrap()
         local_scheduler.add_job(build_mock_snapshot, "interval", minutes=60, kwargs={"source_name": "scheduled"})
         local_scheduler.start()
         try:
@@ -73,8 +75,8 @@ def create_app() -> FastAPI:
     application = FastAPI(title=settings.app_name, lifespan=lifespan)
     application.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
-        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+        allow_origins=settings.cors_allowed_origins,
+        allow_origin_regex=r"https?://(localhost|127\.0\.0\.1|10(?:\.\d{1,3}){3}|192\.168(?:\.\d{1,3}){2}|172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(:\d+)?$",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
