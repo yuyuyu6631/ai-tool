@@ -4,6 +4,7 @@ Catalog services backed by the application database.
 
 from __future__ import annotations
 
+import functools
 import json
 import re
 import unicodedata
@@ -14,7 +15,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.db.session import SessionLocal
 from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolReview, ToolTag
 from app.schemas.catalog import (
     CategorySummary,
@@ -114,6 +114,7 @@ class SearchableTool:
     search_text: str
 
 
+@functools.lru_cache(maxsize=4096)
 def _repair_text(value: str | None) -> str:
     if not value:
         return ""
@@ -128,6 +129,7 @@ def _repair_text(value: str | None) -> str:
         return value
 
 
+@functools.lru_cache(maxsize=4096)
 def _slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", _repair_text(value)).strip().casefold()
     normalized = re.sub(r"[^\w\s-]+", "", normalized, flags=re.UNICODE)
