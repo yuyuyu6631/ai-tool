@@ -4,7 +4,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import select, text
+from sqlalchemy import func, select, text
 
 import app.db.session as session_module
 from app.api.router import api_router
@@ -93,6 +93,23 @@ def create_app() -> FastAPI:
         if ready:
             return payload
         return JSONResponse(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, content=payload)
+
+    @application.post("/health/bootstrap")
+    def bootstrap_catalog():
+        db = session_module.SessionLocal()
+        try:
+            before = int(db.scalar(select(func.count()).select_from(Tool)) or 0)
+            ensure_catalog_bootstrap()
+            after = int(db.scalar(select(func.count()).select_from(Tool)) or 0)
+            return {
+                "status": "ok",
+                "catalogBootstrapMode": settings.catalog_bootstrap_mode,
+                "cacheEnabled": settings.cache_enabled,
+                "before": before,
+                "after": after,
+            }
+        finally:
+            db.close()
 
     return application
 
