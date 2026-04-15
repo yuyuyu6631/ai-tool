@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     embedding_recall_top_k: int = 12
     embedding_recall_min_similarity: float = 0.2
     recommendation_ttl_seconds: int = 1800
-    catalog_bootstrap_mode: str = "off"
+    catalog_bootstrap_mode: str = "import-all"
 
     model_config = SettingsConfigDict(env_file=WORKSPACE_ROOT / ".env", extra="ignore")
 
@@ -65,7 +65,7 @@ class Settings(BaseSettings):
     @field_validator("catalog_bootstrap_mode", mode="before")
     @classmethod
     def normalize_catalog_bootstrap_mode(cls, value: object) -> str:
-        normalized = str(value or "off").strip().lower()
+        normalized = str(value or "import-all").strip().lower()
         if normalized not in {"off", "seed", "import-all"}:
             raise ValueError("catalog_bootstrap_mode must be one of: off, seed, import-all")
         return normalized

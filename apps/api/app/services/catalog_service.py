@@ -5,7 +5,6 @@ Catalog services backed by the application database.
 from __future__ import annotations
 
 import json
-import functools
 import re
 import unicodedata
 from collections import Counter
@@ -15,7 +14,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolTag
+from app.db.session import SessionLocal
+from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolReview, ToolTag
 from app.schemas.catalog import (
     CategorySummary,
     FacetOption,
@@ -25,7 +25,7 @@ from app.schemas.catalog import (
     ScenarioSummary,
     ToolsDirectoryResponse,
 )
-from app.schemas.tool import ToolDetail, ToolSummary
+from app.schemas.tool import AccessFlags, ReviewPreview, ScenarioRecommendation, ToolDetail, ToolSummary
 from app.services.cache_service import get_redis_client
 from app.services.catalog_views_seed import (
     get_scenario_target_audience,
@@ -64,6 +64,22 @@ PRICE_TYPE_LABELS = {
     "freemium": "免费增值",
     "subscription": "订阅",
     "one-time": "一次性付费",
+    "contact": "联系销售",
+}
+
+ACCESS_FLAG_LABELS = {
+    "no-vpn": "国内直连",
+    "needs-vpn": "需特定网络",
+    "cn-lang": "中文界面",
+    "cn-payment": "支持国内支付",
+}
+
+PRICE_RANGE_LABELS = {
+    "free": "完全免费",
+    "0-50": "0-50 元",
+    "51-200": "51-200 元",
+    "201-plus": "201 元以上",
+    "contact": "联系销售",
 }
 
 TASK_PREFIXES = (
@@ -112,12 +128,53 @@ def _repair_text(value: str | None) -> str:
         return value
 
 
-@functools.lru_cache(maxsize=1024)
 def _slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", _repair_text(value)).strip().casefold()
     normalized = re.sub(r"[^\w\s-]+", "", normalized, flags=re.UNICODE)
     normalized = re.sub(r"[\s_]+", "-", normalized, flags=re.UNICODE).strip("-")
     return normalized or value.casefold()
+
+
+def _normalize_access_flags(value: dict[str, bool | None] | None) -> AccessFlags | None:
+    if not isinstance(value, dict):
+        return None
+
+    flags = AccessFlags(
+        needsVpn=value.get("needs_vpn"),
+        cnLang=value.get("cn_lang"),
+        cnPayment=value.get("cn_payment"),
+    )
+    if flags.needsVpn is None and flags.cnLang is None and flags.cnPayment is None:
+        return None
+    return flags
+
+
+def _normalize_string_list(value) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [_repair_text(item).strip() for item in value if isinstance(item, str) and item.strip()]
+
+
+def _unique_strings(values: list[str]) -> list[str]:
+    deduped: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        normalized = value.strip()
+        if not normalized or normalized in seen:
+            continue
+        seen.add(normalized)
+        deduped.append(normalized)
+    return deduped
+
+
+def _published_reviews(tool: Tool) -> list[ToolReview]:
+    return sorted(
+        [review for review in tool.reviews if review.status == PUBLIC_TOOL_STATUS],
+        key=lambda review: (
+            review.source_type != "editor",
+            -(review.created_at.timestamp() if review.created_at else 0),
+        ),
+    )
 
 
 def _tool_row_to_summary(tool: Tool) -> ToolSummary:
@@ -142,11 +199,41 @@ def _tool_row_to_summary(tool: Tool) -> ToolSummary:
         featured=tool.featured,
         createdAt=tool.created_on,
         price=_repair_text(tool.price),
+        reviewCount=tool.review_count,
+        accessFlags=_normalize_access_flags(tool.access_flags),
+        pricingType=tool.pricing_type,
+        priceMinCny=tool.price_min_cny,
+        priceMaxCny=tool.price_max_cny,
+        freeAllowanceText=_repair_text(tool.free_allowance_text),
     )
 
 
 def _tool_row_to_detail(tool: Tool) -> ToolDetail:
     base = _tool_row_to_summary(tool)
+    reviews = _published_reviews(tool)
+    pros = _unique_strings([item for review in reviews for item in _normalize_string_list(review.pros_json)])
+    cons = _unique_strings([item for review in reviews for item in _normalize_string_list(review.cons_json)])
+    pitfalls = _unique_strings([item for review in reviews for item in _normalize_string_list(review.pitfalls_json)])
+    scenario_recommendations = [
+        ScenarioRecommendation(
+            audience=_repair_text(review.audience).strip(),
+            task=_repair_text(review.task).strip(),
+            summary=_repair_text(review.body).strip(),
+        )
+        for review in reviews
+        if _repair_text(review.audience).strip() and _repair_text(review.task).strip() and _repair_text(review.body).strip()
+    ]
+    target_audience = _unique_strings([item.audience for item in scenario_recommendations])
+    review_preview = [
+        ReviewPreview(
+            sourceType=review.source_type,
+            title=_repair_text(review.title),
+            body=_repair_text(review.body),
+            rating=review.rating,
+        )
+        for review in reviews[:3]
+        if _repair_text(review.title) or _repair_text(review.body)
+    ]
     return ToolDetail(
         **base.model_dump(),
         description=_repair_text(tool.description),
@@ -156,11 +243,14 @@ def _tool_row_to_detail(tool: Tool) -> ToolDetail:
         city=_repair_text(tool.city),
         platforms=_repair_text(tool.platforms),
         vpnRequired=_repair_text(tool.vpn_required),
-        targetAudience=[],
+        targetAudience=target_audience,
         abilities=[],
-        pros=[],
-        cons=[],
-        scenarios=[],
+        pros=pros,
+        cons=cons,
+        pitfalls=pitfalls,
+        scenarios=[item.task for item in scenario_recommendations],
+        scenarioRecommendations=scenario_recommendations,
+        reviewPreview=review_preview,
         alternatives=[],
         lastVerifiedAt=tool.last_verified_at,
     )
@@ -310,9 +400,63 @@ def _detect_price_type(price_text: str | None) -> str:
     return "other"
 
 
-def _matches_price_filter(tool: ToolSummary, price_slug: str) -> bool:
+def _resolve_price_type(tool: ToolSummary) -> str:
+    pricing_type = (tool.pricingType or "").strip().replace("_", "-")
+    if pricing_type in {"free", "freemium", "subscription", "one-time", "contact"}:
+        return pricing_type
+
     text = f"{tool.price} {tool.name} {tool.summary} {' '.join(tool.tags)}"
-    return _detect_price_type(text) == price_slug
+    return _detect_price_type(text)
+
+
+def _matches_price_filter(tool: ToolSummary, price_slug: str) -> bool:
+    return _resolve_price_type(tool) == price_slug
+
+
+def _parse_access_filter(access_slug: str | None) -> list[str]:
+    if not access_slug:
+        return []
+    values = [_slugify(item) for item in access_slug.split(",") if item.strip()]
+    return [value for value in values if value in ACCESS_FLAG_LABELS]
+
+
+def _matches_access_filter(tool: ToolSummary, access_filters: list[str]) -> bool:
+    if not access_filters:
+        return True
+
+    flags = tool.accessFlags
+    if flags is None:
+        return False
+
+    checks = {
+        "no-vpn": flags.needsVpn is False,
+        "needs-vpn": flags.needsVpn is True,
+        "cn-lang": flags.cnLang is True,
+        "cn-payment": flags.cnPayment is True,
+    }
+    return all(checks.get(item, False) for item in access_filters)
+
+
+def _derive_price_range(tool: ToolSummary) -> str | None:
+    pricing_type = tool.pricingType or "unknown"
+    if pricing_type == "free":
+        return "free"
+    if pricing_type == "contact":
+        return "contact"
+
+    if tool.priceMinCny is None:
+        return None
+    if tool.priceMinCny <= 50:
+        return "0-50"
+    if tool.priceMinCny <= 200:
+        return "51-200"
+    return "201-plus"
+
+
+def _matches_price_range_filter(tool: ToolSummary, price_range_slug: str | None) -> bool:
+    if not price_range_slug:
+        return True
+    return _derive_price_range(tool) == price_range_slug
 
 
 def _build_facets(items: list[ToolSummary], key: str) -> list[FacetOption]:
@@ -354,8 +498,7 @@ def _build_status_facets(items: list[ToolSummary]) -> list[FacetOption]:
 def _build_price_facets(items: list[ToolSummary]) -> list[FacetOption]:
     counter: Counter[str] = Counter()
     for item in items:
-        text = f"{item.price} {item.name} {item.summary} {' '.join(item.tags)}"
-        price_type = _detect_price_type(text)
+        price_type = _resolve_price_type(item)
         if price_type != "other":
             counter[price_type] += 1
 
@@ -363,6 +506,38 @@ def _build_price_facets(items: list[ToolSummary]) -> list[FacetOption]:
         FacetOption(slug=slug, label=PRICE_TYPE_LABELS[slug], count=count)
         for slug, count in sorted(counter.items(), key=lambda pair: (-pair[1], pair[0]))
     ]
+
+
+def _build_access_facets(items: list[ToolSummary]) -> list[FacetOption]:
+    counter: Counter[str] = Counter()
+    for item in items:
+        flags = item.accessFlags
+        if not flags:
+            continue
+        if flags.needsVpn is False:
+            counter["no-vpn"] += 1
+        if flags.needsVpn is True:
+            counter["needs-vpn"] += 1
+        if flags.cnLang is True:
+            counter["cn-lang"] += 1
+        if flags.cnPayment is True:
+            counter["cn-payment"] += 1
+
+    return [
+        FacetOption(slug=slug, label=ACCESS_FLAG_LABELS[slug], count=count)
+        for slug, count in sorted(counter.items(), key=lambda pair: (-pair[1], pair[0]))
+    ]
+
+
+def _build_price_range_facets(items: list[ToolSummary]) -> list[FacetOption]:
+    counter: Counter[str] = Counter()
+    for item in items:
+        price_range = _derive_price_range(item)
+        if price_range is not None:
+            counter[price_range] += 1
+
+    ordered = [slug for slug in PRICE_RANGE_LABELS if counter.get(slug)]
+    return [FacetOption(slug=slug, label=PRICE_RANGE_LABELS[slug], count=counter[slug]) for slug in ordered]
 
 
 def _matches_preset(tool: ToolSummary, preset: str) -> bool:
@@ -396,14 +571,24 @@ def _build_presets(items: list[ToolSummary]) -> list[PresetView]:
 
 
 def _load_searchable_tools(db, *, status_filter: str | None = PUBLIC_TOOL_STATUS) -> list[SearchableTool]:
-    stmt = select(Tool).options(
-        selectinload(Tool.tags).selectinload(ToolTag.tag),
-        selectinload(Tool.categories).selectinload(ToolCategory.category),
-    )
-    if status_filter is not None and status_filter != ALL_STATUS_SLUG:
-        stmt = stmt.where(Tool.status == status_filter)
+    def _query_rows() -> list[Tool]:
+        stmt = select(Tool).options(
+            selectinload(Tool.tags).selectinload(ToolTag.tag),
+            selectinload(Tool.categories).selectinload(ToolCategory.category),
+        )
+        if status_filter is not None and status_filter != ALL_STATUS_SLUG:
+            stmt_local = stmt.where(Tool.status == status_filter)
+        else:
+            stmt_local = stmt
+        return db.scalars(stmt_local).all()
 
-    rows = db.scalars(stmt).all()
+    rows = _query_rows()
+    if not rows and settings.catalog_bootstrap_mode != "off":
+        from app.services.bootstrap_service import ensure_catalog_bootstrap
+
+        ensure_catalog_bootstrap()
+        rows = _query_rows()
+
     return [SearchableTool(summary=_tool_row_to_summary(row), search_text=_build_search_text(row)) for row in rows]
 
 
@@ -418,8 +603,11 @@ def _filter_tools(
     category_slug: str | None,
     tag_slug: str | None,
     price_slug: str | None,
+    access_slug: str | None,
+    price_range_slug: str | None,
 ) -> list[SearchableTool]:
     filtered = items
+    access_filters = _parse_access_filter(access_slug)
 
     if q:
         filtered = [item for item in filtered if _matches_query(item.search_text, q)]
@@ -429,6 +617,10 @@ def _filter_tools(
         filtered = [item for item in filtered if _matches_tag(item.summary, tag_slug)]
     if price_slug and price_slug in PRICE_TYPE_LABELS:
         filtered = [item for item in filtered if _matches_price_filter(item.summary, price_slug)]
+    if access_filters:
+        filtered = [item for item in filtered if _matches_access_filter(item.summary, access_filters)]
+    if price_range_slug and price_range_slug in PRICE_RANGE_LABELS:
+        filtered = [item for item in filtered if _matches_price_range_filter(item.summary, price_range_slug)]
 
     return filtered
 
@@ -473,6 +665,8 @@ def get_tools_directory(
     tag_slug: str | None,
     status_slug: str | None,
     price_slug: str | None,
+    access_slug: str | None,
+    price_range_slug: str | None,
     sort: str,
     view: str,
     page: int,
@@ -486,6 +680,8 @@ def get_tools_directory(
         category_slug=category_slug,
         tag_slug=tag_slug,
         price_slug=price_slug,
+        access_slug=access_slug,
+        price_range_slug=price_range_slug,
     )
     filtered_searchable = _apply_query_recall(db=db, items=base_filtered_searchable, q=q)
     filtered_searchable = _expand_with_ai_recommendations(
@@ -511,6 +707,9 @@ def get_tools_directory(
         categories=_build_facets(filtered, "category"),
         tags=_build_facets(filtered, "tag"),
         statuses=_build_status_facets(filtered),
+        priceFacets=_build_price_facets(filtered),
+        accessFacets=_build_access_facets(filtered),
+        priceRangeFacets=_build_price_range_facets(filtered),
         presets=_build_presets(all_tools),
     )
 
@@ -523,6 +722,7 @@ def list_tools_raw(*, db) -> list[ToolDetail]:
     stmt = select(Tool).options(
         selectinload(Tool.tags).selectinload(ToolTag.tag),
         selectinload(Tool.categories).selectinload(ToolCategory.category),
+        selectinload(Tool.reviews),
     )
     rows = db.scalars(stmt).all()
     return [_tool_row_to_detail(row) for row in rows]
@@ -532,14 +732,15 @@ def get_tool(*, db, slug: str) -> ToolDetail | None:
     stmt = select(Tool).where(Tool.slug == slug).options(
         selectinload(Tool.tags).selectinload(ToolTag.tag),
         selectinload(Tool.categories).selectinload(ToolCategory.category),
+        selectinload(Tool.reviews),
     )
     row = db.scalar(stmt)
     return _tool_row_to_detail(row) if row else None
 
 
-def list_categories(*, db) -> list[CategorySummary]:
+def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]:
     redis_client = get_redis_client()
-    cache_key = "catalog:categories:all"
+    cache_key = f"catalog:categories:{'all' if include_empty else 'non-empty'}"
     cache_ttl = 300  # 5 minutes
 
     if redis_client:
@@ -552,6 +753,7 @@ def list_categories(*, db) -> list[CategorySummary]:
             pass  # fall through to DB
 
     rows = db.scalars(select(Category)).all()
+    visible_categories = {_slugify(tool.category) for tool in _load_summaries(db)} if not include_empty else set()
     result = [
         CategorySummary(
             slug=row.slug,
@@ -559,6 +761,7 @@ def list_categories(*, db) -> list[CategorySummary]:
             description=_repair_text(row.description),
         )
         for row in rows
+        if include_empty or row.slug in visible_categories or _slugify(row.name) in visible_categories
     ]
 
     if redis_client:
