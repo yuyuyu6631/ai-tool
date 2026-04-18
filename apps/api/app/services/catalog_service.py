@@ -4,6 +4,7 @@ Catalog services backed by the application database.
 
 from __future__ import annotations
 
+import functools
 import json
 import re
 import unicodedata
@@ -14,8 +15,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.db.session import SessionLocal
-from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolReview, ToolTag
+from app.models.models import (
+    Category,
+    Ranking,
+    RankingItem,
+    Scenario,
+    ScenarioTool,
+    Tool,
+    ToolCategory,
+    ToolReview,
+    ToolTag,
+)
 from app.schemas.catalog import (
     CategorySummary,
     FacetOption,
@@ -25,7 +35,13 @@ from app.schemas.catalog import (
     ScenarioSummary,
     ToolsDirectoryResponse,
 )
-from app.schemas.tool import AccessFlags, ReviewPreview, ScenarioRecommendation, ToolDetail, ToolSummary
+from app.schemas.tool import (
+    AccessFlags,
+    ReviewPreview,
+    ScenarioRecommendation,
+    ToolDetail,
+    ToolSummary,
+)
 from app.services.cache_service import get_redis_client
 from app.services.catalog_views_seed import (
     get_scenario_target_audience,
@@ -99,10 +115,46 @@ TASK_PREFIXES = (
 )
 
 TASK_TERM_EXPANSIONS = {
-    "文案": ("文案", "写作", "copywriting", "content", "marketing", "blog", "邮件", "workspace"),
-    "海报": ("海报", "设计", "图像", "图片", "poster", "visual", "banner", "presentation", "slides"),
-    "代码": ("代码", "编程", "开发", "coding", "developer", "engineering", "automation"),
-    "数据": ("数据", "数据分析", "分析", "商业智能", "bi", "analytics", "dashboard", "报表"),
+    "文案": (
+        "文案",
+        "写作",
+        "copywriting",
+        "content",
+        "marketing",
+        "blog",
+        "邮件",
+        "workspace",
+    ),
+    "海报": (
+        "海报",
+        "设计",
+        "图像",
+        "图片",
+        "poster",
+        "visual",
+        "banner",
+        "presentation",
+        "slides",
+    ),
+    "代码": (
+        "代码",
+        "编程",
+        "开发",
+        "coding",
+        "developer",
+        "engineering",
+        "automation",
+    ),
+    "数据": (
+        "数据",
+        "数据分析",
+        "分析",
+        "商业智能",
+        "bi",
+        "analytics",
+        "dashboard",
+        "报表",
+    ),
     "分析": ("分析", "数据分析", "analytics", "insight", "report"),
     "报表": ("报表", "dashboard", "report", "数据分析"),
 }
@@ -114,6 +166,7 @@ class SearchableTool:
     search_text: str
 
 
+@functools.lru_cache(maxsize=4096)
 def _repair_text(value: str | None) -> str:
     if not value:
         return ""
@@ -128,6 +181,7 @@ def _repair_text(value: str | None) -> str:
         return value
 
 
+@functools.lru_cache(maxsize=4096)
 def _slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", _repair_text(value)).strip().casefold()
     normalized = re.sub(r"[^\w\s-]+", "", normalized, flags=re.UNICODE)
@@ -152,7 +206,11 @@ def _normalize_access_flags(value: dict[str, bool | None] | None) -> AccessFlags
 def _normalize_string_list(value) -> list[str]:
     if not isinstance(value, list):
         return []
-    return [_repair_text(item).strip() for item in value if isinstance(item, str) and item.strip()]
+    return [
+        _repair_text(item).strip()
+        for item in value
+        if isinstance(item, str) and item.strip()
+    ]
 
 
 def _unique_strings(values: list[str]) -> list[str]:
@@ -211,9 +269,27 @@ def _tool_row_to_summary(tool: Tool) -> ToolSummary:
 def _tool_row_to_detail(tool: Tool) -> ToolDetail:
     base = _tool_row_to_summary(tool)
     reviews = _published_reviews(tool)
-    pros = _unique_strings([item for review in reviews for item in _normalize_string_list(review.pros_json)])
-    cons = _unique_strings([item for review in reviews for item in _normalize_string_list(review.cons_json)])
-    pitfalls = _unique_strings([item for review in reviews for item in _normalize_string_list(review.pitfalls_json)])
+    pros = _unique_strings(
+        [
+            item
+            for review in reviews
+            for item in _normalize_string_list(review.pros_json)
+        ]
+    )
+    cons = _unique_strings(
+        [
+            item
+            for review in reviews
+            for item in _normalize_string_list(review.cons_json)
+        ]
+    )
+    pitfalls = _unique_strings(
+        [
+            item
+            for review in reviews
+            for item in _normalize_string_list(review.pitfalls_json)
+        ]
+    )
     scenario_recommendations = [
         ScenarioRecommendation(
             audience=_repair_text(review.audience).strip(),
@@ -221,9 +297,13 @@ def _tool_row_to_detail(tool: Tool) -> ToolDetail:
             summary=_repair_text(review.body).strip(),
         )
         for review in reviews
-        if _repair_text(review.audience).strip() and _repair_text(review.task).strip() and _repair_text(review.body).strip()
+        if _repair_text(review.audience).strip()
+        and _repair_text(review.task).strip()
+        and _repair_text(review.body).strip()
     ]
-    target_audience = _unique_strings([item.audience for item in scenario_recommendations])
+    target_audience = _unique_strings(
+        [item.audience for item in scenario_recommendations]
+    )
     review_preview = [
         ReviewPreview(
             sourceType=review.source_type,
@@ -257,7 +337,9 @@ def _tool_row_to_detail(tool: Tool) -> ToolDetail:
 
 
 def _build_search_text(tool: Tool) -> str:
-    tags = " ".join(_repair_text(item.tag.name) for item in tool.tags) if tool.tags else ""
+    tags = (
+        " ".join(_repair_text(item.tag.name) for item in tool.tags) if tool.tags else ""
+    )
     category_name = _repair_text(tool.category_name)
     if tool.categories:
         category_name = _repair_text(tool.categories[0].category.name)
@@ -285,7 +367,11 @@ def _sort_tools(items: list[ToolSummary], sort: str, view: str) -> list[ToolSumm
         return sorted(items, key=lambda item: (item.createdAt, item.id), reverse=True)
     if sort == "name":
         return sorted(items, key=lambda item: item.name.casefold())
-    return sorted(items, key=lambda item: (item.featured, item.score, item.createdAt, item.id), reverse=True)
+    return sorted(
+        items,
+        key=lambda item: (item.featured, item.score, item.createdAt, item.id),
+        reverse=True,
+    )
 
 
 def _normalize_query(query: str) -> str:
@@ -324,7 +410,11 @@ def _is_task_style_query(query: str) -> bool:
     if any(raw.startswith(prefix) for prefix in TASK_PREFIXES):
         return True
 
-    return any(chunk in TASK_TERM_EXPANSIONS for chunk in re.split(r"[\s/_-]+", _normalize_query(query)) if chunk)
+    return any(
+        chunk in TASK_TERM_EXPANSIONS
+        for chunk in re.split(r"[\s/_-]+", _normalize_query(query))
+        if chunk
+    )
 
 
 def _matches_query(search_text: str, query: str) -> bool:
@@ -351,7 +441,13 @@ def _expand_with_ai_recommendations(
     filtered: list[SearchableTool],
     searchable_tools: list[SearchableTool],
 ) -> list[SearchableTool]:
-    if filtered or not q or not searchable_tools or not _is_task_style_query(q) or not _can_use_ai_task_search():
+    if (
+        filtered
+        or not q
+        or not searchable_tools
+        or not _is_task_style_query(q)
+        or not _can_use_ai_task_search()
+    ):
         return filtered
 
     from app.schemas.recommend import RecommendRequest
@@ -375,7 +471,10 @@ def _expand_with_ai_recommendations(
 
 
 def _matches_category(tool: ToolSummary, category_slug: str) -> bool:
-    category_values = {_slugify(tool.category), _slugify(tool.category.replace(" ", "-"))}
+    category_values = {
+        _slugify(tool.category),
+        _slugify(tool.category.replace(" ", "-")),
+    }
     return _slugify(category_slug) in category_values
 
 
@@ -393,7 +492,10 @@ def _detect_price_type(price_text: str | None) -> str:
         return "free"
     if any(word in text for word in ("freemium", "免费增值")):
         return "freemium"
-    if any(word in text for word in ("subscription", "monthly", "yearly", "按月", "按年", "订阅")):
+    if any(
+        word in text
+        for word in ("subscription", "monthly", "yearly", "按月", "按年", "订阅")
+    ):
         return "subscription"
     if any(word in text for word in ("one-time", "lifetime", "一次性", "终身")):
         return "one-time"
@@ -453,7 +555,9 @@ def _derive_price_range(tool: ToolSummary) -> str | None:
     return "201-plus"
 
 
-def _matches_price_range_filter(tool: ToolSummary, price_range_slug: str | None) -> bool:
+def _matches_price_range_filter(
+    tool: ToolSummary, price_range_slug: str | None
+) -> bool:
     if not price_range_slug:
         return True
     return _derive_price_range(tool) == price_range_slug
@@ -477,7 +581,9 @@ def _build_facets(items: list[ToolSummary], key: str) -> list[FacetOption]:
 
     return [
         FacetOption(slug=slug, label=labels[slug], count=count)
-        for slug, count in sorted(counter.items(), key=lambda pair: (-pair[1], labels[pair[0]].casefold()))
+        for slug, count in sorted(
+            counter.items(), key=lambda pair: (-pair[1], labels[pair[0]].casefold())
+        )
     ]
 
 
@@ -489,9 +595,22 @@ def _build_status_facets(items: list[ToolSummary]) -> list[FacetOption]:
         "archived": "Archived",
     }
     counter: Counter[str] = Counter(item.status for item in items)
-    ordered_statuses = [status for status in VISIBLE_TOOL_STATUSES if counter.get(status)]
-    facets = [FacetOption(slug=ALL_STATUS_SLUG, label=labels[ALL_STATUS_SLUG], count=sum(counter.values()))]
-    facets.extend(FacetOption(slug=status, label=labels.get(status, status), count=counter[status]) for status in ordered_statuses)
+    ordered_statuses = [
+        status for status in VISIBLE_TOOL_STATUSES if counter.get(status)
+    ]
+    facets = [
+        FacetOption(
+            slug=ALL_STATUS_SLUG,
+            label=labels[ALL_STATUS_SLUG],
+            count=sum(counter.values()),
+        )
+    ]
+    facets.extend(
+        FacetOption(
+            slug=status, label=labels.get(status, status), count=counter[status]
+        )
+        for status in ordered_statuses
+    )
     return facets
 
 
@@ -537,7 +656,10 @@ def _build_price_range_facets(items: list[ToolSummary]) -> list[FacetOption]:
             counter[price_range] += 1
 
     ordered = [slug for slug in PRICE_RANGE_LABELS if counter.get(slug)]
-    return [FacetOption(slug=slug, label=PRICE_RANGE_LABELS[slug], count=counter[slug]) for slug in ordered]
+    return [
+        FacetOption(slug=slug, label=PRICE_RANGE_LABELS[slug], count=counter[slug])
+        for slug in ordered
+    ]
 
 
 def _matches_preset(tool: ToolSummary, preset: str) -> bool:
@@ -570,7 +692,9 @@ def _build_presets(items: list[ToolSummary]) -> list[PresetView]:
     ]
 
 
-def _load_searchable_tools(db, *, status_filter: str | None = PUBLIC_TOOL_STATUS) -> list[SearchableTool]:
+def _load_searchable_tools(
+    db, *, status_filter: str | None = PUBLIC_TOOL_STATUS
+) -> list[SearchableTool]:
     def _query_rows() -> list[Tool]:
         stmt = select(Tool).options(
             selectinload(Tool.tags).selectinload(ToolTag.tag),
@@ -589,11 +713,20 @@ def _load_searchable_tools(db, *, status_filter: str | None = PUBLIC_TOOL_STATUS
         ensure_catalog_bootstrap()
         rows = _query_rows()
 
-    return [SearchableTool(summary=_tool_row_to_summary(row), search_text=_build_search_text(row)) for row in rows]
+    return [
+        SearchableTool(
+            summary=_tool_row_to_summary(row), search_text=_build_search_text(row)
+        )
+        for row in rows
+    ]
 
 
-def _load_summaries(db, *, status_filter: str | None = PUBLIC_TOOL_STATUS) -> list[ToolSummary]:
-    return [item.summary for item in _load_searchable_tools(db, status_filter=status_filter)]
+def _load_summaries(
+    db, *, status_filter: str | None = PUBLIC_TOOL_STATUS
+) -> list[ToolSummary]:
+    return [
+        item.summary for item in _load_searchable_tools(db, status_filter=status_filter)
+    ]
 
 
 def _filter_tools(
@@ -612,20 +745,34 @@ def _filter_tools(
     if q:
         filtered = [item for item in filtered if _matches_query(item.search_text, q)]
     if category_slug:
-        filtered = [item for item in filtered if _matches_category(item.summary, category_slug)]
+        filtered = [
+            item for item in filtered if _matches_category(item.summary, category_slug)
+        ]
     if tag_slug:
         filtered = [item for item in filtered if _matches_tag(item.summary, tag_slug)]
     if price_slug and price_slug in PRICE_TYPE_LABELS:
-        filtered = [item for item in filtered if _matches_price_filter(item.summary, price_slug)]
+        filtered = [
+            item for item in filtered if _matches_price_filter(item.summary, price_slug)
+        ]
     if access_filters:
-        filtered = [item for item in filtered if _matches_access_filter(item.summary, access_filters)]
+        filtered = [
+            item
+            for item in filtered
+            if _matches_access_filter(item.summary, access_filters)
+        ]
     if price_range_slug and price_range_slug in PRICE_RANGE_LABELS:
-        filtered = [item for item in filtered if _matches_price_range_filter(item.summary, price_range_slug)]
+        filtered = [
+            item
+            for item in filtered
+            if _matches_price_range_filter(item.summary, price_range_slug)
+        ]
 
     return filtered
 
 
-def _apply_query_recall(*, db, items: list[SearchableTool], q: str | None) -> list[SearchableTool]:
+def _apply_query_recall(
+    *, db, items: list[SearchableTool], q: str | None
+) -> list[SearchableTool]:
     if not q:
         return items
 
@@ -633,7 +780,9 @@ def _apply_query_recall(*, db, items: list[SearchableTool], q: str | None) -> li
     candidate_tool_ids = [item.summary.id for item in items]
 
     try:
-        semantic_tool_ids = recall_tool_ids_by_embedding(db=db, query=q, candidate_tool_ids=candidate_tool_ids)
+        semantic_tool_ids = recall_tool_ids_by_embedding(
+            db=db, query=q, candidate_tool_ids=candidate_tool_ids
+        )
     except Exception:
         semantic_tool_ids = []
 
@@ -683,7 +832,9 @@ def get_tools_directory(
         access_slug=access_slug,
         price_range_slug=price_range_slug,
     )
-    filtered_searchable = _apply_query_recall(db=db, items=base_filtered_searchable, q=q)
+    filtered_searchable = _apply_query_recall(
+        db=db, items=base_filtered_searchable, q=q
+    )
     filtered_searchable = _expand_with_ai_recommendations(
         db=db,
         q=q,
@@ -729,10 +880,14 @@ def list_tools_raw(*, db) -> list[ToolDetail]:
 
 
 def get_tool(*, db, slug: str) -> ToolDetail | None:
-    stmt = select(Tool).where(Tool.slug == slug).options(
-        selectinload(Tool.tags).selectinload(ToolTag.tag),
-        selectinload(Tool.categories).selectinload(ToolCategory.category),
-        selectinload(Tool.reviews),
+    stmt = (
+        select(Tool)
+        .where(Tool.slug == slug)
+        .options(
+            selectinload(Tool.tags).selectinload(ToolTag.tag),
+            selectinload(Tool.categories).selectinload(ToolCategory.category),
+            selectinload(Tool.reviews),
+        )
     )
     row = db.scalar(stmt)
     return _tool_row_to_detail(row) if row else None
@@ -753,7 +908,11 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
             pass  # fall through to DB
 
     rows = db.scalars(select(Category)).all()
-    visible_categories = {_slugify(tool.category) for tool in _load_summaries(db)} if not include_empty else set()
+    visible_categories = (
+        {_slugify(tool.category) for tool in _load_summaries(db)}
+        if not include_empty
+        else set()
+    )
     result = [
         CategorySummary(
             slug=row.slug,
@@ -761,13 +920,17 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
             description=_repair_text(row.description),
         )
         for row in rows
-        if include_empty or row.slug in visible_categories or _slugify(row.name) in visible_categories
+        if include_empty
+        or row.slug in visible_categories
+        or _slugify(row.name) in visible_categories
     ]
 
     if redis_client:
         try:
             # Serialize for caching
-            serialized = json.dumps([item.model_dump() for item in result], ensure_ascii=False)
+            serialized = json.dumps(
+                [item.model_dump() for item in result], ensure_ascii=False
+            )
             redis_client.setex(cache_key, cache_ttl, serialized)
         except Exception:
             pass  # ignore cache errors
@@ -778,7 +941,9 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
 def list_tools_by_category(*, db, category_slug: str) -> list[ToolSummary]:
     normalized = _slugify(category_slug)
     # status already filtered by _load_summaries default to PUBLIC_TOOL_STATUS
-    tools = [tool for tool in _load_summaries(db) if _slugify(tool.category) == normalized]
+    tools = [
+        tool for tool in _load_summaries(db) if _slugify(tool.category) == normalized
+    ]
     return _sort_tools(tools, sort="featured", view="hot")
 
 
@@ -787,10 +952,12 @@ def _build_scenario_summary(scenario: Scenario, db) -> ScenarioSummary:
     stmt = (
         select(ScenarioTool)
         .where(ScenarioTool.scenario_id == scenario.id)
-        .options(selectinload(ScenarioTool.tool).options(
-            selectinload(Tool.tags).selectinload(ToolTag.tag),
-            selectinload(Tool.categories).selectinload(ToolCategory.category),
-        ))
+        .options(
+            selectinload(ScenarioTool.tool).options(
+                selectinload(Tool.tags).selectinload(ToolTag.tag),
+                selectinload(Tool.categories).selectinload(ToolCategory.category),
+            )
+        )
     )
     links = db.scalars(stmt).all()
     primary_tools: list[ToolSummary] = []
@@ -832,11 +999,15 @@ def list_scenarios(*, db) -> list[ScenarioSummary]:
 
     rows = db.scalars(select(Scenario).order_by(Scenario.id)).all()
     scenarios = [_build_scenario_summary(row, db) for row in rows]
-    result = sort_scenario_sections([scenario for scenario in scenarios if scenario.toolCount])
+    result = sort_scenario_sections(
+        [scenario for scenario in scenarios if scenario.toolCount]
+    )
 
     if redis_client:
         try:
-            serialized = json.dumps([item.model_dump() for item in result], ensure_ascii=False)
+            serialized = json.dumps(
+                [item.model_dump() for item in result], ensure_ascii=False
+            )
             redis_client.setex(cache_key, cache_ttl, serialized)
         except Exception:
             pass  # ignore cache errors
@@ -857,10 +1028,12 @@ def _build_ranking_section(ranking: Ranking, db) -> RankingSection:
         select(RankingItem)
         .where(RankingItem.ranking_id == ranking.id)
         .order_by(RankingItem.rank_order)
-        .options(selectinload(RankingItem.tool).options(
-            selectinload(Tool.tags).selectinload(ToolTag.tag),
-            selectinload(Tool.categories).selectinload(ToolCategory.category),
-        ))
+        .options(
+            selectinload(RankingItem.tool).options(
+                selectinload(Tool.tags).selectinload(ToolTag.tag),
+                selectinload(Tool.categories).selectinload(ToolCategory.category),
+            )
+        )
     )
     rows = db.scalars(stmt).all()
     items = []
@@ -911,7 +1084,9 @@ def list_rankings(*, db) -> list[RankingSection]:
 
     if redis_client:
         try:
-            serialized = json.dumps([item.model_dump() for item in result], ensure_ascii=False)
+            serialized = json.dumps(
+                [item.model_dump() for item in result], ensure_ascii=False
+            )
             redis_client.setex(cache_key, cache_ttl, serialized)
         except Exception:
             pass  # ignore cache errors
