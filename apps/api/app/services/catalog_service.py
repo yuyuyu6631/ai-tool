@@ -4,6 +4,7 @@ Catalog services backed by the application database.
 
 from __future__ import annotations
 
+import functools
 import json
 import re
 import unicodedata
@@ -114,6 +115,7 @@ class SearchableTool:
     search_text: str
 
 
+@functools.lru_cache(maxsize=4096)
 def _repair_text(value: str | None) -> str:
     if not value:
         return ""
@@ -128,7 +130,12 @@ def _repair_text(value: str | None) -> str:
         return value
 
 
+@functools.lru_cache(maxsize=4096)
 def _slugify(value: str) -> str:
+    """
+    Slugify a string for catalog matching. Cached since categories/tags are highly repetitive
+    and unicode normalization / regex ops are expensive during O(N*M) filtering iterations.
+    """
     normalized = unicodedata.normalize("NFKC", _repair_text(value)).strip().casefold()
     normalized = re.sub(r"[^\w\s-]+", "", normalized, flags=re.UNICODE)
     normalized = re.sub(r"[\s_]+", "-", normalized, flags=re.UNICODE).strip("-")
