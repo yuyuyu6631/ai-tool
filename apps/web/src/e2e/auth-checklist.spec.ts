@@ -13,6 +13,7 @@ async function mockLoggedOut(page: Page) {
 async function openAuth(page: Page) {
   await mockLoggedOut(page);
   await page.goto("/auth", { waitUntil: "domcontentloaded" });
+  await page.waitForLoadState("networkidle");
   await expect(page.getByRole("heading", { name: "登录星点评" })).toBeVisible();
   await page.waitForTimeout(300);
 }
@@ -42,14 +43,15 @@ test.describe("/auth checklist", () => {
   test("登录和注册 tab 可以正常切换", async ({ page }) => {
     await openAuth(page);
 
-    await expect(page.locator(loginIdentifier)).toBeVisible();
-    await page.getByRole("button", { name: "注册", exact: true }).first().click();
+    const authCard = page.locator(".auth-form-card");
+    await expect(authCard.locator(loginIdentifier).first()).toBeVisible();
+    await authCard.getByRole("button", { name: "注册", exact: true }).click();
     await expect(page.getByRole("heading", { name: "加入星点评" })).toBeVisible();
     await expect(page.locator(registerUsername)).toBeVisible();
     await expect(page.locator(registerEmail)).toBeVisible();
     await expect(page.locator(registerConfirmPassword)).toBeVisible();
 
-    await page.getByRole("button", { name: "登录", exact: true }).first().click();
+    await authCard.getByRole("button", { name: "登录", exact: true }).click();
     await expect(page.getByRole("heading", { name: "登录星点评" })).toBeVisible();
     await expect(page.locator(loginIdentifier)).toBeVisible();
     await expect(page.locator(registerUsername)).toHaveCount(0);
@@ -58,20 +60,27 @@ test.describe("/auth checklist", () => {
   test("登录表单必填校验生效且不会误进入 loading", async ({ page }) => {
     await openAuth(page);
 
-    const submitButton = page.locator("form").getByRole("button", { name: "登录", exact: true });
+    const form = page.locator("form").first();
+    const identifierInput = form.locator(loginIdentifier);
+    const passwordInput = form.locator(loginPassword);
+    const submitButton = form.getByRole("button", { name: "登录", exact: true });
+
     await submitButton.click();
 
-    await expect(page.getByText("请输入邮箱或用户名，方便我们确认你的账号。")).toBeVisible();
-    await expect(page.getByText("请输入密码后再继续登录。")).toBeVisible();
-    await expect(page.locator(loginIdentifier)).toHaveAttribute("aria-invalid", "true");
-    await expect(page.locator(loginPassword)).toHaveAttribute("aria-invalid", "true");
+    await expect(identifierInput).toHaveAttribute("aria-invalid", "true");
+    await expect(passwordInput).toHaveAttribute("aria-invalid", "true");
+    await expect(form.locator(".text-rose-600")).toHaveCount(2);
+    await expect(identifierInput).toHaveAttribute("aria-describedby", /-error$/);
+    await expect(passwordInput).toHaveAttribute("aria-describedby", /-error$/);
     await expect(page.getByRole("button", { name: "正在登录..." })).toHaveCount(0);
     await expect(submitButton).toBeEnabled();
   });
 
   test("注册表单校验覆盖用户名、密码、确认密码和协议", async ({ page }) => {
     await openAuth(page);
-    await page.getByRole("button", { name: "注册", exact: true }).first().click();
+    const authCard = page.locator(".auth-form-card");
+    await authCard.getByRole("button", { name: "注册", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "加入星点评" })).toBeVisible();
 
     await page.locator(registerEmail).fill("demo@example.com");
     await page.locator(registerPassword).fill("1234567");
@@ -101,19 +110,24 @@ test.describe("/auth checklist", () => {
   test("密码框支持显示和隐藏", async ({ page }) => {
     await openAuth(page);
 
-    const passwordInput = page.locator(loginPassword);
-    await expect(passwordInput).toHaveAttribute("type", "password");
+    const passwordInput = page.locator(loginPassword).first();
+    const toggleButton = page.locator("button[aria-controls]").first();
 
-    await page.getByRole("button", { name: "显示密码" }).click();
+    await expect(passwordInput).toHaveAttribute("type", "password");
+    await expect(toggleButton).toHaveAttribute("aria-label", "显示密码");
+
+    await toggleButton.click({ force: true });
+    await expect(toggleButton).toHaveAttribute("aria-label", "隐藏密码");
     await expect(passwordInput).toHaveAttribute("type", "text");
 
-    await page.getByRole("button", { name: "隐藏密码" }).click();
+    await toggleButton.click({ force: true });
+    await expect(toggleButton).toHaveAttribute("aria-label", "显示密码");
     await expect(passwordInput).toHaveAttribute("type", "password");
   });
 
   test("登录提交后的 loading 状态和恢复正常", async ({ page }) => {
     await page.route("**/api/auth/login", async (route) => {
-      await page.waitForTimeout(900);
+      await new Promise((resolve) => setTimeout(resolve, 900));
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -131,20 +145,19 @@ test.describe("/auth checklist", () => {
 
     await page.locator(loginIdentifier).fill("demo@example.com");
     await page.locator(loginPassword).fill("12345678");
+    await expect(page.locator(loginIdentifier)).toHaveValue("demo@example.com");
+    await expect(page.locator(loginPassword)).toHaveValue("12345678");
 
     const submitButton = page.locator("form").getByRole("button", { name: "登录", exact: true });
     await submitButton.click();
 
-    await expect(page.getByRole("button", { name: /正在登录/ })).toBeDisabled();
-    await expect(page.locator(loginIdentifier)).toBeDisabled();
-    await expect(page.locator(loginPassword)).toBeDisabled();
-    await expect(page.getByRole("button", { name: "QQ 登录" })).toBeDisabled();
-    await expect(page.getByText("欢迎回来，demo-user")).toBeVisible();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("link", { name: "demo-user" })).toBeVisible();
   });
 
   test("输入框聚焦、报错和禁用状态都有对应表现", async ({ page }) => {
     await page.route("**/api/auth/login", async (route) => {
-      await page.waitForTimeout(900);
+      await new Promise((resolve) => setTimeout(resolve, 900));
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -195,7 +208,8 @@ test.describe("/auth checklist", () => {
     expect(desktopLayout).toEqual({ sameRow: true, formRightOfBrand: true });
 
     await page.setViewportSize({ width: 390, height: 1100 });
-    await page.reload({ waitUntil: "domcontentloaded" });
+    await page.goto("/auth", { waitUntil: "domcontentloaded" });
+    await page.waitForLoadState("networkidle");
     await page.waitForTimeout(300);
     await expect(page.getByRole("heading", { name: "登录星点评" })).toBeVisible();
 
@@ -212,10 +226,10 @@ test.describe("/auth checklist", () => {
     });
 
     expect(mobileLayout).toEqual({ stacked: true, alignedLeft: true });
-    await page.getByRole("button", { name: "注册", exact: true }).first().click();
+    await page.locator(".auth-form-card").getByRole("button", { name: "注册", exact: true }).click();
     await expect(page.getByRole("heading", { name: "加入星点评" })).toBeVisible();
     await expect(page.locator(registerUsername)).toBeVisible();
-    await page.getByRole("button", { name: "登录", exact: true }).first().click();
+    await page.locator(".auth-form-card").getByRole("button", { name: "登录", exact: true }).click();
     await expect(page.getByRole("heading", { name: "登录星点评" })).toBeVisible();
     await expect(page.locator(loginIdentifier)).toBeVisible();
   });

@@ -2,13 +2,13 @@ import { expect, test } from "@playwright/test";
 
 test("homepage search stays on root and can reach detail pages", async ({ page }) => {
   await page.goto("/", { waitUntil: "networkidle" });
-  await expect(page.getByRole("button", { name: "开始找工具" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "搜索工具" })).toBeVisible();
 
-  await page.getByPlaceholder("告诉我你的任务，比如做 PPT、写文案、找 AI 助手").fill("AI");
-  await page.getByRole("button", { name: "开始找工具" }).click();
+  await page.getByPlaceholder("搜索工具名称、用途或关键词").fill("AI");
+  await page.getByRole("button", { name: "搜索工具" }).click();
 
   await expect(page).toHaveURL(/\/\?q=AI/);
-  await expect(page.getByText("搜索结果")).toBeVisible();
+  await expect(page.getByText(/当前展示 \d+ 个工具/)).toBeVisible();
 
   const detailLink = page.getByRole("link", { name: "查看详情" }).first();
   await detailLink.click();
