@@ -7,14 +7,13 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.db.session import SessionLocal
 from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolReview, ToolTag
 from app.schemas.catalog import (
     CategorySummary,
@@ -853,18 +852,32 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
         if item.slug == slug
     ]
 
-    category_sections = [
-        HomeCategorySection(
+    # Pre-calculate category mapping to avoid O(N*M) lookups and N+1 database/load queries
+    # O(M) time to build map
+    tools_by_category = defaultdict(list)
+    for tool in all_tools:
+        tools_by_category[tool.categorySlug or _slugify(tool.category)].append(tool)
+
+    # Resolve legacy canonical slugs for categories in O(N) time
+    category_sections = []
+    for item in categories:
+        normalized = _slugify(item.slug)
+        canonical_slug = next(
+            (slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() if normalized == slug or normalized in aliases),
+            normalized,
+        )
+        category_tools = tools_by_category.get(canonical_slug, [])
+        sorted_category_tools = _sort_tools(category_tools, sort="featured", view="hot")[:section_size]
+
+        category_sections.append(HomeCategorySection(
             homeSlug=item.slug,
             label=item.name,
             description=item.description,
             sectionId=f"category-{item.slug}",
             browseCategorySlug=item.slug,
-            items=list_tools_by_category(db=db, category_slug=item.slug)[:section_size],
+            items=sorted_category_tools,
             moreHref=f"/tools?mode=search&category={item.slug}&page=1",
-        )
-        for item in categories
-    ]
+        ))
 
     return HomeCatalogResponse(
         hotTools=hot_tools,
