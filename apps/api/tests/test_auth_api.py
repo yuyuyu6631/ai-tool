@@ -14,7 +14,7 @@ os.environ.setdefault("SESSION_COOKIE_NAME", "xingdianping_session")
 os.environ.setdefault("COOKIE_SECURE", "false")
 
 import app.db.session as session_mod  # noqa: E402
-from app.db.session import Base, get_db  # noqa: E402
+from app.db.session import Base  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import models  # noqa: E402, F401
 from app.models.models import User, UserSession  # noqa: E402

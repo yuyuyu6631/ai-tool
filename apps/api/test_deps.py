@@ -1,8 +1,6 @@
 
 from app.db.session import SessionLocal
-from app.services.catalog_service import get_tool, list_categories, list_scenarios
-from app.services.recommendation_service import recommend
-from app.schemas.recommend import RecommendRequest
+from app.services.catalog_service import list_categories, list_scenarios
 
 with SessionLocal() as db:
     # Test that all functions accept db dependency now

@@ -1,7 +1,6 @@
 """
 E2E 端到端集成测试，涵盖新增的全套 AI API（Tool Parser + RAG Stream Chat）的外围端点保障。
 """
-import pytest
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 

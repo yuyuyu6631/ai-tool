@@ -1,4 +1,3 @@
-import pytest
 from unittest.mock import patch, MagicMock
 
 from app.services.tool_parser_service import fetch_webpage_text, generate_tool_metadata

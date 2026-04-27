@@ -7,14 +7,13 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.db.session import SessionLocal
 from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolReview, ToolTag
 from app.schemas.catalog import (
     CategorySummary,
@@ -853,18 +852,35 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
         if item.slug == slug
     ]
 
-    category_sections = [
-        HomeCategorySection(
-            homeSlug=item.slug,
-            label=item.name,
-            description=item.description,
-            sectionId=f"category-{item.slug}",
-            browseCategorySlug=item.slug,
-            items=list_tools_by_category(db=db, category_slug=item.slug)[:section_size],
-            moreHref=f"/tools?mode=search&category={item.slug}&page=1",
+    # ⚡ Bolt 优化：为避免 O(N*M) 的列表扫描和 N+1 数据库查询，
+    # 预先将工具按类别进行分组。这在获取主页各个分类的工具列表时
+    # 大幅减少了重复遍历开销。
+    tools_by_category = defaultdict(list)
+    for tool in all_tools:
+        cat_slug = tool.categorySlug or _slugify(tool.category)
+        tools_by_category[cat_slug].append(tool)
+
+    category_sections = []
+    for item in categories:
+        normalized = _slugify(item.slug)
+        canonical_slug = next(
+            (slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() if normalized == slug or normalized in aliases),
+            normalized,
         )
-        for item in categories
-    ]
+        cat_tools = tools_by_category.get(canonical_slug, [])
+        sorted_cat_tools = _sort_tools(cat_tools, sort="featured", view="hot")[:section_size]
+
+        category_sections.append(
+            HomeCategorySection(
+                homeSlug=item.slug,
+                label=item.name,
+                description=item.description,
+                sectionId=f"category-{item.slug}",
+                browseCategorySlug=item.slug,
+                items=sorted_cat_tools,
+                moreHref=f"/tools?mode=search&category={item.slug}&page=1",
+            )
+        )
 
     return HomeCatalogResponse(
         hotTools=hot_tools,

@@ -3,7 +3,6 @@ from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 
-import pytest
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session, sessionmaker
 

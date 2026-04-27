@@ -4,7 +4,6 @@ RAG 流式对话服务单元测试 —— 覆盖核心函数和异常处理。
 
 import json
 
-import pytest
 from unittest.mock import patch, MagicMock
 from app.services.rag_chat_service import (
     stream_chat_rag,
