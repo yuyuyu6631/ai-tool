@@ -55,6 +55,11 @@ def _add_tool(
     price_min_cny: int | None = None,
     price_max_cny: int | None = None,
     free_allowance_text: str = "",
+    features_json: list[str] | None = None,
+    limitations_json: list[str] | None = None,
+    best_for_json: list[str] | None = None,
+    deal_summary: str = "",
+    media_items_json: list[dict] | None = None,
 ) -> Tool:
     tool = Tool(
         slug=slug,
@@ -76,6 +81,11 @@ def _add_tool(
         price_min_cny=price_min_cny,
         price_max_cny=price_max_cny,
         free_allowance_text=free_allowance_text,
+        features_json=features_json,
+        limitations_json=limitations_json,
+        best_for_json=best_for_json,
+        deal_summary=deal_summary,
+        media_items_json=media_items_json,
         created_on=created_on,
         last_verified_at=created_on,
     )
@@ -154,6 +164,21 @@ def setup_module():
                 price_min_cny=145,
                 price_max_cny=145,
                 free_allowance_text="基础问答可免费体验，进阶能力需订阅。",
+                features_json=["多模态问答稳定", "生态插件丰富"],
+                limitations_json=["高级模型额度消耗快", "关键结论仍需人工复核"],
+                best_for_json=["内容团队", "产品经理", "开发者"],
+                deal_summary="免费版可先试，团队高频使用建议核算 Plus/Team 成本。",
+                media_items_json=[
+                    {
+                        "type": "video",
+                        "url": "https://example.com/chatgpt-demo.mp4",
+                        "thumbnailUrl": "/media/chatgpt-cover.jpg",
+                        "title": "3 分钟上手演示",
+                        "sourceName": "星点评编辑部",
+                        "sourceUrl": "https://example.com/source",
+                    },
+                    {"type": "video", "url": "javascript:alert(1)", "title": "invalid"},
+                ],
             ),
             _add_tool(
                 db,
@@ -431,6 +456,31 @@ def test_tools_directory_default_response_shape_and_visibility():
     assert "reviewCount" in first
     assert "accessFlags" in first
     assert "pricingType" in first
+    assert "features" in first
+    assert "limitations" in first
+    assert "bestFor" in first
+    assert "dealSummary" in first
+    assert "primaryMedia" in first
+
+
+def test_tools_directory_exposes_structured_product_elements_and_sanitized_primary_media():
+    response = client.get("/api/tools?q=ChatGPT&page_size=24")
+
+    assert response.status_code == 200
+    item = response.json()["items"][0]
+    assert item["slug"] == "chatgpt"
+    assert item["features"] == ["多模态问答稳定", "生态插件丰富"]
+    assert item["limitations"] == ["高级模型额度消耗快", "关键结论仍需人工复核"]
+    assert item["bestFor"] == ["内容团队", "产品经理", "开发者"]
+    assert item["dealSummary"] == "免费版可先试，团队高频使用建议核算 Plus/Team 成本。"
+    assert item["primaryMedia"] == {
+        "type": "video",
+        "url": "https://example.com/chatgpt-demo.mp4",
+        "thumbnailUrl": "/media/chatgpt-cover.jpg",
+        "title": "3 分钟上手演示",
+        "sourceName": "星点评编辑部",
+        "sourceUrl": "https://example.com/source",
+    }
 
 
 def test_tools_directory_page_two_returns_only_second_page_slice():
@@ -644,6 +694,20 @@ def test_tool_detail_aggregates_review_content():
     assert payload["scenarioRecommendations"] == [
         {"audience": "内容团队", "task": "快速起草与问答", "summary": "适合先上手，再决定是否长期使用。"},
         {"audience": "独立开发者", "task": "高频日常生产", "summary": "适合高频通用任务，但复杂流程最好配合其他工具。"},
+    ]
+    assert payload["features"] == ["多模态问答稳定", "生态插件丰富"]
+    assert payload["limitations"] == ["高级模型额度消耗快", "关键结论仍需人工复核"]
+    assert payload["bestFor"] == ["内容团队", "产品经理", "开发者"]
+    assert payload["dealSummary"] == "免费版可先试，团队高频使用建议核算 Plus/Team 成本。"
+    assert payload["mediaItems"] == [
+        {
+            "type": "video",
+            "url": "https://example.com/chatgpt-demo.mp4",
+            "thumbnailUrl": "/media/chatgpt-cover.jpg",
+            "title": "3 分钟上手演示",
+            "sourceName": "星点评编辑部",
+            "sourceUrl": "https://example.com/source",
+        }
     ]
     assert len(payload["reviewPreview"]) == 2
 

@@ -210,6 +210,21 @@ def test_admin_can_manage_tools_and_rankings():
                 "priceMinCny": None,
                 "priceMaxCny": None,
                 "freeAllowanceText": "Free forever",
+                "features": ["Fast setup", "Clear onboarding"],
+                "limitations": ["Small team feature set"],
+                "bestFor": ["Students", "Solo builders"],
+                "dealSummary": "Free plan is enough for light usage.",
+                "mediaItems": [
+                    {
+                        "type": "image",
+                        "url": "/media/new-tool.png",
+                        "thumbnailUrl": "/media/new-tool-thumb.png",
+                        "title": "Product screenshot",
+                        "sourceName": "Vendor",
+                        "sourceUrl": "https://example.com/new-tool-source",
+                    },
+                    {"type": "video", "url": "ftp://example.com/bad.mp4", "title": "Bad media"},
+                ],
                 "accessFlags": {"needs_vpn": False, "cn_lang": True, "cn_payment": True},
                 "tags": ["assistant", "chat"],
                 "createdOn": "2026-04-17",
@@ -217,7 +232,14 @@ def test_admin_can_manage_tools_and_rankings():
             },
         )
         assert create_tool.status_code == 201
-        assert create_tool.json()["slug"] == "new-tool"
+        created_tool_payload = create_tool.json()
+        assert created_tool_payload["slug"] == "new-tool"
+        assert created_tool_payload["features"] == ["Fast setup", "Clear onboarding"]
+        assert created_tool_payload["limitations"] == ["Small team feature set"]
+        assert created_tool_payload["bestFor"] == ["Students", "Solo builders"]
+        assert created_tool_payload["dealSummary"] == "Free plan is enough for light usage."
+        assert created_tool_payload["primaryMedia"]["url"] == "/media/new-tool.png"
+        assert created_tool_payload["mediaItems"] == [created_tool_payload["primaryMedia"]]
 
         create_ranking = client.post(
             "/api/admin/rankings",
@@ -257,6 +279,11 @@ def test_admin_can_manage_tools_and_rankings():
                 "priceMinCny": 99,
                 "priceMaxCny": 199,
                 "freeAllowanceText": "",
+                "features": ["Updated feature"],
+                "limitations": ["Updated limitation"],
+                "bestFor": ["Updated audience"],
+                "dealSummary": "Updated deal note.",
+                "mediaItems": [],
                 "accessFlags": {"needs_vpn": False, "cn_lang": True, "cn_payment": True},
                 "tags": ["assistant", "productivity"],
                 "createdOn": "2026-04-01",
@@ -265,6 +292,8 @@ def test_admin_can_manage_tools_and_rankings():
         )
         assert updated_tool.status_code == 200
         assert updated_tool.json()["name"] == "ChatGPT Updated"
+        assert updated_tool.json()["features"] == ["Updated feature"]
+        assert updated_tool.json()["mediaItems"] == []
 
         tools_after_update = client.get("/api/admin/tools")
         assert tools_after_update.status_code == 200
@@ -273,6 +302,7 @@ def test_admin_can_manage_tools_and_rankings():
         public_detail = client.get("/api/tools/chatgpt")
         assert public_detail.status_code == 200
         assert public_detail.json()["name"] == "ChatGPT Updated"
+        assert public_detail.json()["limitations"] == ["Updated limitation"]
 
 
 def test_production_like_environment_rejects_in_memory_database():

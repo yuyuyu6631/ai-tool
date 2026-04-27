@@ -1,3 +1,12 @@
+export interface ToolMediaItem {
+  type: "image" | "video" | string;
+  url: string;
+  thumbnailUrl?: string | null;
+  title?: string;
+  sourceName?: string;
+  sourceUrl?: string | null;
+}
+
 export interface ToolSummary {
   id: number;
   slug: string;
@@ -21,6 +30,11 @@ export interface ToolSummary {
   priceMinCny?: number | null;
   priceMaxCny?: number | null;
   freeAllowanceText?: string;
+  features?: string[];
+  limitations?: string[];
+  bestFor?: string[];
+  dealSummary?: string;
+  primaryMedia?: ToolMediaItem | null;
   reason?: string | null;
 }
 
@@ -42,6 +56,7 @@ export interface ToolDetail extends ToolSummary {
   scenarioRecommendations?: ScenarioRecommendation[];
   reviewPreview?: ReviewPreview[];
   ratingSummary?: ToolRatingSummary | null;
+  mediaItems?: ToolMediaItem[];
   alternatives: string[];
   lastVerifiedAt: string;
 }
@@ -248,6 +263,7 @@ export interface AdminToolListItem {
   status: ToolSummary["status"] | string;
   score: number;
   reviewCount: number;
+  updatedAt?: string;
 }
 
 export interface AdminToolAccessFlagsPayload {
@@ -277,6 +293,11 @@ export interface AdminToolPayload {
   priceMinCny: number | null;
   priceMaxCny: number | null;
   freeAllowanceText: string;
+  features: string[];
+  limitations: string[];
+  bestFor: string[];
+  dealSummary: string;
+  mediaItems: ToolMediaItem[];
   accessFlags: AdminToolAccessFlagsPayload;
   tags: string[];
   createdOn: string | null;

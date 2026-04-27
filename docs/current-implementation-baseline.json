@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-04-24T02:52:16.464Z",
+  "generatedAt": "2026-04-27T08:48:22.906Z",
   "summary": {
     "frontendRouteCount": 15,
     "apiEndpointCount": 36,
     "dataModelCount": 17,
-    "testFileCount": 41
+    "testFileCount": 46
   },
   "frontendRoutes": [
     {
@@ -579,7 +579,7 @@
     {
       "className": "Tool",
       "tableName": "tools",
-      "fieldCount": 31,
+      "fieldCount": 36,
       "fieldsPreview": [
         "id",
         "slug",
@@ -628,7 +628,7 @@
   "tests": [
     {
       "name": "Web unit/integration",
-      "count": 20,
+      "count": 22,
       "files": [
         "apps/web/src/app/components/__tests__/BackToResultsLink.test.tsx",
         "apps/web/src/app/components/__tests__/CommandPalette.test.tsx",
@@ -639,8 +639,10 @@
         "apps/web/src/app/components/__tests__/ToolReviewsPanel.test.tsx",
         "apps/web/src/app/components/admin/__tests__/AdminAccessGate.test.tsx",
         "apps/web/src/app/components/admin/__tests__/AdminOverviewDashboard.test.tsx",
+        "apps/web/src/app/components/admin/__tests__/AdminToolEditor.test.tsx",
         "apps/web/src/app/components/auth/__tests__/AuthCard.test.tsx",
         "apps/web/src/app/features/matches/components/__tests__/MatchFeed.test.tsx",
+        "apps/web/src/app/lib/__tests__/catalog-api.test.ts",
         "apps/web/src/app/lib/__tests__/catalog-navigation.test.ts",
         "apps/web/src/app/lib/__tests__/compare-utils.test.ts",
         "apps/web/src/app/lib/__tests__/floating-chat-visibility.test.ts",
@@ -654,9 +656,10 @@
     },
     {
       "name": "Web e2e",
-      "count": 4,
+      "count": 5,
       "files": [
         "apps/web/src/e2e/auth-checklist.spec.ts",
+        "apps/web/src/e2e/home-radar.spec.ts",
         "apps/web/src/e2e/navigation-verify.spec.ts",
         "apps/web/src/e2e/smoke.spec.ts",
         "apps/web/src/e2e/visual.spec.ts"
@@ -664,7 +667,7 @@
     },
     {
       "name": "API pytest",
-      "count": 17,
+      "count": 19,
       "files": [
         "apps/api/tests/test_ai_integration.py",
         "apps/api/tests/test_api_hardening.py",
@@ -676,12 +679,14 @@
         "apps/api/tests/test_catalog_view_seed.py",
         "apps/api/tests/test_chat_api.py",
         "apps/api/tests/test_chat_rag.py",
+        "apps/api/tests/test_demo_ai_search.py",
         "apps/api/tests/test_embedding_service.py",
         "apps/api/tests/test_import_preview_validation.py",
         "apps/api/tests/test_logo_assets.py",
         "apps/api/tests/test_organize_aitool_assets.py",
         "apps/api/tests/test_published_visibility.py",
         "apps/api/tests/test_reviews_admin_api.py",
+        "apps/api/tests/test_tool_elements_migration.py",
         "apps/api/tests/test_tool_parser.py"
       ]
     }

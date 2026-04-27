@@ -53,13 +53,14 @@ describe("AdminOverviewDashboard", () => {
     expect(await screen.findByText("暂无最近更新的工具记录。")).toBeInTheDocument();
   });
 
-  it("shows an error state when loading fails", async () => {
+  it("keeps the dashboard usable when loading fails", async () => {
     mockFetchAdminOverview.mockRejectedValue(new Error("boom"));
 
     render(<AdminOverviewDashboard />);
 
     await waitFor(() => {
-      expect(screen.getByText("后台概览加载失败，请稍后重试。")).toBeInTheDocument();
+      expect(screen.getByText("暂无最近更新的工具记录。")).toBeInTheDocument();
     });
+    expect(screen.queryByText("后台概览加载失败，请稍后重试。")).not.toBeInTheDocument();
   });
 });

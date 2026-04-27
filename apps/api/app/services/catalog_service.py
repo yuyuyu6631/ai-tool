@@ -9,6 +9,7 @@ import re
 import unicodedata
 from collections import Counter
 from dataclasses import dataclass
+from urllib.parse import urlparse
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
@@ -28,7 +29,7 @@ from app.schemas.catalog import (
     ScenarioSummary,
     ToolsDirectoryResponse,
 )
-from app.schemas.tool import AccessFlags, ReviewPreview, ScenarioRecommendation, ToolDetail, ToolRatingSummary, ToolSummary
+from app.schemas.tool import AccessFlags, ReviewPreview, ScenarioRecommendation, ToolDetail, ToolMediaItem, ToolRatingSummary, ToolSummary
 from app.services.cache_service import get_redis_client, mark_redis_unavailable
 from app.services.catalog_views_seed import (
     get_scenario_target_audience,
@@ -162,6 +163,48 @@ def _normalize_string_list(value) -> list[str]:
     return [_repair_text(item).strip() for item in value if isinstance(item, str) and item.strip()]
 
 
+def _is_safe_display_url(value: str | None, *, allow_relative: bool) -> bool:
+    if not isinstance(value, str):
+        return False
+    stripped = value.strip()
+    if not stripped:
+        return False
+    if allow_relative and stripped.startswith("/") and not stripped.startswith("//") and "\\" not in stripped:
+        return True
+    parsed = urlparse(stripped)
+    return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def _sanitize_media_items(value) -> list[ToolMediaItem]:
+    if not isinstance(value, list):
+        return []
+
+    items: list[ToolMediaItem] = []
+    for raw in value:
+        if not isinstance(raw, dict):
+            continue
+        media_type = str(raw.get("type") or "").strip().lower()
+        url = str(raw.get("url") or "").strip()
+        if media_type not in {"image", "video"} or not _is_safe_display_url(url, allow_relative=True):
+            continue
+
+        thumbnail_url = str(raw.get("thumbnailUrl") or raw.get("thumbnail_url") or "").strip()
+        source_url = str(raw.get("sourceUrl") or raw.get("source_url") or "").strip()
+
+        items.append(
+            ToolMediaItem(
+                type=media_type,
+                url=url,
+                thumbnailUrl=thumbnail_url if _is_safe_display_url(thumbnail_url, allow_relative=True) else None,
+                title=_repair_text(str(raw.get("title") or "")).strip()[:120],
+                sourceName=_repair_text(str(raw.get("sourceName") or raw.get("source_name") or "")).strip()[:80],
+                sourceUrl=source_url if _is_safe_display_url(source_url, allow_relative=False) else None,
+            )
+        )
+
+    return items
+
+
 def _unique_strings(values: list[str]) -> list[str]:
     deduped: list[str] = []
     seen: set[str] = set()
@@ -226,6 +269,8 @@ def _tool_row_to_summary(tool: Tool) -> ToolSummary:
     category_name = tool.category_name
     if tool.categories:
         category_name = tool.categories[0].category.name
+    media_items = _sanitize_media_items(tool.media_items_json)
+    deal_summary = _repair_text(tool.deal_summary).strip() or _repair_text(tool.free_allowance_text).strip()
 
     return ToolSummary(
         id=tool.id,
@@ -250,6 +295,11 @@ def _tool_row_to_summary(tool: Tool) -> ToolSummary:
         priceMinCny=tool.price_min_cny,
         priceMaxCny=tool.price_max_cny,
         freeAllowanceText=_repair_text(tool.free_allowance_text),
+        features=_normalize_string_list(tool.features_json),
+        limitations=_normalize_string_list(tool.limitations_json),
+        bestFor=_normalize_string_list(tool.best_for_json),
+        dealSummary=deal_summary,
+        primaryMedia=media_items[0] if media_items else None,
     )
 
 
@@ -298,6 +348,7 @@ def _tool_row_to_detail(tool: Tool) -> ToolDetail:
         scenarioRecommendations=scenario_recommendations,
         reviewPreview=review_preview,
         ratingSummary=rating_summary,
+        mediaItems=_sanitize_media_items(tool.media_items_json),
         alternatives=[],
         lastVerifiedAt=tool.last_verified_at,
     )
@@ -314,6 +365,10 @@ def _build_search_text(tool: Tool) -> str:
         _repair_text(tool.name),
         _repair_text(tool.summary),
         _repair_text(tool.description),
+        " ".join(_normalize_string_list(tool.features_json)),
+        " ".join(_normalize_string_list(tool.limitations_json)),
+        " ".join(_normalize_string_list(tool.best_for_json)),
+        _repair_text(tool.deal_summary),
         category_name,
         tags,
     ]
@@ -327,12 +382,17 @@ def _normalize_status_filter(status_slug: str | None) -> str:
     return PUBLIC_TOOL_STATUS
 
 
-def _sort_tools(items: list[ToolSummary], sort: str, view: str) -> list[ToolSummary]:
+def _sort_tools(items: list[ToolSummary], sort: str, view: str, include_all_statuses: bool = False) -> list[ToolSummary]:
+    def status_priority(item: ToolSummary) -> int:
+        if not include_all_statuses:
+            return 0
+        return {"draft": 2, "archived": 1, "published": 0}.get(item.status, 0)
+
     if view == "latest" or sort == "latest":
-        return sorted(items, key=lambda item: (item.createdAt, item.id), reverse=True)
+        return sorted(items, key=lambda item: (status_priority(item), item.createdAt, item.id), reverse=True)
     if sort == "name":
-        return sorted(items, key=lambda item: item.name.casefold())
-    return sorted(items, key=lambda item: (item.featured, item.score, item.createdAt, item.id), reverse=True)
+        return sorted(items, key=lambda item: (-status_priority(item), item.name.casefold()))
+    return sorted(items, key=lambda item: (status_priority(item), item.featured, item.score, item.createdAt, item.id), reverse=True)
 
 
 def _normalize_query(query: str) -> str:
@@ -733,7 +793,7 @@ def get_tools_directory(
     all_tools = [item.summary for item in searchable_tools]
     filtered = [item.summary for item in filtered_searchable]
 
-    sorted_items = _sort_tools(filtered, sort=sort, view=view)
+    sorted_items = _sort_tools(filtered, sort=sort, view=view, include_all_statuses=active_status == ALL_STATUS_SLUG)
     total = len(sorted_items)
     start = (page - 1) * page_size
     page_items = sorted_items[start : start + page_size]

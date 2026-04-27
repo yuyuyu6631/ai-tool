@@ -16,6 +16,8 @@ import type {
   ToolsDirectoryResponse,
 } from "./catalog-types";
 import {
+  getFallbackAdminOverview,
+  getFallbackAdminTools,
   getFallbackCategories,
   getFallbackDirectory,
   getFallbackHomeCatalog,
@@ -30,6 +32,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8
 export const CATALOG_CACHE_TAG = "catalog";
 export const CATALOG_REVALIDATE_SECONDS = 60;
 const CATALOG_FETCH_TIMEOUT_MS = 8000;
+const MOCK_ENABLED_VALUES = new Set(["1", "true", "yes", "on"]);
 
 type CatalogFetchOptions = RequestInit & {
   next?: {
@@ -242,7 +245,16 @@ export async function fetchScenarios(): Promise<ScenarioSummary[]> {
 
 export { ApiError };
 
+export function isMockFallbackEnabled(): boolean {
+  const value = (process.env.NEXT_PUBLIC_USE_MOCK ?? process.env.USE_MOCK_DATA ?? "").toLowerCase();
+  return MOCK_ENABLED_VALUES.has(value);
+}
+
 function resolveReadFallback<T>(path: string): T | null {
+  if (!isMockFallbackEnabled()) {
+    return null;
+  }
+
   const [pathname, queryString = ""] = path.split("?");
 
   if (pathname === "/api/categories") {
@@ -268,6 +280,14 @@ function resolveReadFallback<T>(path: string): T | null {
 
   if (pathname === "/api/rankings") {
     return getFallbackRankings() as T;
+  }
+
+  if (pathname === "/api/admin/tools") {
+    return getFallbackAdminTools() as T;
+  }
+
+  if (pathname === "/api/admin/overview") {
+    return getFallbackAdminOverview() as T;
   }
 
   if (pathname === "/api/tools") {

@@ -28,25 +28,12 @@ export default function Footer() {
         <div>
           <h3 className="text-sm font-semibold text-slate-950">平台</h3>
           <div className="mt-3 space-y-2 text-sm text-slate-600">
-            <a href={TOOL_SUBMISSION_URL} target="_blank" rel="noreferrer" className="block hover:text-slate-900">
+            <Link href={TOOL_SUBMISSION_URL} className="block hover:text-slate-900">
               提交工具
-            </a>
-            <a
-              href="https://github.com/yuyuyu6631/Next.js-AI-Tool-Demo/issues"
-              target="_blank"
-              rel="noreferrer"
-              className="block hover:text-slate-900"
-            >
+            </Link>
+            <Link href="/#submit-tool" className="block hover:text-slate-900">
               问题反馈
-            </a>
-            <a
-              href="https://github.com/yuyuyu6631/Next.js-AI-Tool-Demo"
-              target="_blank"
-              rel="noreferrer"
-              className="block hover:text-slate-900"
-            >
-              项目仓库
-            </a>
+            </Link>
           </div>
         </div>
       </div>

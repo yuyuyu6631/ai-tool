@@ -176,7 +176,7 @@ test.describe("/auth checklist", () => {
     await expect(page.locator(loginIdentifier)).toHaveValue("demo@example.com");
     await expect(page.locator(loginPassword)).toHaveValue("12345678");
 
-    const submitButton = page.locator("form").getByRole("button", { name: "登录", exact: true });
+    const submitButton = page.locator("form").locator("button[type='submit']");
     await submitButton.click();
     await page.waitForURL(/\/tools$/);
     await expect(page.getByRole("link", { name: "demo-user" })).toBeVisible();

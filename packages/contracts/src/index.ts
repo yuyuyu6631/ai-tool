@@ -1,10 +1,20 @@
 export type ToolStatus = "published" | "draft" | "archived";
 
+export interface ToolMediaItem {
+  type: "image" | "video" | string;
+  url: string;
+  thumbnailUrl?: string | null;
+  title?: string;
+  sourceName?: string;
+  sourceUrl?: string | null;
+}
+
 export interface ToolSummary {
   id: number;
   slug: string;
   name: string;
   category: string;
+  categorySlug?: string;
   score: number;
   summary: string;
   tags: string[];
@@ -22,6 +32,12 @@ export interface ToolSummary {
   priceMinCny?: number | null;
   priceMaxCny?: number | null;
   freeAllowanceText?: string;
+  features?: string[];
+  limitations?: string[];
+  bestFor?: string[];
+  dealSummary?: string;
+  primaryMedia?: ToolMediaItem | null;
+  reason?: string | null;
 }
 
 export interface ToolDetail extends ToolSummary {
@@ -41,9 +57,48 @@ export interface ToolDetail extends ToolSummary {
   scenarios: string[];
   scenarioRecommendations?: ScenarioRecommendation[];
   reviewPreview?: ReviewPreview[];
+  mediaItems?: ToolMediaItem[];
   alternatives: string[];
   status: ToolStatus;
   lastVerifiedAt: string;
+}
+
+export interface AdminToolAccessFlagsPayload {
+  needs_vpn?: boolean | null;
+  cn_lang?: boolean | null;
+  cn_payment?: boolean | null;
+}
+
+export interface AdminToolPayload {
+  slug: string;
+  name: string;
+  categorySlug: string;
+  categoryName: string;
+  summary: string;
+  description: string;
+  editorComment: string;
+  developer: string;
+  country: string;
+  city: string;
+  price: string;
+  platforms: string;
+  officialUrl: string;
+  logoPath: string;
+  featured: boolean;
+  status: ToolStatus | string;
+  pricingType: string;
+  priceMinCny: number | null;
+  priceMaxCny: number | null;
+  freeAllowanceText: string;
+  features: string[];
+  limitations: string[];
+  bestFor: string[];
+  dealSummary: string;
+  mediaItems: ToolMediaItem[];
+  accessFlags: AdminToolAccessFlagsPayload;
+  tags: string[];
+  createdOn: string | null;
+  lastVerifiedAt: string | null;
 }
 
 export interface AccessFlags {

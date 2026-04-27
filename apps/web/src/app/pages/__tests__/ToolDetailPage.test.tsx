@@ -50,7 +50,20 @@ const tool: ToolDetail = {
   reviewCount: 2,
   accessFlags: { needsVpn: false, cnLang: true, cnPayment: true },
   pricingType: "free",
-  freeAllowanceText: "永久免费",
+  freeAllowanceText: "永久免费额度",
+  features: ["长文本理解稳定", "多模态能力完整"],
+  limitations: ["复杂工作流需要二次编排"],
+  bestFor: ["内容团队", "开发者"],
+  dealSummary: "新用户可先用免费额度",
+  primaryMedia: null,
+  mediaItems: [
+    {
+      type: "image",
+      url: "/media/chatgpt-demo.png",
+      title: "产品界面演示",
+      sourceName: "编辑部",
+    },
+  ],
   description: "详细介绍",
   editorComment: "这段内容现在不该显示",
   developer: "OpenAI",
@@ -62,7 +75,7 @@ const tool: ToolDetail = {
   abilities: [],
   pros: ["上手快"],
   cons: ["复杂场景需要复核"],
-  pitfalls: ["复杂工作流需要二次编排"],
+  pitfalls: ["旧字段避坑内容"],
   scenarios: [],
   scenarioRecommendations: [{ audience: "内容团队", task: "快速起草", summary: "适合高频日常生产。" }],
   reviewPreview: [{ sourceType: "editor", title: "编辑结论", body: "先试再买", rating: 9.1 }],
@@ -71,14 +84,22 @@ const tool: ToolDetail = {
 };
 
 describe("ToolDetailPage", () => {
-  it("renders the new directory-style detail layout and hides legacy editor comment content", () => {
+  it("renders the review-first detail layout and hides legacy editor comment content", () => {
     render(<ToolDetailPage tool={tool} relatedTools={[]} reviews={null} />);
 
+    expect(screen.getByText("评测结论")).toBeInTheDocument();
+    expect(screen.getByText("先看缺陷 / 限制")).toBeInTheDocument();
+    expect(screen.getByText("复杂工作流需要二次编排")).toBeInTheDocument();
+    expect(screen.getByText("核心特点")).toBeInTheDocument();
+    expect(screen.getByText("长文本理解稳定")).toBeInTheDocument();
+    expect(screen.getByText("适合人群")).toBeInTheDocument();
+    expect(screen.getAllByText("内容团队").length).toBeGreaterThan(0);
+    expect(screen.getByText("优惠 / 免费额度")).toBeInTheDocument();
+    expect(screen.getByText("新用户可先用免费额度")).toBeInTheDocument();
+    expect(screen.getByText("媒体演示")).toBeInTheDocument();
+    expect(screen.getByText("产品界面演示")).toBeInTheDocument();
+    expect(screen.getByText("用户/编辑反馈")).toBeInTheDocument();
     expect(screen.getByText("详细介绍")).toBeInTheDocument();
-    expect(screen.getByText("核心能力")).toBeInTheDocument();
-    expect(screen.getByText("适用场景")).toBeInTheDocument();
-    expect(screen.getByText("避坑提醒")).toBeInTheDocument();
-    expect(screen.getByText("编辑点评 / 用户反馈")).toBeInTheDocument();
     expect(screen.queryByText("编辑评论")).not.toBeInTheDocument();
     expect(screen.queryByText("这段内容现在不该显示")).not.toBeInTheDocument();
   });
