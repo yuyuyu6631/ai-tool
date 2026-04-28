@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import ToolsPage from "../ToolsPage";
 import type { ToolsDirectoryResponse } from "../../lib/catalog-types";
 
@@ -99,5 +99,27 @@ describe("ToolsPage", () => {
     expect(screen.getByText("当前优先筛选逻辑")).toBeInTheDocument();
     expect(screen.getByText("可执行快捷动作")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "只看免费" })).toBeInTheDocument();
+  });
+
+  it("clears the ai pending state after switching ai focus", () => {
+    const { rerender } = render(
+      <ToolsPage
+        directory={directory}
+        state={{ mode: "ai", q: "帮我找免费做 PPT 的工具", view: "hot", page: "1" }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("link", { name: "进入筛选列表" }));
+
+    expect(screen.getByRole("status")).toHaveTextContent("AI 正在匹配工具，请稍候...");
+
+    rerender(
+      <ToolsPage
+        directory={directory}
+        state={{ mode: "ai", aiFocus: "list", q: "帮我找免费做 PPT 的工具", view: "hot", page: "1" }}
+      />,
+    );
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });

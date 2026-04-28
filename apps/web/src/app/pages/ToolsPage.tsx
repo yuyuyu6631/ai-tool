@@ -148,7 +148,7 @@ export default function ToolsPage({ directory, aiSearch = null, state, loadState
 
   useEffect(() => {
     setAiPending(false);
-  }, [state.mode, state.q, state.category, state.tag, state.price, state.access, state.priceRange, state.sort, state.view, state.page]);
+  }, [state.mode, state.aiFocus, state.q, state.category, state.tag, state.price, state.access, state.priceRange, state.sort, state.view, state.page]);
 
   return (
     <div className="page-shell">
