@@ -9,9 +9,12 @@
 - 前端已接入真实 API，默认开发接口为 `http://localhost:8000`
 - 当前公开页面包含首页、工具详情、场景页、对比页、匹配页和认证页
 - `/tools` 与 `/rankings` 是兼容重定向入口，当前统一承接到首页
-- 首页与目录能力已经合并为“统一入口 + 双模式搜索”的当前形态
+- 首页与目录能力已经合并为“统一入口 + 双模式搜索 + 雷达推荐展示”的当前形态
+- 工具详情和后台工具管理已经包含产品元素字段，前后端类型通过 `packages/contracts` 对齐
+- 精选首页工具数据位于 `apps/api/app/data/homepage_curated_tools.json`，可通过 `npm run sync:home-tools` 同步到数据库
 - 文档中标记为“未来规划”的内容，仅代表目标方向，不代表当前代码已实现
 - `../docs/current-implementation-baseline.md` 为自动生成基线，提交前会随代码一起刷新
+- 当前主仓库为 `https://github.com/yuyuyu6631/ai-tool`，本地 `main` 应跟踪 `ai-tool/main`
 
 ## 布局改版先读
 
@@ -57,3 +60,4 @@
 - 若文档与代码冲突，以代码为准，并优先补正文档
 - 布局大改期间，优先保持 README、文档索引、页面规范三处口径一致
 - 需要快速确认真实路由、API、模型和测试时，优先查看 `../docs/current-implementation-baseline.md`
+- 提交文档前建议运行 `npm run docs:check`；涉及前端 UI 时同步运行 `npm run lint:web`、`npm run test:web -- --run` 和 `npm run build:web`
