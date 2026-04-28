@@ -7,15 +7,15 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass
+from functools import lru_cache
 from urllib.parse import urlparse
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.db.session import SessionLocal
 from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolReview, ToolTag
 from app.schemas.catalog import (
     CategorySummary,
@@ -136,6 +136,7 @@ def _repair_text(value: str | None) -> str:
         return value
 
 
+@lru_cache(maxsize=1024)
 def _slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", _repair_text(value)).strip().casefold()
     normalized = re.sub(r"[^\w\s-]+", "", normalized, flags=re.UNICODE)
@@ -434,8 +435,7 @@ def _is_task_style_query(query: str) -> bool:
     return any(chunk in TASK_TERM_EXPANSIONS for chunk in re.split(r"[\s/_-]+", _normalize_query(query)) if chunk)
 
 
-def _matches_query(search_text: str, query: str) -> bool:
-    token_groups = _query_token_groups(query)
+def _matches_query(search_text: str, token_groups: list[tuple[str, ...]]) -> bool:
     if not token_groups:
         return True
 
@@ -710,7 +710,8 @@ def _filter_tools(
     access_filters = _parse_access_filter(access_slug)
 
     if q:
-        filtered = [item for item in filtered if _matches_query(item.search_text, q)]
+        token_groups = _query_token_groups(q)
+        filtered = [item for item in filtered if _matches_query(item.search_text, token_groups)]
     if category_slug:
         filtered = [item for item in filtered if _matches_category(item.summary, category_slug)]
     if tag_slug:
@@ -729,7 +730,8 @@ def _apply_query_recall(*, db, items: list[SearchableTool], q: str | None) -> li
     if not q:
         return items
 
-    lexical_matches = [item for item in items if _matches_query(item.search_text, q)]
+    token_groups = _query_token_groups(q)
+    lexical_matches = [item for item in items if _matches_query(item.search_text, token_groups)]
     candidate_tool_ids = [item.summary.id for item in items]
 
     try:
@@ -913,18 +915,28 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
         if item.slug == slug
     ]
 
-    category_sections = [
-        HomeCategorySection(
-            homeSlug=item.slug,
-            label=item.name,
-            description=item.description,
-            sectionId=f"category-{item.slug}",
-            browseCategorySlug=item.slug,
-            items=list_tools_by_category(db=db, category_slug=item.slug)[:section_size],
-            moreHref=f"/tools?mode=search&category={item.slug}&page=1",
+    tools_by_category: dict[str, list[ToolSummary]] = defaultdict(list)
+    for tool in all_tools:
+        tools_by_category[tool.categorySlug or _slugify(tool.category)].append(tool)
+
+    category_sections = []
+    for item in categories:
+        normalized = _slugify(item.slug)
+        canonical_slug = next(
+            (slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() if normalized == slug or normalized in aliases),
+            normalized,
         )
-        for item in categories
-    ]
+        category_sections.append(
+            HomeCategorySection(
+                homeSlug=item.slug,
+                label=item.name,
+                description=item.description,
+                sectionId=f"category-{item.slug}",
+                browseCategorySlug=item.slug,
+                items=_sort_tools(tools_by_category.get(canonical_slug, []), sort="featured", view="hot")[:section_size],
+                moreHref=f"/tools?mode=search&category={item.slug}&page=1",
+            )
+        )
 
     return HomeCatalogResponse(
         hotTools=hot_tools,
