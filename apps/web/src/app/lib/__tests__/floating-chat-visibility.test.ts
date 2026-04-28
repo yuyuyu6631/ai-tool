@@ -12,6 +12,8 @@ describe("shouldHideFloatingChatBot", () => {
     expect(shouldHideFloatingChatBot("/tools")).toBe(true);
     expect(shouldHideFloatingChatBot("/tools/chatgpt")).toBe(true);
     expect(shouldHideFloatingChatBot("/matches")).toBe(true);
+    expect(shouldHideFloatingChatBot("/admin")).toBe(true);
+    expect(shouldHideFloatingChatBot("/admin/tools")).toBe(true);
   });
 
   it("hides when mode query is ai", () => {

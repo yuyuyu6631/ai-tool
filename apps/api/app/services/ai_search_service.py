@@ -6,7 +6,7 @@ import re
 import time
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
-from urllib import error, request
+from urllib import error as url_error, request
 
 from app.core.config import settings
 from app.schemas.ai_search import (
@@ -26,16 +26,56 @@ INTENT_CACHE_PREFIX = "ai-search:intent"
 HOT_QUERY_TTL_SECONDS = 24 * 60 * 60
 DEFAULT_QUERY_TTL_SECONDS = 60 * 60
 INTENT_TIMEOUT_SECONDS = 1.8
+AI_SEARCH_CANDIDATE_LIMIT = 5000
 
 BUSINESS_MAPPINGS = {
-    "做 ppt": "presentation",
-    "ppt": "presentation",
-    "演示文稿": "presentation",
-    "写周报": "report-writing",
-    "周报": "report-writing",
-    "写公众号": "wechat-writing",
-    "公众号": "wechat-writing",
-    "视频剪辑": "video-editing",
+    "写论文": "academic-writing 论文 学术 写作 文档 润色 查重 总结",
+    "论文": "academic-writing 论文 学术 写作 文档 润色 查重 总结",
+    "做 ppt": "presentation ppt 演示 答辩 汇报 幻灯片 设计",
+    "做ppt": "presentation ppt 演示 答辩 汇报 幻灯片 设计",
+    "ppt": "presentation ppt 演示 答辩 汇报 幻灯片 设计",
+    "演示文稿": "presentation ppt 演示 答辩 汇报 幻灯片 设计",
+    "幻灯片": "presentation ppt 演示 答辩 汇报 幻灯片 设计",
+    "写代码": "coding 代码 编程 开发 debug 测试 接口 前端 后端",
+    "代码": "coding 代码 编程 开发 debug 测试 接口 前端 后端",
+    "编程": "coding 代码 编程 开发 debug 测试 接口 前端 后端",
+    "生成图片": "image-video 图片 绘图 海报 修图 视频 生成图",
+    "图片视频": "image-video 图片 绘图 海报 修图 视频 生成图",
+    "图片": "image-video 图片 绘图 海报 修图 视频 生成图",
+    "办公提效": "office-productivity 表格 会议 纪要 文档 自动化",
+    "数据分析": "data-analysis 数据 bi sql 报表 可视化 分析",
+    "agent": "agent Agent 自动化 工作流 智能体 插件 任务执行",
+    "智能体": "agent Agent 自动化 工作流 智能体 插件 任务执行",
+    "写周报": "report-writing 周报 写作 文档 总结",
+    "周报": "report-writing 周报 写作 文档 总结",
+    "写公众号": "wechat-writing 公众号 写作 润色",
+    "公众号": "wechat-writing 公众号 写作 润色",
+    "视频剪辑": "video-editing 视频 剪辑 生成",
+}
+
+TASK_KEYWORDS = {
+    "academic-writing": {"论文", "学术", "写作", "文档", "润色", "查重", "总结"},
+    "presentation": {"ppt", "演示", "答辩", "汇报", "幻灯片", "设计", "presentation", "slides"},
+    "coding": {"代码", "编程", "开发", "debug", "测试", "接口", "前端", "后端"},
+    "image-video": {"图片", "绘图", "海报", "修图", "视频", "生成图"},
+    "office-productivity": {"表格", "会议", "纪要", "文档", "自动化"},
+    "data-analysis": {"数据", "bi", "sql", "报表", "可视化", "分析"},
+    "agent": {"agent", "自动化", "工作流", "智能体", "插件", "任务执行"},
+}
+
+TOOL_ALIASES = {
+    "chatgpt": {"gpt", "openai", "chat gpt", "论文", "写作", "总结"},
+    "claude": {"长文", "写作", "文档", "分析"},
+    "gamma": {"ppt", "presentation", "slides", "幻灯片", "演示", "答辩", "汇报"},
+    "canva": {"canva", "海报", "设计", "ppt", "图片"},
+    "canva-ai": {"canva", "海报", "设计", "ppt", "图片"},
+    "cursor": {"ide", "代码", "编程", "开发", "debug"},
+    "github-copilot": {"copilot", "代码", "编程", "补全"},
+    "midjourney": {"mj", "图片", "绘图", "海报", "生成图"},
+    "runway": {"视频", "剪辑", "生成视频"},
+    "dify": {"agent", "智能体", "工作流", "自动化"},
+    "coze": {"扣子", "agent", "智能体", "国内", "工作流"},
+    "deepseek": {"国内", "中文", "免费", "代码"},
 }
 
 STOP_WORDS = {
@@ -57,6 +97,12 @@ HOT_QUERY_KEYWORDS = {
     "周报",
     "视频剪辑",
     "图片生成",
+    "写论文",
+    "做ppt",
+    "做PPT",
+    "写代码",
+    "生成图片",
+    "数据分析",
     "思维导图",
 }
 
@@ -129,10 +175,13 @@ def normalize_query(query: str) -> str:
     normalized = unicodedata.normalize("NFKC", query).strip()
     normalized = re.sub(r"\s+", " ", normalized)
     lowered = normalized.lower()
+    expanded: list[str] = [lowered]
     for source, target in BUSINESS_MAPPINGS.items():
-        lowered = lowered.replace(source, target)
+        if source.lower() in lowered:
+            expanded.append(target.lower())
 
-    tokens = [token for token in re.split(r"[\s,，。！？!?.]+", lowered) if token and token not in STOP_WORDS]
+    expanded_text = " ".join(expanded)
+    tokens = [token for token in re.split(r"[\s,，。！？!?.]+", expanded_text) if token and token not in STOP_WORDS]
     return " ".join(tokens).strip() or normalized
 
 
@@ -165,18 +214,24 @@ def _build_default_intent(user_query: str, normalized_query: str) -> tuple[dict,
     if "中文" in normalized_query or "zh" in normalized_query:
         constraints["language"] = "zh_preferred"
         logic.append("中文优先")
+    if "国内" in normalized_query or "不用 vpn" in normalized_query or "无需 vpn" in normalized_query:
+        constraints["access"] = "domestic_preferred"
+        logic.append("国内可访问优先")
     if "presentation" in normalized_query:
         logic.append("PPT / 演示场景")
     if "video" in normalized_query or "视频" in normalized_query:
         logic.append("视频处理场景")
 
     task = "general"
-    if "presentation" in normalized_query:
-        task = "presentation"
-    elif "report" in normalized_query or "周报" in normalized_query:
-        task = "report-writing"
-    elif "video" in normalized_query or "视频" in normalized_query:
-        task = "video-editing"
+    for candidate in ("academic-writing", "presentation", "coding", "image-video", "office-productivity", "data-analysis", "agent"):
+        if candidate in normalized_query:
+            task = candidate
+            break
+    if task == "general":
+        if "report" in normalized_query or "周报" in normalized_query:
+            task = "report-writing"
+        elif "video" in normalized_query or "视频" in normalized_query:
+            task = "video-editing"
 
     actions: list[dict[str, str]] = [
         {"label": "只看免费", "type": "set_filter", "key": "pricing", "value": "free"},
@@ -278,7 +333,7 @@ def _normalize_intent_payload(raw_intent: dict, user_query: str, normalized_quer
     constraints_raw = raw_intent.get("constraints")
     constraints = {}
     if isinstance(constraints_raw, dict):
-        for key in ("pricing", "language", "difficulty", "platform"):
+        for key in ("pricing", "language", "difficulty", "platform", "access"):
             value = constraints_raw.get(key)
             if isinstance(value, str) and value.strip():
                 constraints[key] = value.strip()
@@ -309,8 +364,8 @@ def parse_ai_search_intent(query: str, normalized_query: str) -> tuple[dict, str
             cached = redis_client.get(cache_key)
             if cached:
                 return json.loads(cached), "cache", True
-        except Exception as error:
-            mark_redis_unavailable(error)
+        except Exception as exc:
+            mark_redis_unavailable(exc)
 
     intent_payload, source = _build_default_intent(query, normalized_query)
     if _has_llm_config():
@@ -319,14 +374,14 @@ def parse_ai_search_intent(query: str, normalized_query: str) -> tuple[dict, str
             if llm_payload:
                 intent_payload = _normalize_intent_payload(llm_payload, query, normalized_query)
                 source = "llm"
-        except (error.URLError, TimeoutError, ValueError, json.JSONDecodeError, OSError):
+        except (url_error.URLError, TimeoutError, ValueError, json.JSONDecodeError, OSError):
             source = "fallback"
 
     if redis_client:
         try:
             redis_client.setex(cache_key, _cache_ttl_for_query(normalized_query), json.dumps(intent_payload, ensure_ascii=False))
-        except Exception as error:
-            mark_redis_unavailable(error)
+        except Exception as exc:
+            mark_redis_unavailable(exc)
 
     return intent_payload, source, False
 
@@ -358,6 +413,7 @@ def _build_active_logic(intent_constraints: dict[str, str], category_hint: str, 
         "language": "中文优先" if intent_constraints.get("language") in {"zh", "zh_preferred"} else None,
         "difficulty": "新手友好" if intent_constraints.get("difficulty") == "beginner" else None,
         "platform": f"平台: {intent_constraints.get('platform')}" if intent_constraints.get("platform") else None,
+        "access": "国内可访问优先" if intent_constraints.get("access") == "domestic_preferred" else None,
     }
     logic.extend([value for value in mapping.values() if value])
 
@@ -367,13 +423,107 @@ def _build_active_logic(intent_constraints: dict[str, str], category_hint: str, 
     return logic[:4]
 
 
-def _build_reason(tool: ToolSummary, intent_constraints: dict[str, str], task: str) -> str:
+def _text_contains_any(text: str, terms: set[str] | list[str]) -> bool:
+    lowered = text.lower()
+    return any(term and term.lower() in lowered for term in terms)
+
+
+def _tool_field_text(tool: ToolSummary, fields: tuple[str, ...]) -> str:
+    values: list[str] = []
+    for field in fields:
+        value = getattr(tool, field)
+        if isinstance(value, list):
+            values.extend(str(item) for item in value)
+        elif value is not None:
+            values.append(str(value))
+    return " ".join(values)
+
+
+def _tokenize_search_text(normalized_query: str) -> list[str]:
+    tokens = [token for token in re.split(r"[\s,，。！？!?.、/]+", normalized_query.lower()) if token]
+    return [token for token in tokens if token not in STOP_WORDS and len(token) > 1]
+
+
+def _score_tool(tool: ToolSummary, normalized_query: str, intent_constraints: dict[str, str], task: str) -> int:
+    tokens = _tokenize_search_text(normalized_query)
+    if not tokens and not intent_constraints:
+        return 0
+
+    name_alias = " ".join([tool.name, tool.slug, *TOOL_ALIASES.get(tool.slug, set())]).lower()
+    best_for_text = _tool_field_text(tool, ("bestFor",)).lower()
+    feature_text = _tool_field_text(tool, ("features",)).lower()
+    tag_category_text = " ".join([tool.category, *tool.tags]).lower()
+    summary_text = tool.summary.lower()
+    weak_text = _tool_field_text(tool, ("dealSummary", "freeAllowanceText", "limitations")).lower()
+
+    score = 0
+    for token in tokens:
+        if token in name_alias:
+            score += 80
+        if token in best_for_text:
+            score += 34
+        if token in feature_text:
+            score += 28
+        if token in tag_category_text:
+            score += 22
+        if token in summary_text:
+            score += 14
+        if token in weak_text:
+            score += 8
+
+    task_terms = TASK_KEYWORDS.get(task, set())
+    if task_terms:
+        rich_task_text = " ".join([best_for_text, feature_text, tag_category_text, summary_text])
+        matched_terms = sum(1 for term in task_terms if term.lower() in rich_task_text)
+        score += min(matched_terms, 4) * 22
+
+    if intent_constraints.get("pricing") in {"free", "free_preferred"}:
+        if tool.pricingType in {"free", "freemium"}:
+            score += 70
+        if "免费" in " ".join([tool.dealSummary or "", tool.freeAllowanceText or ""]):
+            score += 30
+
+    if intent_constraints.get("language") in {"zh", "zh_preferred"} and tool.accessFlags and tool.accessFlags.cnLang:
+        score += 20
+
+    if intent_constraints.get("access") == "domestic_preferred":
+        if tool.accessFlags and tool.accessFlags.needsVpn is False:
+            score += 70
+        if _text_contains_any(" ".join([tool.summary, tool.dealSummary or "", *tool.bestFor, *tool.features]), {"国内", "中文"}):
+            score += 16
+
+    return score
+
+
+def _build_reason(tool: ToolSummary, intent_constraints: dict[str, str], task: str, normalized_query: str) -> str:
     if intent_constraints.get("pricing") in {"free", "free_preferred"} and tool.pricingType in {"free", "freemium"}:
-        return "支持免费试用或免费版本，符合免费优先条件"
+        return "免费版可用，适合作为低成本试用候选"
+    if intent_constraints.get("access") == "domestic_preferred" and tool.accessFlags and tool.accessFlags.needsVpn is False:
+        return "国内访问更稳定，适合先做可落地验证"
+    if intent_constraints.get("pricing") in {"free", "free_preferred"}:
+        return "免费信息暂未核验，建议进入详情查看官网额度和最近核验状态"
+    if intent_constraints.get("access") == "domestic_preferred":
+        return "国内访问状态暂未核验，建议进入详情查看官网和最近核验状态"
     if intent_constraints.get("language") in {"zh", "zh_preferred"} and tool.accessFlags and tool.accessFlags.cnLang:
         return "支持中文界面，降低上手成本"
-    if task and task != "general" and any(task_part in " ".join(tool.tags).lower() for task_part in task.split("-")):
-        return "标签与当前任务匹配度较高"
+    if task == "academic-writing":
+        return "适合写论文/文档润色，覆盖写作、学术和总结场景"
+    if task == "presentation":
+        return "适合做 PPT 初稿，覆盖演示、答辩和幻灯片场景"
+    if task == "coding":
+        return "适合写代码/debug，覆盖开发、测试和接口场景"
+    if task == "image-video":
+        return "适合生成图片/海报视觉，覆盖图片视频创作场景"
+    if task == "data-analysis":
+        return "适合数据分析/报表，可用于 BI、SQL 或可视化"
+    if task == "agent":
+        return "适合智能体和工作流自动化，便于验证任务执行场景"
+    if "限制" in normalized_query and tool.limitations:
+        return f"主要限制是{tool.limitations[0]}"
+    if tool.bestFor:
+        return f"适合{tool.bestFor[0]}，可继续比较限制和价格"
+    if tool.features:
+        return f"核心特点是{tool.features[0]}，适合作为候选"
     if tool.tags:
         return f"覆盖 {tool.tags[0]} 等场景，适合作为候选"
     return "与当前查询关键词匹配，适合进一步比较"
@@ -418,7 +568,7 @@ def search_with_ai(
         intent_future = executor.submit(parse_ai_search_intent, query, normalized_query)
         directory = catalog_service.get_tools_directory(
             db=db,
-            q=query,
+            q=None,
             category_slug=category,
             tag_slug=tag,
             status_slug=None,
@@ -427,8 +577,8 @@ def search_with_ai(
             price_range_slug=price_range,
             sort=sort,
             view=view,
-            page=page,
-            page_size=page_size,
+            page=1,
+            page_size=max(AI_SEARCH_CANDIDATE_LIMIT, page * page_size),
         )
 
         intent_payload: dict
@@ -443,12 +593,38 @@ def search_with_ai(
     constraints = intent_payload.get("constraints") if isinstance(intent_payload.get("constraints"), dict) else {}
 
     task = str(intent_payload.get("task") or "general")
+    if task == "general":
+        fallback_intent, _ = _build_default_intent(query, normalized_query)
+        task = str(fallback_intent.get("task") or task)
+        constraints = {**fallback_intent.get("constraints", {}), **constraints}
+
+    scored_items = [(_score_tool(item, normalized_query, constraints, task), item) for item in directory.items]
+    if any(score > 0 for score, _ in scored_items):
+        scored_items.sort(key=lambda pair: (-pair[0], -float(pair[1].score), not pair[1].featured, pair[1].name.lower()))
+        ranked_items = [item for score, item in scored_items if score > 0]
+    else:
+        ranked_items = [item for _, item in scored_items]
+
+    start = max(page - 1, 0) * page_size
+    end = start + page_size
+    paged_items = ranked_items[start:end]
+
     results = [
-        AiSearchResult(**item.model_dump(), reason=_build_reason(item, constraints, task))
-        for item in directory.items
+        AiSearchResult(**{**item.model_dump(), "reason": _build_reason(item, constraints, task, normalized_query)})
+        for item in paged_items
     ]
 
     latency_ms = int((time.perf_counter() - started_at) * 1000)
+    directory_payload = directory.model_dump()
+    directory_payload.update(
+        {
+            "total": len(ranked_items),
+            "page": page,
+            "pageSize": page_size,
+            "hasMore": end < len(ranked_items),
+            "items": [ToolSummary(**item.model_dump()) for item in results],
+        }
+    )
 
     return AiSearchResponse(
         mode="ai",
@@ -456,10 +632,7 @@ def search_with_ai(
         normalized_query=normalized_query,
         ai_panel=_build_ai_panel(query, intent_payload),
         results=results,
-        directory=ToolsDirectoryResponse(
-            **directory.model_dump(),
-            items=[ToolSummary(**item.model_dump()) for item in results],
-        ),
+        directory=ToolsDirectoryResponse(**directory_payload),
         meta=AiSearchMeta(
             latency_ms=latency_ms,
             cache_hit=cache_hit,

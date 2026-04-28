@@ -49,12 +49,12 @@ def _extract_json_block(content: str) -> dict | None:
 
 
 @retry(
-    stop=stop_after_attempt(2),
+    stop=stop_after_attempt(1),
     wait=wait_exponential(multiplier=1, min=1, max=4),
     retry=retry_if_exception_type((error.URLError, TimeoutError)),
 )
 def _call_ai_api(api_request: request.Request) -> dict:
-    with request.urlopen(api_request, timeout=20) as response:
+    with request.urlopen(api_request, timeout=2) as response:
         return json.loads(response.read().decode("utf-8"))
 
 

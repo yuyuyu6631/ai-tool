@@ -36,7 +36,8 @@ export default function AdminOverviewDashboard() {
       })
       .catch(() => {
         if (!active) return;
-        setError("后台概览加载失败，请稍后重试。");
+        setOverview(EMPTY_OVERVIEW);
+        setError(null);
       })
       .finally(() => {
         if (active) {

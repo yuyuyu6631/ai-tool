@@ -1,4 +1,4 @@
-export const TOOL_SUBMISSION_URL = "https://github.com/yuyuyu6631/Next.js-AI-Tool-Demo/issues";
+export const TOOL_SUBMISSION_URL = "/#submit-tool";
 
 const GARBAGE_FACET_VALUES = new Set([
   "",
@@ -17,6 +17,31 @@ const GARBAGE_FACET_VALUES = new Set([
 ]);
 
 const GARBAGE_FACET_PATTERNS = [/^c\d+$/i, /^test(?:ing)?$/i, /^demo(?:-.+)?$/i, /^unknown(?:-.+)?$/i];
+
+export function repairDisplayText(value: unknown, fallback = "待补充") {
+  if (value === null || value === undefined) return fallback;
+  const raw = String(value).trim();
+  if (!raw) return fallback;
+  const lowered = raw.toLowerCase();
+  if (lowered === "undefined" || lowered === "null" || lowered === "nan" || lowered === "none") return fallback;
+
+  const looksMojibake = /[ÃÂ�]|[åæçèé][\u0080-\u00ff]?|[閸闁濮姝缂鐠]/.test(raw);
+  if (!looksMojibake) return raw;
+
+  try {
+    const bytes = new Uint8Array(Array.from(raw, (char) => char.charCodeAt(0) & 0xff));
+    const decoded = new TextDecoder("utf-8", { fatal: false }).decode(bytes).trim();
+    if (decoded && !/[ÃÂ�]/.test(decoded) && decoded !== raw) return decoded;
+  } catch {
+  }
+
+  return raw;
+}
+
+export function repairDisplayList(values?: Array<string | null | undefined> | null, limit?: number) {
+  const cleaned = (values ?? []).map((item) => repairDisplayText(item, "")).filter(Boolean);
+  return typeof limit === "number" ? cleaned.slice(0, limit) : cleaned;
+}
 
 export function slugifyLabel(value: string) {
   return value

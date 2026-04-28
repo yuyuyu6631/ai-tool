@@ -5,11 +5,11 @@
 
 ## 摘要
 
-- 生成时间：2026-04-24T02:52:16.464Z
+- 生成时间：2026-04-28T02:06:55.066Z
 - 前端路由：15
 - API 端点：36
 - 数据模型：17
-- 测试文件：41
+- 测试文件：46
 
 ## 前端路由
 
@@ -35,7 +35,6 @@
 
 | Method | Path | Handler | Response | Status | Source |
 | --- | --- | --- | --- | --- | --- |
-| POST | /api | chat_stream | - | - | apps/api/app/api/routes/chat.py |
 | GET | /api/admin/overview | get_overview | AdminOverviewResponse | - | apps/api/app/api/routes/admin.py |
 | GET | /api/admin/rankings | list_rankings | list[AdminRankingListItem] | - | apps/api/app/api/routes/admin.py |
 | POST | /api/admin/rankings | create_ranking | AdminRankingPayload | 201 | apps/api/app/api/routes/admin.py |
@@ -54,9 +53,10 @@
 | POST | /api/auth/register | register | AuthUserResponse | 201 | apps/api/app/api/routes/auth.py |
 | GET | /api/categories | get_categories | list[CategorySummary] | - | apps/api/app/api/routes/catalog.py |
 | GET | /api/categories/{slug}/tools | get_category_tools | list[ToolSummary] | - | apps/api/app/api/routes/catalog.py |
+| POST | /api/chat | chat_stream | - | - | apps/api/app/api/routes/chat.py |
 | POST | /api/crawl/jobs | create_crawl_job | - | - | apps/api/app/api/routes/crawl.py |
-| POST | /api/extract | extract_tool_metadata | ParseToolResponse | - | apps/api/app/api/routes/parser.py |
 | GET | /api/home | get_home_catalog | HomeCatalogResponse | - | apps/api/app/api/routes/catalog.py |
+| POST | /api/parser/extract | extract_tool_metadata | ParseToolResponse | - | apps/api/app/api/routes/parser.py |
 | GET | /api/rankings | get_rankings | list[RankingSection] | - | apps/api/app/api/routes/catalog.py |
 | GET | /api/rankings/{slug} | get_ranking | RankingSection | - | apps/api/app/api/routes/catalog.py |
 | POST | /api/recommend | recommend_tools | list[RecommendItem] | - | apps/api/app/api/routes/recommend.py |
@@ -90,7 +90,7 @@
 | tool_reviews | ToolReview | 15 | id, tool_id, user_id, source_type, status, rating, title, body | apps/api/app/models/models.py |
 | tool_tags | ToolTag | 5 | id, tool_id, tag_id, tool, tag | apps/api/app/models/models.py |
 | tool_updates | ToolUpdate | 5 | id, tool_id, status, proposed_payload, reviewer_note | apps/api/app/models/models.py |
-| tools | Tool | 31 | id, slug, name, category_name, summary, description, editor_comment, developer | apps/api/app/models/models.py |
+| tools | Tool | 36 | id, slug, name, category_name, summary, description, editor_comment, developer | apps/api/app/models/models.py |
 | user_sessions | UserSession | 8 | id, user_id, session_token_hash, expires_at, revoked_at, user_agent, ip_address, user | apps/api/app/models/models.py |
 | users | User | 9 | id, username, email, password_hash, status, role, agreed_terms_at, last_login_at | apps/api/app/models/models.py |
 
@@ -98,7 +98,7 @@
 
 ### Web unit/integration
 
-- 数量：20
+- 数量：22
 - `apps/web/src/app/components/__tests__/BackToResultsLink.test.tsx`
 - `apps/web/src/app/components/__tests__/CommandPalette.test.tsx`
 - `apps/web/src/app/components/__tests__/CompareToolsGrid.test.tsx`
@@ -108,8 +108,10 @@
 - `apps/web/src/app/components/__tests__/ToolReviewsPanel.test.tsx`
 - `apps/web/src/app/components/admin/__tests__/AdminAccessGate.test.tsx`
 - `apps/web/src/app/components/admin/__tests__/AdminOverviewDashboard.test.tsx`
+- `apps/web/src/app/components/admin/__tests__/AdminToolEditor.test.tsx`
 - `apps/web/src/app/components/auth/__tests__/AuthCard.test.tsx`
 - `apps/web/src/app/features/matches/components/__tests__/MatchFeed.test.tsx`
+- `apps/web/src/app/lib/__tests__/catalog-api.test.ts`
 - `apps/web/src/app/lib/__tests__/catalog-navigation.test.ts`
 - `apps/web/src/app/lib/__tests__/compare-utils.test.ts`
 - `apps/web/src/app/lib/__tests__/floating-chat-visibility.test.ts`
@@ -122,15 +124,16 @@
 
 ### Web e2e
 
-- 数量：4
+- 数量：5
 - `apps/web/src/e2e/auth-checklist.spec.ts`
+- `apps/web/src/e2e/home-radar.spec.ts`
 - `apps/web/src/e2e/navigation-verify.spec.ts`
 - `apps/web/src/e2e/smoke.spec.ts`
 - `apps/web/src/e2e/visual.spec.ts`
 
 ### API pytest
 
-- 数量：17
+- 数量：19
 - `apps/api/tests/test_ai_integration.py`
 - `apps/api/tests/test_api_hardening.py`
 - `apps/api/tests/test_api.py`
@@ -141,17 +144,20 @@
 - `apps/api/tests/test_catalog_view_seed.py`
 - `apps/api/tests/test_chat_api.py`
 - `apps/api/tests/test_chat_rag.py`
+- `apps/api/tests/test_demo_ai_search.py`
 - `apps/api/tests/test_embedding_service.py`
 - `apps/api/tests/test_import_preview_validation.py`
 - `apps/api/tests/test_logo_assets.py`
 - `apps/api/tests/test_organize_aitool_assets.py`
 - `apps/api/tests/test_published_visibility.py`
 - `apps/api/tests/test_reviews_admin_api.py`
+- `apps/api/tests/test_tool_elements_migration.py`
 - `apps/api/tests/test_tool_parser.py`
 
 ## 扫描来源
 
 - `apps/web/app/**/*/page.tsx`
+- `apps/api/app/api/router.py`
 - `apps/api/app/api/routes/*.py`
 - `apps/api/app/main.py`
 - `apps/api/app/models/models.py`

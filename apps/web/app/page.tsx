@@ -1,6 +1,6 @@
 import HomePage from "@/src/app/pages/HomePage";
-import { fetchDirectory, fetchScenarios } from "@/src/app/lib/catalog-api";
-import type { ScenarioSummary, ToolsDirectoryResponse } from "@/src/app/lib/catalog-types";
+import { fetchAiSearch, fetchDirectory, fetchScenarios } from "@/src/app/lib/catalog-api";
+import type { AiSearchResponse, ScenarioSummary, ToolsDirectoryResponse } from "@/src/app/lib/catalog-types";
 
 export const dynamic = "force-dynamic";
 
@@ -101,18 +101,25 @@ export default async function Page({ searchParams }: HomeRouteProps) {
     source: readValue(params.source),
   };
 
-  const [directoryResult, hotDirectoryResult, latestDirectoryResult, scenariosResult] = await Promise.allSettled([
+  const shouldUseAiSearch = state.mode === "ai" && Boolean(state.q?.trim());
+  const aiSearchPromise: Promise<AiSearchResponse | null> = shouldUseAiSearch
+    ? fetchAiSearch(buildDirectoryQuery(state, DEFAULT_PAGE_SIZE))
+    : Promise.resolve(null);
+
+  const [directoryResult, aiSearchResult, hotDirectoryResult, latestDirectoryResult, scenariosResult] = await Promise.allSettled([
     fetchDirectory(buildDirectoryQuery(state, DEFAULT_PAGE_SIZE)),
+    aiSearchPromise,
     fetchDirectory(`view=hot&page=1&page_size=${SECTION_PAGE_SIZE}`),
     fetchDirectory(`view=latest&page=1&page_size=${SECTION_PAGE_SIZE}`),
     fetchScenarios(),
   ]);
 
+  const aiSearch = aiSearchResult.status === "fulfilled" ? aiSearchResult.value : null;
   const hotTools = hotDirectoryResult.status === "fulfilled" ? hotDirectoryResult.value.items : [];
   const latestTools = latestDirectoryResult.status === "fulfilled" ? latestDirectoryResult.value.items : [];
   const scenarios = scenariosResult.status === "fulfilled" ? scenariosResult.value : EMPTY_SCENARIOS;
 
-  let directory = directoryResult.status === "fulfilled" ? directoryResult.value : EMPTY_DIRECTORY;
+  let directory = aiSearch?.directory ?? (directoryResult.status === "fulfilled" ? directoryResult.value : EMPTY_DIRECTORY);
   if (directory.items.length === 0 && !hasHomepageFilters(state)) {
     const defaultTools = hotTools.length > 0 ? hotTools : latestTools;
     if (defaultTools.length > 0) {
@@ -120,5 +127,15 @@ export default async function Page({ searchParams }: HomeRouteProps) {
     }
   }
 
-  return <HomePage directory={directory} hotTools={hotTools} latestTools={latestTools} scenarios={scenarios} state={state} />;
+  return (
+    <HomePage
+      directory={directory}
+      hotTools={hotTools}
+      latestTools={latestTools}
+      scenarios={scenarios}
+      state={state}
+      aiPanel={aiSearch?.ai_panel ?? null}
+      aiMeta={aiSearch?.meta ?? null}
+    />
+  );
 }

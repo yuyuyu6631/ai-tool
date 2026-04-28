@@ -107,6 +107,26 @@ function parseRouterPrefix(source) {
   return prefixMatch ? prefixMatch[1] : "";
 }
 
+function collectIncludedRouterPrefixes() {
+  const routerPath = path.join(apiRoot, "api", "router.py");
+  if (!fs.existsSync(routerPath)) {
+    return new Map();
+  }
+
+  const source = readFile(routerPath);
+  const prefixes = new Map();
+  const includePattern = /include_router\(\s*([A-Za-z_][A-Za-z0-9_]*)\.router([\s\S]*?)\)/g;
+
+  for (const match of source.matchAll(includePattern)) {
+    const moduleName = match[1];
+    const args = match[2];
+    const prefixMatch = args.match(/prefix\s*=\s*["']([^"']*)["']/);
+    prefixes.set(moduleName, prefixMatch ? prefixMatch[1] : "");
+  }
+
+  return prefixes;
+}
+
 function parseDecoratedEndpoints(source, routerPrefix, filePath) {
   const endpoints = [];
   const decoratorPattern = /@router\.(get|post|put|patch|delete)\(([\s\S]*?)\)\s*\ndef\s+([A-Za-z_][A-Za-z0-9_]*)/g;
@@ -136,6 +156,7 @@ function parseDecoratedEndpoints(source, routerPrefix, filePath) {
 function collectApiEndpoints() {
   const routesDir = path.join(apiRoot, "api", "routes");
   const routeFiles = walkFiles(routesDir, (filePath) => filePath.endsWith(".py"));
+  const includedRouterPrefixes = collectIncludedRouterPrefixes();
   const apiPrefix = "/api";
   const healthEndpoints = [
     { method: "GET", path: "/health", handler: "health_check", responseModel: null, statusCode: null, source: "apps/api/app/main.py" },
@@ -145,7 +166,9 @@ function collectApiEndpoints() {
   const routeEndpoints = routeFiles.flatMap((filePath) => {
     const source = readFile(filePath);
     const routerPrefix = parseRouterPrefix(source);
-    return parseDecoratedEndpoints(source, `${apiPrefix}${routerPrefix}`, filePath);
+    const moduleName = path.basename(filePath, ".py");
+    const includedRouterPrefix = includedRouterPrefixes.get(moduleName) ?? "";
+    return parseDecoratedEndpoints(source, `${apiPrefix}${includedRouterPrefix}${routerPrefix}`, filePath);
   });
 
   return [...healthEndpoints, ...routeEndpoints].sort((a, b) => {
@@ -222,6 +245,7 @@ function buildSnapshotBase() {
   const tests = collectTests();
   const trackedSources = [
     "apps/web/app/**/*/page.tsx",
+    "apps/api/app/api/router.py",
     "apps/api/app/api/routes/*.py",
     "apps/api/app/main.py",
     "apps/api/app/models/models.py",

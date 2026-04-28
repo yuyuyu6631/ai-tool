@@ -112,7 +112,7 @@ describe("CompareToolsGrid", () => {
     );
     expect(screen.getByRole("link", { name: "\u63d0\u4ea4\u4f60\u5e38\u7528\u7684\u5de5\u5177" })).toHaveAttribute(
       "href",
-      "https://github.com/yuyuyu6631/Next.js-AI-Tool-Demo/issues",
+      "/#submit-tool",
     );
   });
 });

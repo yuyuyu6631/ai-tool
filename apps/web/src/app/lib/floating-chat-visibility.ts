@@ -1,6 +1,6 @@
-const HIDDEN_EXACT_PATHS = new Set<string>(["/", "/tools", "/matches", "/auth"]);
+const HIDDEN_EXACT_PATHS = new Set<string>(["/", "/tools", "/matches", "/auth", "/admin"]);
 
-const HIDDEN_PREFIX_PATHS = ["/tools/", "/matches/", "/auth/"];
+const HIDDEN_PREFIX_PATHS = ["/tools/", "/matches/", "/auth/", "/admin/"];
 
 function isHiddenPath(pathname: string): boolean {
   if (HIDDEN_EXACT_PATHS.has(pathname)) {

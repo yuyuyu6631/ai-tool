@@ -46,6 +46,11 @@ class Tool(Base, TimestampMixin):
     price_min_cny: Mapped[int | None] = mapped_column(Integer, nullable=True)
     price_max_cny: Mapped[int | None] = mapped_column(Integer, nullable=True)
     free_allowance_text: Mapped[str] = mapped_column(String(255), default="")
+    features_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    limitations_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    best_for_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    deal_summary: Mapped[str] = mapped_column(String(255), default="")
+    media_items_json: Mapped[list[dict[str, str]] | None] = mapped_column(JSON, nullable=True)
     created_on: Mapped[date] = mapped_column(Date, index=True)
     last_verified_at: Mapped[date] = mapped_column(Date)
 

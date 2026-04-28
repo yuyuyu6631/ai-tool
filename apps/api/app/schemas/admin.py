@@ -2,6 +2,8 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.schemas.tool import ToolMediaItem
+
 
 class AdminToolPayload(BaseModel):
     slug: str = Field(min_length=1, max_length=120)
@@ -24,6 +26,11 @@ class AdminToolPayload(BaseModel):
     priceMinCny: int | None = None
     priceMaxCny: int | None = None
     freeAllowanceText: str = Field(default="")
+    features: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+    bestFor: list[str] = Field(default_factory=list)
+    dealSummary: str = Field(default="")
+    mediaItems: list[ToolMediaItem] = Field(default_factory=list)
     accessFlags: dict[str, bool | None] | None = None
     tags: list[str] = Field(default_factory=list)
     createdOn: date | None = None
@@ -44,6 +51,7 @@ class AdminToolPayload(BaseModel):
         "platforms",
         "officialUrl",
         "freeAllowanceText",
+        "dealSummary",
         mode="before",
     )
     @classmethod

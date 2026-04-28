@@ -27,6 +27,7 @@
     "export:categories": "python apps/api/app/scripts/export_data.py --type categories",
     "export:reviews": "python apps/api/app/scripts/export_data.py --type reviews",
     "export:scenarios": "python apps/api/app/scripts/export_data.py --type scenarios",
+    "sync:home-tools": "cd apps/api && python app/scripts/sync_curated_home_tools.py",
     "build:web": "npm run build --workspace @xingdianping/web",
     "lint:web": "npm run lint --workspace @xingdianping/web",
     "test:web": "npm run test --workspace @xingdianping/web",

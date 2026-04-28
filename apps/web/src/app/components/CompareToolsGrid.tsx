@@ -101,14 +101,12 @@ export default function CompareToolsGrid({
                   <Link href="/?view=hot" className="btn-primary rounded-full px-5 py-3 text-sm">
                     去看热门工具
                   </Link>
-                  <a
+                  <Link
                     href={TOOL_SUBMISSION_URL}
-                    target="_blank"
-                    rel="noreferrer"
                     className="btn-secondary rounded-full px-5 py-3 text-sm"
                   >
                     提交你常用的工具
-                  </a>
+                  </Link>
                 </div>
               </div>
             )}

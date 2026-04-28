@@ -36,14 +36,12 @@ export default async function Page() {
                 <Link href="/?view=hot" className="btn-primary rounded-full px-5 py-3 text-sm">
                   去最热榜单
                 </Link>
-                <a
+                <Link
                   href={TOOL_SUBMISSION_URL}
-                  target="_blank"
-                  rel="noreferrer"
                   className="btn-secondary rounded-full px-5 py-3 text-sm"
                 >
                   提交你喜欢的工具
-                </a>
+                </Link>
               </div>
             </section>
           ) : (

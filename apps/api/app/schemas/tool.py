@@ -10,6 +10,15 @@ class AccessFlags(BaseModel):
     cnPayment: bool | None = None
 
 
+class ToolMediaItem(BaseModel):
+    type: str
+    url: str
+    thumbnailUrl: str | None = None
+    title: str = ""
+    sourceName: str = ""
+    sourceUrl: str | None = None
+
+
 class ScenarioRecommendation(BaseModel):
     audience: str
     task: str
@@ -82,6 +91,12 @@ class ToolSummary(BaseModel):
     priceMinCny: int | None = None
     priceMaxCny: int | None = None
     freeAllowanceText: str = ""
+    features: list[str] = Field(default_factory=list)
+    limitations: list[str] = Field(default_factory=list)
+    bestFor: list[str] = Field(default_factory=list)
+    dealSummary: str = ""
+    primaryMedia: ToolMediaItem | None = None
+    reason: str | None = None
 
 
 class ToolDetail(ToolSummary):
@@ -102,6 +117,7 @@ class ToolDetail(ToolSummary):
     scenarioRecommendations: list[ScenarioRecommendation] = Field(default_factory=list)
     reviewPreview: list[ReviewPreview] = Field(default_factory=list)
     ratingSummary: ToolRatingSummary = Field(default_factory=ToolRatingSummary)
+    mediaItems: list[ToolMediaItem] = Field(default_factory=list)
     alternatives: list[str] = Field(default_factory=list)
     lastVerifiedAt: date
 

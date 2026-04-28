@@ -39,7 +39,7 @@ Stage 1 introduced the search embedding persistence layer:
 
 Supporting script:
 
-- `app/scripts/backfill_tool_embeddings.py`
+- `apps/api/app/scripts/backfill_tool_embeddings.py`
 
 Current storage choice:
 
