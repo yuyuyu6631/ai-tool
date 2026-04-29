@@ -122,7 +122,11 @@ class SearchableTool:
     search_text: str
 
 
+@lru_cache(maxsize=4096)
 def _repair_text(value: str | None) -> str:
+    if not isinstance(value, str):
+        return str(value) if value is not None else ""
+
     if not value:
         return ""
 
@@ -136,7 +140,7 @@ def _repair_text(value: str | None) -> str:
         return value
 
 
-@lru_cache(maxsize=1024)
+@lru_cache(maxsize=4096)
 def _slugify(value: str) -> str:
     normalized = unicodedata.normalize("NFKC", _repair_text(value)).strip().casefold()
     normalized = re.sub(r"[^\w\s-]+", "", normalized, flags=re.UNICODE)
