@@ -946,17 +946,7 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
     )
 
 
-def _build_scenario_summary(scenario: Scenario, db) -> ScenarioSummary:
-    # Join with Tool and eager load relationships in one query
-    stmt = (
-        select(ScenarioTool)
-        .where(ScenarioTool.scenario_id == scenario.id)
-        .options(selectinload(ScenarioTool.tool).options(
-            selectinload(Tool.tags).selectinload(ToolTag.tag),
-            selectinload(Tool.categories).selectinload(ToolCategory.category),
-        ))
-    )
-    links = db.scalars(stmt).all()
+def _build_scenario_summary(scenario: Scenario, links: list[ScenarioTool]) -> ScenarioSummary:
     primary_tools: list[ToolSummary] = []
     alternative_tools: list[ToolSummary] = []
 
@@ -995,7 +985,26 @@ def list_scenarios(*, db) -> list[ScenarioSummary]:
             mark_redis_unavailable(error)
 
     rows = db.scalars(select(Scenario).order_by(Scenario.id)).all()
-    scenarios = [_build_scenario_summary(row, db) for row in rows]
+
+    if rows:
+        scenario_ids = [row.id for row in rows]
+        stmt = (
+            select(ScenarioTool)
+            .where(ScenarioTool.scenario_id.in_(scenario_ids))
+            .options(selectinload(ScenarioTool.tool).options(
+                selectinload(Tool.tags).selectinload(ToolTag.tag),
+                selectinload(Tool.categories).selectinload(ToolCategory.category),
+            ))
+        )
+        all_links = db.scalars(stmt).all()
+        links_by_scenario = defaultdict(list)
+        for link in all_links:
+            links_by_scenario[link.scenario_id].append(link)
+
+        scenarios = [_build_scenario_summary(row, links_by_scenario[row.id]) for row in rows]
+    else:
+        scenarios = []
+
     result = sort_scenario_sections([scenario for scenario in scenarios if scenario.toolCount])
 
     if redis_client:
@@ -1012,27 +1021,27 @@ def get_scenario(*, db, slug: str) -> ScenarioSummary | None:
     row = db.scalar(select(Scenario).where(Scenario.slug == slug))
     if not row:
         return None
-    scenario = _build_scenario_summary(row, db)
-    return scenario if scenario.toolCount else None
 
-
-def _build_ranking_section(ranking: Ranking, db) -> RankingSection:
     stmt = (
-        select(RankingItem)
-        .where(RankingItem.ranking_id == ranking.id)
-        .order_by(RankingItem.rank_order)
-        .options(selectinload(RankingItem.tool).options(
+        select(ScenarioTool)
+        .where(ScenarioTool.scenario_id == row.id)
+        .options(selectinload(ScenarioTool.tool).options(
             selectinload(Tool.tags).selectinload(ToolTag.tag),
             selectinload(Tool.categories).selectinload(ToolCategory.category),
         ))
     )
-    rows = db.scalars(stmt).all()
-    items = []
-    for row in rows:
+    links = db.scalars(stmt).all()
+    scenario = _build_scenario_summary(row, links)
+    return scenario if scenario.toolCount else None
+
+
+def _build_ranking_section(ranking: Ranking, items: list[RankingItem]) -> RankingSection:
+    result_items = []
+    for row in sorted(items, key=lambda item: item.rank_order):
         tool_row = row.tool
         if not tool_row or tool_row.status != PUBLIC_TOOL_STATUS:
             continue
-        items.append(
+        result_items.append(
             RankingItemSchema(
                 rank=row.rank_order,
                 reason=_normalize_ranking_reason(row.reason, row.rank_order),
@@ -1044,7 +1053,7 @@ def _build_ranking_section(ranking: Ranking, db) -> RankingSection:
         slug=ranking.slug,
         title=_repair_text(ranking.title),
         description=_repair_text(ranking.description),
-        items=items,
+        items=result_items,
     )
 
 
@@ -1070,7 +1079,26 @@ def list_rankings(*, db) -> list[RankingSection]:
             mark_redis_unavailable(error)
 
     rows = db.scalars(select(Ranking).order_by(Ranking.id)).all()
-    sections = [_build_ranking_section(row, db) for row in rows]
+
+    if rows:
+        ranking_ids = [row.id for row in rows]
+        stmt = (
+            select(RankingItem)
+            .where(RankingItem.ranking_id.in_(ranking_ids))
+            .options(selectinload(RankingItem.tool).options(
+                selectinload(Tool.tags).selectinload(ToolTag.tag),
+                selectinload(Tool.categories).selectinload(ToolCategory.category),
+            ))
+        )
+        all_items = db.scalars(stmt).all()
+        items_by_ranking = defaultdict(list)
+        for item in all_items:
+            items_by_ranking[item.ranking_id].append(item)
+
+        sections = [_build_ranking_section(row, items_by_ranking[row.id]) for row in rows]
+    else:
+        sections = []
+
     result = sort_ranking_sections([section for section in sections if section.items])
 
     if redis_client:
@@ -1087,5 +1115,16 @@ def get_ranking(*, db, slug: str) -> RankingSection | None:
     row = db.scalar(select(Ranking).where(Ranking.slug == slug))
     if not row:
         return None
-    section = _build_ranking_section(row, db)
+
+    stmt = (
+        select(RankingItem)
+        .where(RankingItem.ranking_id == row.id)
+        .order_by(RankingItem.rank_order)
+        .options(selectinload(RankingItem.tool).options(
+            selectinload(Tool.tags).selectinload(ToolTag.tag),
+            selectinload(Tool.categories).selectinload(ToolCategory.category),
+        ))
+    )
+    items = db.scalars(stmt).all()
+    section = _build_ranking_section(row, items)
     return section if section.items else None
