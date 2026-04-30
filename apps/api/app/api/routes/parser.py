@@ -1,11 +1,12 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import AnyHttpUrl, BaseModel
 
+from app.services import auth_service
 from app.services.tool_parser_service import generate_tool_metadata
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(auth_service.current_admin_dependency)])
 
 
 class ParseToolRequest(BaseModel):
