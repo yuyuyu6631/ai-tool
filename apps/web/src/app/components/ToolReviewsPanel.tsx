@@ -246,7 +246,9 @@ export default function ToolReviewsPanel({ toolSlug, reviews, summary }: ToolRev
                         key={value}
                         type="button"
                         onClick={() => setRating(String(value))}
-                        className={`group p-1 transition-transform hover:scale-110 focus:outline-none`}
+                        className={`group p-1 rounded-full transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2`}
+                        aria-label={`评分 ${value} 星`}
+                        aria-pressed={value <= Number(rating)}
                       >
                         <StarIcon className={`h-8 w-8 ${value <= Number(rating) ? 'text-amber-400' : 'text-slate-200 group-hover:text-amber-200'} transition-colors`} />
                       </button>
