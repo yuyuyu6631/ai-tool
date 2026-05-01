@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
 from app.services.crawler_service import build_mock_snapshot
+from app.services import auth_service
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(auth_service.current_admin_dependency)])
 
 
 @router.post("/crawl/jobs")
