@@ -1,3 +1,6 @@
 ## 2024-05-18 - Playwright Component Testing & Data Hydration
 **Learning:** For purely visual micro-UX improvements (like adding aria-pressed or focus states to a button component), running end-to-end visual verification (like with Playwright) against a mocked page may fail due to complex SSR/Next.js hydration and routing boundaries, blocking the components from ever rendering on the page.
 **Action:** When working on isolated component changes (like in `ToolCard.tsx`), rely primarily on Vitest unit tests to verify that the logic doesn't break, and when visual verification is required, consider writing isolated component-level tests (e.g. `testing-library/react`) to mock props directly rather than intercepting full network APIs, especially if the app relies on SSR.
+## 2024-05-18 - Input Field Button Focus States
+**Learning:** Icon-only interactive elements positioned absolutely inside input fields (like password visibility toggles) often miss keyboard focus styles because default browser outlines might be suppressed, and global outline resets are commonly applied without providing `focus-visible` alternatives.
+**Action:** When auditing forms, specifically check absolutely positioned utility buttons (clear input, show password) to ensure they have explicit `focus-visible:ring-x` styles to maintain keyboard navigability.
