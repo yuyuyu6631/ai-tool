@@ -1,0 +1,3 @@
+## 2024-05-18 - Playwright Component Testing & Data Hydration
+**Learning:** For purely visual micro-UX improvements (like adding aria-pressed or focus states to a button component), running end-to-end visual verification (like with Playwright) against a mocked page may fail due to complex SSR/Next.js hydration and routing boundaries, blocking the components from ever rendering on the page.
+**Action:** When working on isolated component changes (like in `ToolCard.tsx`), rely primarily on Vitest unit tests to verify that the logic doesn't break, and when visual verification is required, consider writing isolated component-level tests (e.g. `testing-library/react`) to mock props directly rather than intercepting full network APIs, especially if the app relies on SSR.

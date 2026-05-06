@@ -90,7 +90,9 @@ export default function ToolCard({
             type="button"
             onClick={onCompareToggle}
             disabled={!compareSelected && compareDisabled}
-            className={`rounded px-3 py-1 text-xs font-semibold transition ${
+            aria-pressed={compareSelected}
+            title={compareDisabled ? "最多可选 3 个工具" : undefined}
+            className={`rounded px-3 py-1 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${
               compareSelected
                 ? "bg-slate-950 text-white"
                 : compareDisabled
