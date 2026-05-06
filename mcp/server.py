@@ -9,21 +9,24 @@ python mcp/server.py
 import sys
 sys.path.insert(0, 'apps/api')
 
-from typing import Any, List, Optional
+from typing import Any, List, Dict, Optional
 from mcp.server import Server
-from mcp.types import Resource, Tool as MCPTool, TextContent
+from mcp.types import Resource, Tool, TextContent
 from pydantic import BaseModel, Field
 import asyncio
 import json
 
-from sqlalchemy import select
+from sqlalchemy import text, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.db.session import SessionLocal
-from app.models.models import Tool, Tag, Category, Scenario, Ranking
+from app.db.session import engine, SessionLocal
+from app.models.models import Tool, Tag, Category, Scenario, Ranking, RankingItem
 
 app = Server("xingdianping-db-mcp")
+
+class DBQueryRequest(BaseModel):
+    query: str = Field(description="SQL query to execute (SELECT only for safety)")
 
 class SearchToolsRequest(BaseModel):
     keyword: Optional[str] = Field(description="Search keyword for tool name/summary", default=None)
@@ -60,20 +63,25 @@ async def list_resources() -> List[Resource]:
     ]
 
 @app.list_tools()
-async def list_tools() -> List[MCPTool]:
+async def list_tools() -> List[Tool]:
     """List available database query tools"""
     return [
-        MCPTool(
+        Tool(
+            name="raw_sql_query",
+            description="Execute a raw SQL query on the database (READ-ONLY SELECT queries only)",
+            inputSchema=DBQueryRequest.model_json_schema()
+        ),
+        Tool(
             name="search_ai_tools",
             description="Search for AI tools by keyword, category, or tag",
             inputSchema=SearchToolsRequest.model_json_schema()
         ),
-        MCPTool(
+        Tool(
             name="get_tool_detail",
             description="Get detailed information about a specific AI tool",
             inputSchema=GetToolDetailRequest.model_json_schema()
         ),
-        MCPTool(
+        Tool(
             name="list_all_tags",
             description="List all tags in the database",
             inputSchema={
@@ -82,7 +90,7 @@ async def list_tools() -> List[MCPTool]:
                 "additionalProperties": False
             }
         ),
-        MCPTool(
+        Tool(
             name="list_all_categories",
             description="List all categories in the database",
             inputSchema={
@@ -91,7 +99,7 @@ async def list_tools() -> List[MCPTool]:
                 "additionalProperties": False
             }
         ),
-        MCPTool(
+        Tool(
             name="get_statistics",
             description="Get database statistics (count of tools, tags, categories)",
             inputSchema={
@@ -111,7 +119,19 @@ async def call_tool(name: str, arguments: Any) -> List[TextContent]:
     """Handle tool calls"""
     db = get_db()
     try:
-        if name == "search_ai_tools":
+        if name == "raw_sql_query":
+            request = DBQueryRequest(**arguments)
+            query = request.query.strip()
+
+            # Safety check: only allow SELECT queries
+            if not query.upper().startswith("SELECT"):
+                raise ValueError("Only SELECT queries are allowed for safety")
+
+            result = db.execute(text(query))
+            rows = [dict(row._mapping) for row in result]
+            return [TextContent(type="text", text=json.dumps(rows, indent=2, default=str))]
+
+        elif name == "search_ai_tools":
             request = SearchToolsRequest(**arguments)
             query = select(Tool).where(Tool.status == 'published')
 
