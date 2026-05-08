@@ -11,6 +11,8 @@ const allowedTopLevel = new Set([
   ".env.example",
   "AGENTS.md",
   "CLAUDE.md",
+  "Containerfile.api.prod",
+  "Containerfile.web.prod",
   "README.md",
   "apps",
   "doc",
@@ -25,8 +27,11 @@ const allowedTopLevel = new Set([
   "packages",
   "scripts",
   "start.py",
+  "deploy_podman_prod.sh",
   "tests",
   "workflow",
+  "start_podman_prod.sh",
+  "xingdp_proxy_server.cjs",
 ]);
 
 const forbiddenTrackedPatterns = [
