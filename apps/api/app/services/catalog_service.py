@@ -1,9 +1,11 @@
 """
 Catalog services backed by the application database.
 """
+# ruff: noqa: E501
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import unicodedata
@@ -16,7 +18,17 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
-from app.models.models import Category, Ranking, RankingItem, Scenario, ScenarioTool, Tool, ToolCategory, ToolReview, ToolTag
+from app.models.models import (
+    Category,
+    Ranking,
+    RankingItem,
+    Scenario,
+    ScenarioTool,
+    Tool,
+    ToolCategory,
+    ToolReview,
+    ToolTag,
+)
 from app.schemas.catalog import (
     CategorySummary,
     FacetOption,
@@ -24,13 +36,24 @@ from app.schemas.catalog import (
     HomeCategorySection,
     HomeSidebarCategory,
     PresetView,
-    RankingItem as RankingItemSchema,
     RankingSection,
-    SearchMeta,
     ScenarioSummary,
+    SearchMeta,
     ToolsDirectoryResponse,
 )
-from app.schemas.tool import AccessFlags, ReviewPreview, ScenarioRecommendation, ToolDetail, ToolMediaItem, ToolRatingSummary, ToolSummary
+from app.schemas.catalog import (
+    RankingItem as RankingItemSchema,
+)
+from app.schemas.tool import (
+    AccessFlags,
+    ReviewPreview,
+    ScenarioRecommendation,
+    ToolDetail,
+    ToolMediaItem,
+    ToolRatingSummary,
+    ToolSummary,
+)
+from app.services import meilisearch_service
 from app.services.cache_service import get_redis_client, mark_redis_unavailable
 from app.services.catalog_views_seed import (
     get_scenario_target_audience,
@@ -39,8 +62,6 @@ from app.services.catalog_views_seed import (
 )
 from app.services.embedding_service import recall_tool_ids_by_embedding
 from app.services.logo_assets import normalize_logo_path
-from app.services import meilisearch_service
-
 
 PUBLIC_TOOL_STATUS = "published"
 VISIBLE_TOOL_STATUSES = ("published", "draft", "archived")
@@ -111,7 +132,17 @@ TASK_PREFIXES = (
 
 TASK_TERM_EXPANSIONS = {
     "文案": ("文案", "写作", "copywriting", "content", "marketing", "blog", "邮件", "workspace"),
-    "海报": ("海报", "设计", "图像", "图片", "poster", "visual", "banner", "presentation", "slides"),
+    "海报": (
+        "海报",
+        "设计",
+        "图像",
+        "图片",
+        "poster",
+        "visual",
+        "banner",
+        "presentation",
+        "slides",
+    ),
     "代码": ("代码", "编程", "开发", "coding", "developer", "engineering", "automation"),
     "数据": ("数据", "数据分析", "分析", "商业智能", "bi", "analytics", "dashboard", "报表"),
     "分析": ("分析", "数据分析", "analytics", "insight", "report"),
@@ -173,7 +204,12 @@ def _is_safe_display_url(value: str | None, *, allow_relative: bool) -> bool:
     stripped = value.strip()
     if not stripped:
         return False
-    if allow_relative and stripped.startswith("/") and not stripped.startswith("//") and "\\" not in stripped:
+    if (
+        allow_relative
+        and stripped.startswith("/")
+        and not stripped.startswith("//")
+        and "\\" not in stripped
+    ):
         return True
     parsed = urlparse(stripped)
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
@@ -189,7 +225,9 @@ def _sanitize_media_items(value) -> list[ToolMediaItem]:
             continue
         media_type = str(raw.get("type") or "").strip().lower()
         url = str(raw.get("url") or "").strip()
-        if media_type not in {"image", "video"} or not _is_safe_display_url(url, allow_relative=True):
+        if media_type not in {"image", "video"} or not _is_safe_display_url(
+            url, allow_relative=True
+        ):
             continue
 
         thumbnail_url = str(raw.get("thumbnailUrl") or raw.get("thumbnail_url") or "").strip()
@@ -199,10 +237,16 @@ def _sanitize_media_items(value) -> list[ToolMediaItem]:
             ToolMediaItem(
                 type=media_type,
                 url=url,
-                thumbnailUrl=thumbnail_url if _is_safe_display_url(thumbnail_url, allow_relative=True) else None,
+                thumbnailUrl=thumbnail_url
+                if _is_safe_display_url(thumbnail_url, allow_relative=True)
+                else None,
                 title=_repair_text(str(raw.get("title") or "")).strip()[:120],
-                sourceName=_repair_text(str(raw.get("sourceName") or raw.get("source_name") or "")).strip()[:80],
-                sourceUrl=source_url if _is_safe_display_url(source_url, allow_relative=False) else None,
+                sourceName=_repair_text(
+                    str(raw.get("sourceName") or raw.get("source_name") or "")
+                ).strip()[:80],
+                sourceUrl=source_url
+                if _is_safe_display_url(source_url, allow_relative=False)
+                else None,
             )
         )
 
@@ -219,6 +263,19 @@ def _unique_strings(values: list[str]) -> list[str]:
         seen.add(normalized)
         deduped.append(normalized)
     return deduped
+
+
+def _database_cache_namespace(db) -> str:
+    try:
+        bind = db.get_bind()
+        url = getattr(bind, "url", None)
+    except Exception:
+        url = None
+
+    if url is None:
+        return "default"
+
+    return hashlib.sha256(str(url).encode("utf-8")).hexdigest()[:16]
 
 
 def _is_public_catalog_garbage(tool: ToolSummary) -> bool:
@@ -265,7 +322,9 @@ def _build_rating_summary(reviews: list[ToolReview]) -> ToolRatingSummary:
     distribution = {str(score): 0 for score in range(5, 0, -1)}
     for rating in ratings:
         distribution[str(int(rating))] = distribution.get(str(int(rating)), 0) + 1
-    return ToolRatingSummary(average=average, reviewCount=review_count, ratingDistribution=distribution)
+    return ToolRatingSummary(
+        average=average, reviewCount=review_count, ratingDistribution=distribution
+    )
 
 
 def _tool_row_to_summary(tool: Tool) -> ToolSummary:
@@ -277,7 +336,9 @@ def _tool_row_to_summary(tool: Tool) -> ToolSummary:
         category_name = primary_category.name
         category_slug = primary_category.slug
     media_items = _sanitize_media_items(tool.media_items_json)
-    deal_summary = _repair_text(tool.deal_summary).strip() or _repair_text(tool.free_allowance_text).strip()
+    deal_summary = (
+        _repair_text(tool.deal_summary).strip() or _repair_text(tool.free_allowance_text).strip()
+    )
 
     return ToolSummary(
         id=tool.id,
@@ -313,9 +374,15 @@ def _tool_row_to_summary(tool: Tool) -> ToolSummary:
 def _tool_row_to_detail(tool: Tool) -> ToolDetail:
     base = _tool_row_to_summary(tool)
     reviews = _published_reviews(tool)
-    pros = _unique_strings([item for review in reviews for item in _normalize_string_list(review.pros_json)])
-    cons = _unique_strings([item for review in reviews for item in _normalize_string_list(review.cons_json)])
-    pitfalls = _unique_strings([item for review in reviews for item in _normalize_string_list(review.pitfalls_json)])
+    pros = _unique_strings(
+        [item for review in reviews for item in _normalize_string_list(review.pros_json)]
+    )
+    cons = _unique_strings(
+        [item for review in reviews for item in _normalize_string_list(review.cons_json)]
+    )
+    pitfalls = _unique_strings(
+        [item for review in reviews for item in _normalize_string_list(review.pitfalls_json)]
+    )
     scenario_recommendations = [
         ScenarioRecommendation(
             audience=_repair_text(review.audience).strip(),
@@ -323,7 +390,9 @@ def _tool_row_to_detail(tool: Tool) -> ToolDetail:
             summary=_repair_text(review.body).strip(),
         )
         for review in reviews
-        if _repair_text(review.audience).strip() and _repair_text(review.task).strip() and _repair_text(review.body).strip()
+        if _repair_text(review.audience).strip()
+        and _repair_text(review.task).strip()
+        and _repair_text(review.body).strip()
     ]
     target_audience = _unique_strings([item.audience for item in scenario_recommendations])
     review_preview = [
@@ -389,17 +458,31 @@ def _normalize_status_filter(status_slug: str | None) -> str:
     return PUBLIC_TOOL_STATUS
 
 
-def _sort_tools(items: list[ToolSummary], sort: str, view: str, include_all_statuses: bool = False) -> list[ToolSummary]:
+def _sort_tools(
+    items: list[ToolSummary], sort: str, view: str, include_all_statuses: bool = False
+) -> list[ToolSummary]:
     def status_priority(item: ToolSummary) -> int:
         if not include_all_statuses:
             return 0
         return {"draft": 2, "archived": 1, "published": 0}.get(item.status, 0)
 
     if view == "latest" or sort == "latest":
-        return sorted(items, key=lambda item: (status_priority(item), item.createdAt, item.id), reverse=True)
+        return sorted(
+            items, key=lambda item: (status_priority(item), item.createdAt, item.id), reverse=True
+        )
     if sort == "name":
         return sorted(items, key=lambda item: (-status_priority(item), item.name.casefold()))
-    return sorted(items, key=lambda item: (status_priority(item), item.featured, item.score, item.createdAt, item.id), reverse=True)
+    return sorted(
+        items,
+        key=lambda item: (
+            status_priority(item),
+            item.featured,
+            item.score,
+            item.createdAt,
+            item.id,
+        ),
+        reverse=True,
+    )
 
 
 def _normalize_query(query: str) -> str:
@@ -438,7 +521,11 @@ def _is_task_style_query(query: str) -> bool:
     if any(raw.startswith(prefix) for prefix in TASK_PREFIXES):
         return True
 
-    return any(chunk in TASK_TERM_EXPANSIONS for chunk in re.split(r"[\s/_-]+", _normalize_query(query)) if chunk)
+    return any(
+        chunk in TASK_TERM_EXPANSIONS
+        for chunk in re.split(r"[\s/_-]+", _normalize_query(query))
+        if chunk
+    )
 
 
 def _matches_query(search_text: str, token_groups: list[tuple[str, ...]]) -> bool:
@@ -464,7 +551,13 @@ def _expand_with_ai_recommendations(
     filtered: list[SearchableTool],
     searchable_tools: list[SearchableTool],
 ) -> list[SearchableTool]:
-    if filtered or not q or not searchable_tools or not _is_task_style_query(q) or not _can_use_ai_task_search():
+    if (
+        filtered
+        or not q
+        or not searchable_tools
+        or not _is_task_style_query(q)
+        or not _can_use_ai_task_search()
+    ):
         return filtered
 
     from app.schemas.recommend import RecommendRequest
@@ -490,7 +583,11 @@ def _expand_with_ai_recommendations(
 def _matches_category(tool: ToolSummary, category_slug: str) -> bool:
     normalized = _slugify(category_slug)
     canonical_slug = next(
-        (slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() if normalized == slug or normalized in aliases),
+        (
+            slug
+            for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
+            if normalized == slug or normalized in aliases
+        ),
         normalized,
     )
     category_values = {
@@ -599,7 +696,9 @@ def _build_facets(items: list[ToolSummary], key: str) -> list[FacetOption]:
 
     return [
         FacetOption(slug=slug, label=labels[slug], count=count)
-        for slug, count in sorted(counter.items(), key=lambda pair: (-pair[1], labels[pair[0]].casefold()))
+        for slug, count in sorted(
+            counter.items(), key=lambda pair: (-pair[1], labels[pair[0]].casefold())
+        )
     ]
 
 
@@ -612,8 +711,15 @@ def _build_status_facets(items: list[ToolSummary]) -> list[FacetOption]:
     }
     counter: Counter[str] = Counter(item.status for item in items)
     ordered_statuses = [status for status in VISIBLE_TOOL_STATUSES if counter.get(status)]
-    facets = [FacetOption(slug=ALL_STATUS_SLUG, label=labels[ALL_STATUS_SLUG], count=sum(counter.values()))]
-    facets.extend(FacetOption(slug=status, label=labels.get(status, status), count=counter[status]) for status in ordered_statuses)
+    facets = [
+        FacetOption(
+            slug=ALL_STATUS_SLUG, label=labels[ALL_STATUS_SLUG], count=sum(counter.values())
+        )
+    ]
+    facets.extend(
+        FacetOption(slug=status, label=labels.get(status, status), count=counter[status])
+        for status in ordered_statuses
+    )
     return facets
 
 
@@ -659,7 +765,10 @@ def _build_price_range_facets(items: list[ToolSummary]) -> list[FacetOption]:
             counter[price_range] += 1
 
     ordered = [slug for slug in PRICE_RANGE_LABELS if counter.get(slug)]
-    return [FacetOption(slug=slug, label=PRICE_RANGE_LABELS[slug], count=counter[slug]) for slug in ordered]
+    return [
+        FacetOption(slug=slug, label=PRICE_RANGE_LABELS[slug], count=counter[slug])
+        for slug in ordered
+    ]
 
 
 def _matches_preset(tool: ToolSummary, preset: str) -> bool:
@@ -692,7 +801,9 @@ def _build_presets(items: list[ToolSummary]) -> list[PresetView]:
     ]
 
 
-def _load_searchable_tools(db, *, status_filter: str | None = PUBLIC_TOOL_STATUS) -> list[SearchableTool]:
+def _load_searchable_tools(
+    db, *, status_filter: str | None = PUBLIC_TOOL_STATUS
+) -> list[SearchableTool]:
     stmt = select(Tool).options(
         selectinload(Tool.tags).selectinload(ToolTag.tag),
         selectinload(Tool.categories).selectinload(ToolCategory.category),
@@ -701,7 +812,10 @@ def _load_searchable_tools(db, *, status_filter: str | None = PUBLIC_TOOL_STATUS
         stmt = stmt.where(Tool.status == status_filter)
 
     rows = db.scalars(stmt).all()
-    items = [SearchableTool(summary=_tool_row_to_summary(row), search_text=_build_search_text(row)) for row in rows]
+    items = [
+        SearchableTool(summary=_tool_row_to_summary(row), search_text=_build_search_text(row))
+        for row in rows
+    ]
     if status_filter == PUBLIC_TOOL_STATUS:
         return [item for item in items if not _is_public_catalog_garbage(item.summary)]
     return items
@@ -712,17 +826,25 @@ def _load_summaries(db, *, status_filter: str | None = PUBLIC_TOOL_STATUS) -> li
 
 
 def _load_meilisearch_documents(db) -> list[dict]:
-    stmt = select(Tool).options(
-        selectinload(Tool.tags).selectinload(ToolTag.tag),
-        selectinload(Tool.categories).selectinload(ToolCategory.category),
-    ).where(Tool.status == PUBLIC_TOOL_STATUS)
+    stmt = (
+        select(Tool)
+        .options(
+            selectinload(Tool.tags).selectinload(ToolTag.tag),
+            selectinload(Tool.categories).selectinload(ToolCategory.category),
+        )
+        .where(Tool.status == PUBLIC_TOOL_STATUS)
+    )
     rows = db.scalars(stmt).all()
     documents = []
     for row in rows:
         summary = _tool_row_to_summary(row)
         if _is_public_catalog_garbage(summary):
             continue
-        documents.append(meilisearch_service.build_tool_document(summary, description=_repair_text(row.description)))
+        documents.append(
+            meilisearch_service.build_tool_document(
+                summary, description=_repair_text(row.description)
+            )
+        )
     return documents
 
 
@@ -746,7 +868,11 @@ def sync_tool_search_index(db, tool_id: int) -> bool:
     if _is_public_catalog_garbage(summary):
         return meilisearch_service.delete_documents([tool_id])
     return meilisearch_service.upsert_documents(
-        [meilisearch_service.build_tool_document(summary, description=_repair_text(row.description))]
+        [
+            meilisearch_service.build_tool_document(
+                summary, description=_repair_text(row.description)
+            )
+        ]
     )
 
 
@@ -773,9 +899,13 @@ def _filter_tools(
     if price_slug and price_slug in PRICE_TYPE_LABELS:
         filtered = [item for item in filtered if _matches_price_filter(item.summary, price_slug)]
     if access_filters:
-        filtered = [item for item in filtered if _matches_access_filter(item.summary, access_filters)]
+        filtered = [
+            item for item in filtered if _matches_access_filter(item.summary, access_filters)
+        ]
     if price_range_slug and price_range_slug in PRICE_RANGE_LABELS:
-        filtered = [item for item in filtered if _matches_price_range_filter(item.summary, price_range_slug)]
+        filtered = [
+            item for item in filtered if _matches_price_range_filter(item.summary, price_range_slug)
+        ]
 
     return filtered
 
@@ -789,7 +919,9 @@ def _apply_query_recall(*, db, items: list[SearchableTool], q: str | None) -> li
     candidate_tool_ids = [item.summary.id for item in items]
 
     try:
-        semantic_tool_ids = recall_tool_ids_by_embedding(db=db, query=q, candidate_tool_ids=candidate_tool_ids)
+        semantic_tool_ids = recall_tool_ids_by_embedding(
+            db=db, query=q, candidate_tool_ids=candidate_tool_ids
+        )
     except Exception:
         semantic_tool_ids = []
 
@@ -828,10 +960,18 @@ def _build_tools_directory_response(
 ) -> ToolsDirectoryResponse:
     all_tools = [item.summary for item in searchable_tools]
     filtered = [item.summary for item in filtered_searchable]
-    sorted_items = filtered if preserve_order else _sort_tools(filtered, sort=sort, view=view, include_all_statuses=include_all_statuses)
+    sorted_items = (
+        filtered
+        if preserve_order
+        else _sort_tools(filtered, sort=sort, view=view, include_all_statuses=include_all_statuses)
+    )
     total = total_override if total_override is not None else len(sorted_items)
     start = (page - 1) * page_size
-    page_items = sorted_items[start : start + page_size] if total_override is None else sorted_items[:page_size]
+    page_items = (
+        sorted_items[start : start + page_size]
+        if total_override is None
+        else sorted_items[:page_size]
+    )
 
     return ToolsDirectoryResponse(
         items=page_items,
@@ -892,7 +1032,10 @@ def _get_tools_directory_legacy(
         page=page,
         page_size=page_size,
         include_all_statuses=active_status == ALL_STATUS_SLUG,
-        meta=meta or SearchMeta(provider="legacy", degraded=False, normalizedQuery=_normalize_query(q or "") or None),
+        meta=meta
+        or SearchMeta(
+            provider="legacy", degraded=False, normalizedQuery=_normalize_query(q or "") or None
+        ),
     )
 
 
@@ -954,7 +1097,11 @@ def get_tools_directory(
             view=view,
             page=page,
             page_size=page_size,
-            meta=SearchMeta(provider="legacy", degraded=settings.search_provider == "meilisearch", normalizedQuery=_normalize_query(q or "") or None),
+            meta=SearchMeta(
+                provider="legacy",
+                degraded=settings.search_provider == "meilisearch",
+                normalizedQuery=_normalize_query(q or "") or None,
+            ),
         )
 
     searchable_tools = _load_searchable_tools(db, status_filter=PUBLIC_TOOL_STATUS)
@@ -990,10 +1137,14 @@ def list_tools_raw(*, db) -> list[ToolDetail]:
 
 
 def get_tool(*, db, slug: str) -> ToolDetail | None:
-    stmt = select(Tool).where(Tool.slug == slug).options(
-        selectinload(Tool.tags).selectinload(ToolTag.tag),
-        selectinload(Tool.categories).selectinload(ToolCategory.category),
-        selectinload(Tool.reviews),
+    stmt = (
+        select(Tool)
+        .where(Tool.slug == slug)
+        .options(
+            selectinload(Tool.tags).selectinload(ToolTag.tag),
+            selectinload(Tool.categories).selectinload(ToolCategory.category),
+            selectinload(Tool.reviews),
+        )
     )
     row = db.scalar(stmt)
     return _tool_row_to_detail(row) if row else None
@@ -1015,7 +1166,9 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
 
     rows = db.scalars(select(Category)).all()
     published_tools = _load_summaries(db)
-    category_counts = Counter(tool.categorySlug or _slugify(tool.category) for tool in published_tools)
+    category_counts = Counter(
+        tool.categorySlug or _slugify(tool.category) for tool in published_tools
+    )
     visible_categories = set(category_counts) if not include_empty else set()
     result = [
         CategorySummary(
@@ -1027,7 +1180,9 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
             legacySlugs=LEGACY_CATEGORY_SLUGS.get(row.slug, []),
         )
         for row in rows
-        if include_empty or row.slug in visible_categories or _slugify(row.name) in visible_categories
+        if include_empty
+        or row.slug in visible_categories
+        or _slugify(row.name) in visible_categories
     ]
     result.sort(key=lambda item: (-item.toolCount, item.slug))
 
@@ -1045,11 +1200,19 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
 def list_tools_by_category(*, db, category_slug: str) -> list[ToolSummary]:
     normalized = _slugify(category_slug)
     canonical_slug = next(
-        (slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() if normalized == slug or normalized in aliases),
+        (
+            slug
+            for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
+            if normalized == slug or normalized in aliases
+        ),
         normalized,
     )
     # status already filtered by _load_summaries default to PUBLIC_TOOL_STATUS
-    tools = [tool for tool in _load_summaries(db) if (tool.categorySlug or _slugify(tool.category)) == canonical_slug]
+    tools = [
+        tool
+        for tool in _load_summaries(db)
+        if (tool.categorySlug or _slugify(tool.category)) == canonical_slug
+    ]
     return _sort_tools(tools, sort="featured", view="hot")
 
 
@@ -1082,7 +1245,11 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
     for item in categories:
         normalized = _slugify(item.slug)
         canonical_slug = next(
-            (slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() if normalized == slug or normalized in aliases),
+            (
+                slug
+                for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
+                if normalized == slug or normalized in aliases
+            ),
             normalized,
         )
         category_sections.append(
@@ -1092,7 +1259,9 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
                 description=item.description,
                 sectionId=f"category-{item.slug}",
                 browseCategorySlug=item.slug,
-                items=_sort_tools(tools_by_category.get(canonical_slug, []), sort="featured", view="hot")[:section_size],
+                items=_sort_tools(
+                    tools_by_category.get(canonical_slug, []), sort="featured", view="hot"
+                )[:section_size],
                 moreHref=f"/tools?mode=search&category={item.slug}&page=1",
             )
         )
@@ -1131,7 +1300,7 @@ def _build_scenario_summary(scenario: Scenario, links: list[ScenarioTool]) -> Sc
 
 def list_scenarios(*, db) -> list[ScenarioSummary]:
     redis_client = get_redis_client()
-    cache_key = "catalog:scenarios:all"
+    cache_key = f"catalog:scenarios:all:{_database_cache_namespace(db)}"
     cache_ttl = 300  # 5 minutes
 
     if redis_client:
@@ -1150,10 +1319,12 @@ def list_scenarios(*, db) -> list[ScenarioSummary]:
         stmt = (
             select(ScenarioTool)
             .where(ScenarioTool.scenario_id.in_(scenario_ids))
-            .options(selectinload(ScenarioTool.tool).options(
-                selectinload(Tool.tags).selectinload(ToolTag.tag),
-                selectinload(Tool.categories).selectinload(ToolCategory.category),
-            ))
+            .options(
+                selectinload(ScenarioTool.tool).options(
+                    selectinload(Tool.tags).selectinload(ToolTag.tag),
+                    selectinload(Tool.categories).selectinload(ToolCategory.category),
+                )
+            )
         )
         all_links = db.scalars(stmt).all()
         links_by_scenario = defaultdict(list)
@@ -1184,10 +1355,12 @@ def get_scenario(*, db, slug: str) -> ScenarioSummary | None:
     stmt = (
         select(ScenarioTool)
         .where(ScenarioTool.scenario_id == row.id)
-        .options(selectinload(ScenarioTool.tool).options(
-            selectinload(Tool.tags).selectinload(ToolTag.tag),
-            selectinload(Tool.categories).selectinload(ToolCategory.category),
-        ))
+        .options(
+            selectinload(ScenarioTool.tool).options(
+                selectinload(Tool.tags).selectinload(ToolTag.tag),
+                selectinload(Tool.categories).selectinload(ToolCategory.category),
+            )
+        )
     )
     links = db.scalars(stmt).all()
     scenario = _build_scenario_summary(row, links)
@@ -1225,7 +1398,7 @@ def _normalize_ranking_reason(reason: str, rank: int) -> str:
 
 def list_rankings(*, db) -> list[RankingSection]:
     redis_client = get_redis_client()
-    cache_key = "catalog:rankings:all"
+    cache_key = f"catalog:rankings:all:{_database_cache_namespace(db)}"
     cache_ttl = 60  # 1 minute
 
     if redis_client:
@@ -1244,10 +1417,12 @@ def list_rankings(*, db) -> list[RankingSection]:
         stmt = (
             select(RankingItem)
             .where(RankingItem.ranking_id.in_(ranking_ids))
-            .options(selectinload(RankingItem.tool).options(
-                selectinload(Tool.tags).selectinload(ToolTag.tag),
-                selectinload(Tool.categories).selectinload(ToolCategory.category),
-            ))
+            .options(
+                selectinload(RankingItem.tool).options(
+                    selectinload(Tool.tags).selectinload(ToolTag.tag),
+                    selectinload(Tool.categories).selectinload(ToolCategory.category),
+                )
+            )
         )
         all_items = db.scalars(stmt).all()
         items_by_ranking = defaultdict(list)
@@ -1279,10 +1454,12 @@ def get_ranking(*, db, slug: str) -> RankingSection | None:
         select(RankingItem)
         .where(RankingItem.ranking_id == row.id)
         .order_by(RankingItem.rank_order)
-        .options(selectinload(RankingItem.tool).options(
-            selectinload(Tool.tags).selectinload(ToolTag.tag),
-            selectinload(Tool.categories).selectinload(ToolCategory.category),
-        ))
+        .options(
+            selectinload(RankingItem.tool).options(
+                selectinload(Tool.tags).selectinload(ToolTag.tag),
+                selectinload(Tool.categories).selectinload(ToolCategory.category),
+            )
+        )
     )
     items = db.scalars(stmt).all()
     section = _build_ranking_section(row, items)
