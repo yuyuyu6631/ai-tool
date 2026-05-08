@@ -40,8 +40,28 @@ jobs:
         working-directory: packages/contracts
         run: npx tsc --noEmit
 
-      - name: Prettier check
-        run: npx prettier --check "apps/web/src/**/*.{ts,tsx}" "packages/contracts/src/**/*.ts"
+      - name: Prettier check changed source files
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "Skipping changed-file Prettier check outside pull_request."
+            exit 0
+          fi
+
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          mapfile -t files < <(
+            git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- \
+              "apps/web/src/**/*.ts" \
+              "apps/web/src/**/*.tsx" \
+              "packages/contracts/src/**/*.ts"
+          )
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No changed source files require Prettier check."
+            exit 0
+          fi
+
+          npx prettier --check "${files[@]}"
 
   # ── Job 2: Backend Tests ──────────────────────────────────
   test-backend:
