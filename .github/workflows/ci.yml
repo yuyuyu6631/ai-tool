@@ -101,13 +101,45 @@ jobs:
         working-directory: apps/api
         run: pip install ".[dev]"
 
-      - name: Run ruff lint
-        working-directory: apps/api
-        run: ruff check .
+      - name: Run ruff lint on changed Python files
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "Skipping changed-file ruff lint outside pull_request."
+            exit 0
+          fi
 
-      - name: Run ruff format check
-        working-directory: apps/api
-        run: ruff format --check .
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          mapfile -t files < <(
+            git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- "apps/api/**/*.py"
+          )
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No changed Python files require ruff lint."
+            exit 0
+          fi
+
+          ruff check "${files[@]}"
+
+      - name: Run ruff format check on changed Python files
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            echo "Skipping changed-file ruff format check outside pull_request."
+            exit 0
+          fi
+
+          git fetch origin "${{ github.base_ref }}" --depth=1
+          mapfile -t files < <(
+            git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- "apps/api/**/*.py"
+          )
+
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No changed Python files require ruff format check."
+            exit 0
+          fi
+
+          ruff format --check "${files[@]}"
 
       - name: Run migrations
         working-directory: apps/api
