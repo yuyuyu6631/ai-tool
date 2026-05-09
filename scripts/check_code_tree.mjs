@@ -30,6 +30,7 @@ const allowedTopLevel = new Set([
   "deploy_podman_prod.sh",
   "tests",
   "workflow",
+  ".jules",
   "start_podman_prod.sh",
   "xingdp_proxy_server.cjs",
 ]);
