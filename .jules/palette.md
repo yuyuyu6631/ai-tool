@@ -1,0 +1,3 @@
+## 2024-05-09 - [Accessibility for Star Rating Buttons]
+**Learning:** Found an accessibility issue pattern specific to this app's components - interactive icon-only buttons (like the star rating input) lacking \`aria-label\` and visible focus states (\`focus:outline-none\` without a custom focus indicator).
+**Action:** Always verify icon-only interactive elements in custom components like \`ToolReviewsPanel\` for \`aria-label\` and ensure keyboard accessibility by replacing \`focus:outline-none\` with visible focus indicators using Tailwind classes like \`focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 rounded-full\`.
