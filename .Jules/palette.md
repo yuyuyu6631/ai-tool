@@ -1,0 +1,3 @@
+## 2024-05-11 - [提升评分组件的键盘无障碍访问]
+**Learning:** In interactive, icon-only custom form controls (like a star rating built with buttons), relying solely on `focus:outline-none` severely hinders keyboard users as they cannot track their current focus. Additionally, omitting `aria-label` renders the element inaccessible to screen readers. We need both text representations and visual indicators for true accessibility.
+**Action:** When implementing custom interactive controls, always provide an `aria-label` with descriptive text. Replace `focus:outline-none` with accessible focus indicators, utilizing Tailwind classes like `focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2` to support keyboard navigation while keeping mouse interaction clean.
