@@ -43,7 +43,7 @@ export default async function Page({ searchParams }: SearchRouteProps) {
 
               <form action={withPublicPath("/tools")} className="hero-search-panel rounded-2xl p-3">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-white/60" />
+                  <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                   <input
                     name="q"
                     type="search"

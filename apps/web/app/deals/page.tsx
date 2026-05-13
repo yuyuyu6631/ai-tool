@@ -39,8 +39,8 @@ export default async function Page() {
               </div>
               <div className="hero-search-panel rounded-2xl p-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-sky-100">福利态势</p>
-                  <Radar className="h-5 w-5 text-sky-200" />
+                  <p className="text-sm font-semibold text-blue-700">福利态势</p>
+                  <Radar className="h-5 w-5 text-blue-500" />
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   {[
@@ -49,9 +49,9 @@ export default async function Page() {
                     ["限时活动", "待运营接入"],
                     ["避坑提醒", "详情页核验"],
                   ].map(([label, value]) => (
-                    <div key={label} className="rounded-xl border border-white/10 bg-white/[0.06] px-3 py-3">
-                      <p className="text-[11px] text-white/48">{label}</p>
-                      <p className="mt-1 text-sm font-semibold text-white">{value}</p>
+                    <div key={label} className="rounded-xl border border-slate-200/80 bg-white/70 px-3 py-3">
+                      <p className="text-[11px] text-slate-500">{label}</p>
+                      <p className="mt-1 text-sm font-semibold text-slate-950">{value}</p>
                     </div>
                   ))}
                 </div>

@@ -332,43 +332,45 @@
   }
 
   .site-header--dark {
-    background: var(--surface-glass);
-    border-bottom-color: var(--border);
-    box-shadow: var(--shadow-glass);
+    background: rgba(250, 250, 248, 0.82);
+    border-bottom-color: rgba(224, 221, 214, 0.82);
+    box-shadow: 0 14px 42px rgba(23, 23, 23, 0.07);
   }
 
   .site-header--dark::before {
     background:
-      linear-gradient(180deg, rgba(17, 24, 39, 0.72), rgba(17, 24, 39, 0.34)),
-      radial-gradient(circle at 28% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 32%);
+      linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.32)),
+      radial-gradient(circle at 18% 0%, rgba(47, 117, 255, 0.08), transparent 32%);
   }
 
   .site-header--dark .header-utility-button {
-    border-color: var(--border-default);
-    background: var(--bg-surface-strong);
-    color: var(--text-secondary) !important;
+    border-color: rgba(45, 42, 36, 0.10);
+    background: rgba(255, 255, 255, 0.78);
+    color: #171717 !important;
+    box-shadow: 0 16px 38px rgba(36, 31, 23, 0.08);
     text-shadow: none;
   }
 
   .site-header--dark .header-utility-button:hover {
-    border-color: var(--color-primary-border);
-    background: var(--bg-surface-hover);
-    color: var(--text-primary) !important;
+    border-color: rgba(45, 42, 36, 0.16);
+    background: rgba(255, 255, 255, 0.96);
+    color: #111111 !important;
   }
 
   .site-header--dark .header-auth-button,
   .site-header--dark .user-chip {
-    border-color: var(--border-default);
-    background: var(--bg-surface-strong);
-    color: var(--text-secondary) !important;
+    border-color: rgba(45, 42, 36, 0.10);
+    background: rgba(255, 255, 255, 0.78);
+    color: #171717 !important;
+    box-shadow: 0 16px 38px rgba(36, 31, 23, 0.08);
     text-shadow: none;
   }
 
   .site-header--dark .header-auth-button:hover,
   .site-header--dark .user-chip:hover {
-    border-color: var(--color-primary-border);
-    background: var(--bg-surface-hover);
-    color: var(--text-primary) !important;
+    border-color: rgba(45, 42, 36, 0.16);
+    background: rgba(255, 255, 255, 0.96);
+    color: #111111 !important;
   }
 
   .site-header--home-light {
@@ -1489,43 +1491,47 @@
   }
 
   .hero-brand-panel {
-    background: var(--hero-brand);
-    border: 1px solid color-mix(in srgb, var(--primary) 18%, #101827);
-    box-shadow: 0 26px 70px rgba(23, 32, 51, 0.18);
-    color: #FFFFFF;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(245, 200, 66, 0.18), transparent 28%),
+      radial-gradient(circle at 92% 8%, rgba(47, 117, 255, 0.12), transparent 32%),
+      rgba(255, 255, 255, 0.74);
+    border: 1px solid rgba(45, 42, 36, 0.10);
+    box-shadow: 0 16px 38px rgba(36, 31, 23, 0.08);
+    color: #111111;
   }
 
   .hero-kicker {
-    border: 1px solid rgba(125, 162, 255, 0.24);
-    background: rgba(125, 162, 255, 0.12);
-    color: #DDE8FF;
+    border: 1px solid rgba(47, 117, 255, 0.28);
+    background: rgba(238, 244, 254, 0.86);
+    color: #2F75FF;
   }
 
   .hero-kicker-accent {
-    border-color: rgba(242, 197, 107, 0.28);
-    background: rgba(242, 197, 107, 0.12);
-    color: #FFE7A8;
+    border-color: rgba(203, 145, 34, 0.34);
+    background: rgba(250, 238, 218, 0.86);
+    color: #8B6210;
   }
 
   .hero-subtitle {
-    color: rgba(255, 255, 255, 0.68);
+    color: #4F4A42;
   }
 
   .hero-search-panel {
-    background: rgba(17, 24, 39, 0.58);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(255, 255, 255, 0.66);
+    border: 1px solid rgba(45, 42, 36, 0.10);
+    box-shadow: 0 16px 38px rgba(36, 31, 23, 0.08);
     backdrop-filter: blur(18px) saturate(118%);
     -webkit-backdrop-filter: blur(18px) saturate(118%);
   }
 
   .hero-search-input {
-    background: rgba(9, 13, 20, 0.38);
-    border: 1px solid rgba(255, 255, 255, 0.10);
-    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid rgba(45, 42, 36, 0.12);
+    color: #171717;
   }
 
   .hero-search-input::placeholder {
-    color: rgba(255, 255, 255, 0.42);
+    color: #9A9285;
   }
 
   .hero-search-input:focus {
@@ -1564,9 +1570,9 @@
   }
 
   .hero-ghost-button {
-    background: rgba(255, 255, 255, 0.08);
-    color: rgba(255, 255, 255, 0.78);
-    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.82);
+    color: #4F4A42;
+    border-color: rgba(45, 42, 36, 0.12);
   }
 
   .btn-token-neutral:hover,
