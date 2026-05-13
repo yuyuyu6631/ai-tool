@@ -1,10 +1,11 @@
-import json
 import ipaddress
+import json
 import logging
 import os
 import re
-from urllib.parse import urlparse
+import socket
 from urllib import request
+from urllib.parse import urlparse
 
 from app.core.config import settings
 from app.services.ai_client import _call_ai_api, _extract_json_block, _normalize_chat_url
@@ -25,9 +26,10 @@ def validate_public_url(url: str) -> str:
         raise ValueError("不允许抓取本机或局域网地址")
 
     try:
-        host_ip = ipaddress.ip_address(hostname)
-    except ValueError:
-        return parsed.geturl()
+        ip_str = socket.gethostbyname(hostname)
+        host_ip = ipaddress.ip_address(ip_str)
+    except (ValueError, socket.gaierror):
+        raise ValueError("无法解析域名或地址无效")
 
     if (
         host_ip.is_private
