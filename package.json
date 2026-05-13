@@ -53,7 +53,7 @@
     "docx": "^9.6.1"
   },
   "devDependencies": {
-    "lint-staged": "^15.5.0",
+    "lint-staged": "^17.0.4",
     "prettier": "^3.5.0"
   }
 }
