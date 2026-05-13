@@ -1,10 +1,16 @@
 import Link from "next/link";
-import { ArrowRight, MessageSquareText, PenLine, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, Heart, MessageSquareText, Star, Bookmark } from "lucide-react";
 import Header from "@/src/app/components/Header";
 import Footer from "@/src/app/components/Footer";
 import Breadcrumbs from "@/src/app/components/Breadcrumbs";
 import { EXPERIENCE_CHANNELS, EXPERIENCE_POSTS } from "@/src/app/lib/experience-community";
 import { withPublicPath } from "@/src/app/lib/public-path";
+
+const FILTER_TABS = ["全部", "实战教程", "避坑反馈", "工具组合", "福利线索"] as const;
+
+function StatBadge({ icon: Icon, value }: { icon: typeof Eye; value: number }) {
+  return <span className="inline-flex items-center gap-1"><Icon className="h-3 w-3" />{value}</span>;
+}
 
 export default function Page() {
   return (
@@ -28,7 +34,7 @@ export default function Page() {
               </div>
               <div className="hero-search-panel rounded-2xl p-5">
                 <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
-                  <Sparkles className="h-4 w-4" />
+                  <Star className="h-4 w-4" />
                   发布经验
                 </div>
                 <p className="mt-3 text-sm leading-7 text-slate-600">
@@ -51,31 +57,44 @@ export default function Page() {
             ))}
           </section>
 
-          <section className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <section className="mt-6 flex flex-wrap items-center gap-2">
+            {FILTER_TABS.map((tab, i) => (
+              <span key={tab} className={`token-tag ${i === 0 ? "token-tag--active" : ""}`}>{tab}</span>
+            ))}
+          </section>
+
+          <section className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="space-y-4">
               {EXPERIENCE_POSTS.map((post) => (
-                <article key={post.title} className="surface-card rounded-2xl p-5">
+                <Link key={post.id} href={withPublicPath(`/experiences/${post.id}`)} className="surface-card block rounded-2xl p-5 transition hover:shadow-md">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{post.channel}</span>
                     <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">{post.scenario}</span>
+                    {post.isOfficial && <span className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white"><Star className="h-3 w-3" />官方精选</span>}
                   </div>
                   <h2 className="mt-3 text-xl font-semibold text-slate-950">{post.title}</h2>
                   <p className="mt-3 text-sm leading-7 text-slate-600">{post.summary}</p>
+                  <div className="mt-3 flex flex-wrap gap-1.5">{post.roles.map((role) => <span key={role} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{role}</span>)}</div>
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
-                    <p>{post.author} · {post.stats}</p>
-                    <p>工具：{post.tools.join(" / ")}</p>
+                    <span>{post.author} · {post.publishedAt}</span>
+                    <span className="flex items-center gap-3">
+                      <StatBadge icon={Eye} value={post.views} />
+                      <StatBadge icon={Heart} value={post.likes} />
+                      <StatBadge icon={Bookmark} value={post.favorites} />
+                      <span>工具：{post.tools.join(" / ")}</span>
+                    </span>
                   </div>
-                </article>
+                </Link>
               ))}
             </div>
 
             <aside className="surface-card h-fit rounded-2xl p-5">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                <PenLine className="h-4 w-4 text-blue-600" />
+                <Star className="h-4 w-4 text-blue-600" />
                 社区不是单独的论坛孤岛
               </div>
               <p className="mt-3 text-sm leading-7 text-slate-600">
-                每篇经验都要关联任务场景和工具，让用户能从“我要完成什么任务”一路走到“别人怎么做”和“我该试哪个工具”。
+                每篇经验都要关联任务场景和工具，让用户能从"我要完成什么任务"一路走到"别人怎么做"和"我该试哪个工具"。
               </p>
               <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-token-neutral mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
                 去工具库交叉验证
