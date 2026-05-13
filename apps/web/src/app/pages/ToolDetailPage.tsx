@@ -164,7 +164,7 @@ export default function ToolDetailPage({ tool, relatedTools, reviews }: ToolDeta
         <main className="mx-auto w-full max-w-[1440px] px-4 py-20 text-center sm:px-6 lg:px-8">
           <h1 className="text-3xl font-semibold text-[var(--text-primary)]">暂时找不到这个工具</h1>
           <p className="mt-3 text-sm text-[var(--text-secondary)]">当前工具信息可能已下架或尚未收录，你可以先回到目录继续浏览其他结果。</p>
-          <BackToResultsLink className="btn-primary mt-6 inline-flex items-center gap-2 rounded px-5 py-3 text-sm font-medium" />
+          <BackToResultsLink className="btn-token-accent mt-6 inline-flex items-center gap-2 rounded px-5 py-3 text-sm font-medium" />
         </main>
         <Footer />
       </div>
@@ -210,7 +210,7 @@ export default function ToolDetailPage({ tool, relatedTools, reviews }: ToolDeta
   return (
     <div className="page-shell">
       <RecentToolTracker slug={tool.slug} name={tool.name} summary={tool.summary} category={tool.category} />
-      <Header currentPath={`/tools/${tool.slug}`} currentRoute={`/tools/${tool.slug}`} />
+      <Header currentPath={`/tools/${tool.slug}`} currentRoute={`/tools/${tool.slug}`} forceHomeHeader />
 
       <main>
         <section className="bg-[var(--bg-subtle)] text-[var(--text-primary)]">
@@ -280,7 +280,7 @@ export default function ToolDetailPage({ tool, relatedTools, reviews }: ToolDeta
                     href={tool.officialUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="btn-primary inline-flex w-full items-center justify-center gap-2 rounded px-5 py-3 text-sm font-semibold"
+                    className="btn-token-accent inline-flex w-full items-center justify-center gap-2 rounded px-5 py-3 text-sm font-semibold"
                   >
                     访问官网
                     <ExternalLink className="h-4 w-4" />

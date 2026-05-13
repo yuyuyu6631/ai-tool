@@ -13,6 +13,8 @@ describe("shouldHideFloatingChatBot", () => {
     expect(shouldHideFloatingChatBot("/tools/chatgpt")).toBe(true);
     expect(shouldHideFloatingChatBot("/xingdp/tools")).toBe(true);
     expect(shouldHideFloatingChatBot("/xingdp/tools/chatgpt")).toBe(true);
+    expect(shouldHideFloatingChatBot("/experiences")).toBe(true);
+    expect(shouldHideFloatingChatBot("/experiences/chatgpt-gamma-prd-report")).toBe(true);
     expect(shouldHideFloatingChatBot("/matches")).toBe(true);
     expect(shouldHideFloatingChatBot("/admin")).toBe(true);
     expect(shouldHideFloatingChatBot("/admin/tools")).toBe(true);

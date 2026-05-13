@@ -159,7 +159,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
   return (
     <div className="page-shell">
       <CatalogScrollRestorer />
-      <Header currentPath="/tools" currentRoute={currentRoute} />
+      <Header currentPath="/tools" currentRoute={currentRoute} forceHomeHeader />
 
       <main className="py-5 md:py-7">
         <div className="mx-auto grid w-full max-w-[1500px] gap-5 px-4 sm:px-6 xl:grid-cols-[220px_minmax(0,1fr)] xl:px-8">
@@ -173,7 +173,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                     href={buildToolsPageHref(current, { [item.hrefKey]: item.value, page: 1 })}
                     className={`aside-item flex items-center justify-between rounded px-2.5 py-2 text-sm ${
                       (item.hrefKey === "view" ? activeView === item.value : state.price === item.value)
-                        ? "bg-blue-50 text-blue-700"
+                        ? "bg-[var(--accent-soft)] text-[var(--color-accent)]"
                         : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
                     }`}
                     onClick={startAiPending}
@@ -192,7 +192,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                         key={category.slug}
                         href={buildToolsPageHref(current, { category: category.slug, page: 1 })}
                         className={`aside-item flex items-center justify-between rounded px-2.5 py-1.5 text-sm ${
-                          activeCategorySlug === normalizeCategorySlug(category.slug) ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                          activeCategorySlug === normalizeCategorySlug(category.slug) ? "bg-[var(--accent-soft)] text-[var(--color-accent)]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
                         }`}
                       >
                         <span>{category.label}</span>
@@ -229,7 +229,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                         key={price.slug}
                         href={buildToolsPageHref(current, { price: price.slug, page: 1 })}
                         className={`aside-item flex items-center justify-between rounded px-2.5 py-1.5 text-sm ${
-                          state.price === price.slug ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                          state.price === price.slug ? "bg-[var(--accent-soft)] text-[var(--color-accent)]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
                         }`}
                       >
                         <span>{price.label}</span>
@@ -249,7 +249,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                         key={priceRange.slug}
                         href={buildToolsPageHref(current, { price_range: priceRange.slug, page: 1 })}
                         className={`aside-item flex items-center justify-between rounded px-2.5 py-1.5 text-sm ${
-                          state.priceRange === priceRange.slug ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                          state.priceRange === priceRange.slug ? "bg-[var(--accent-soft)] text-[var(--color-accent)]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
                         }`}
                       >
                         <span>{priceRange.label}</span>
@@ -274,7 +274,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                           key={accessFacet.slug}
                           href={buildToolsPageHref(current, { access: Array.from(values).sort().join(",") || null, page: 1 })}
                           className={`aside-item flex items-center justify-between rounded px-2.5 py-1.5 text-sm ${
-                            active ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+                            active ? "bg-[var(--accent-soft)] text-[var(--color-accent)]" : "text-slate-600 hover:bg-slate-50 hover:text-slate-950"
                           }`}
                         >
                           <span>{accessFacet.label}</span>
@@ -295,7 +295,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                         key={tag.slug}
                         href={buildToolsPageHref(current, { tag: tag.slug, page: 1 })}
                         className={`filter-chip rounded px-2.5 py-1 text-xs font-medium ${
-                          state.tag === tag.slug ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          state.tag === tag.slug ? "btn-token-accent" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
                         {tag.label}
@@ -333,7 +333,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                           (item.id === "latest" && activeView === "latest") ||
                           (item.id === "free" && state.price === "free") ||
                           (item.id === "team" && state.tag === "团队协作")
-                            ? "bg-blue-600 text-white shadow-[0_10px_22px_rgba(37,99,235,0.22)]"
+                            ? "btn-token-accent"
                             : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-950"
                         }`}
                       >
@@ -357,7 +357,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                     <Link
                       href={buildToolsPageHref(current, { mode: "search", page: 1 })}
                       className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                        activeMode === "search" ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-white hover:text-slate-950"
+                        activeMode === "search" ? "btn-token-accent" : "text-slate-600 hover:bg-white hover:text-slate-950"
                       }`}
                       onClick={() => trackEvent("home_mode_switch", { mode: "search", source: "tools" })}
                     >
@@ -366,7 +366,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                     <Link
                       href={buildToolsPageHref(current, { mode: "ai", page: 1 })}
                       className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                        activeMode === "ai" ? "bg-blue-600 text-white" : "text-slate-600 hover:bg-white hover:text-slate-950"
+                        activeMode === "ai" ? "btn-token-accent" : "text-slate-600 hover:bg-white hover:text-slate-950"
                       }`}
                       onClick={() => {
                         setAiPending(true);
@@ -400,7 +400,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                     </div>
                     <button
                       type="submit"
-                      className="btn-token-primary inline-flex h-11 w-full items-center justify-center rounded px-5 text-sm font-semibold transition sm:w-28"
+                      className="btn-token-accent inline-flex h-11 w-full items-center justify-center rounded px-5 text-sm font-semibold transition sm:w-28"
                       disabled={activeMode === "ai" && aiPending}
                     >
                       {activeMode === "ai" ? (aiPending ? "匹配中" : "开始搜索") : "开始搜索"}
@@ -423,7 +423,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
             </section>
 
           {activeMode === "ai" && aiPending ? (
-            <section role="status" aria-live="polite" className="mt-5 rounded-lg border border-blue-200 bg-blue-50/80 p-5 md:p-6">
+            <section role="status" aria-live="polite" className="mt-5 rounded-lg border border-[var(--color-accent-border)] bg-[var(--accent-soft)] p-5 md:p-6">
               <p className="text-sm font-semibold text-sky-900">AI 正在匹配工具，请稍候...</p>
               <p className="mt-1 text-xs text-sky-700">正在分析你的任务、价格偏好和访问条件，马上返回结果。</p>
               <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -453,7 +453,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                         href={buildToolsPageHref(current, { [item.hrefKey]: item.value, page: 1 })}
                         className={`filter-chip rounded-full px-3 py-1.5 text-xs font-medium ${
                           (item.hrefKey === "view" ? activeView === item.value : state.price === item.value)
-                            ? "bg-slate-900 text-white"
+                            ? "btn-token-accent"
                             : "border border-slate-200 bg-white text-slate-700"
                         }`}
                       >
@@ -471,7 +471,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                           key={`mobile-category-${category.slug}`}
                           href={buildToolsPageHref(current, { category: category.slug, page: 1 })}
                           className={`filter-chip rounded-full px-3 py-1.5 text-xs font-medium ${
-                          activeCategorySlug === normalizeCategorySlug(category.slug) ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-700"
+                          activeCategorySlug === normalizeCategorySlug(category.slug) ? "btn-token-accent" : "border border-slate-200 bg-white text-slate-700"
                           }`}
                         >
                           {category.label} ({category.count})
@@ -489,7 +489,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                           key={`mobile-price-${price.slug}`}
                           href={buildToolsPageHref(current, { price: price.slug, page: 1 })}
                           className={`filter-chip rounded-full px-3 py-1.5 text-xs font-medium ${
-                            state.price === price.slug ? "bg-slate-900 text-white" : "border border-slate-200 bg-white text-slate-700"
+                            state.price === price.slug ? "btn-token-accent" : "border border-slate-200 bg-white text-slate-700"
                           }`}
                         >
                           {price.label} ({price.count})
@@ -513,7 +513,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                   <h2 className="text-lg font-semibold text-slate-900">{loadState === "timeout" ? "目录加载超时" : "目录加载失败"}</h2>
                   <p className="mt-2 text-sm leading-7 text-slate-600">当前未能完整获取工具目录数据。你可以刷新重试，或稍后再访问。</p>
                   <div className="mt-4 flex flex-wrap gap-3">
-                    <Link href={buildToolsPageHref(current, {})} className="btn-primary rounded px-4 py-2 text-sm">
+                    <Link href={buildToolsPageHref(current, {})} className="btn-token-accent rounded px-4 py-2 text-sm">
                       重新加载
                     </Link>
                     <Link href={withPublicPath("/tools?mode=search")} className="btn-secondary rounded px-4 py-2 text-sm">
@@ -542,7 +542,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                         key={sortOption.id}
                         href={buildToolsPageHref(current, { sort: sortOption.id, page: 1 })}
                         className={`rounded px-3 py-1.5 text-xs font-medium transition ${
-                          activeSort === sortOption.id ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                          activeSort === sortOption.id ? "btn-token-accent" : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                         }`}
                       >
                         {sortOption.label}
@@ -557,7 +557,7 @@ export default function ToolsPage({ directory, state, loadState = "idle" }: Tool
                   <h2 className="text-xl font-semibold text-slate-900">暂无匹配工具</h2>
                   <p className="mt-3 text-sm leading-7 text-slate-600">当前筛选条件下没有找到结果。你可以放宽条件、切换到 AI 帮找，或先看热门工具继续缩小范围。</p>
                   <div className="mt-5 flex flex-wrap justify-center gap-3">
-                    <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-primary rounded px-5 py-3 text-sm">
+                    <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-token-accent rounded px-5 py-3 text-sm">
                       放宽全部条件
                     </Link>
                     <Link href={buildToolsPageHref(current, { mode: "ai", page: 1, category: null, tag: null })} className="btn-secondary rounded px-5 py-3 text-sm">

@@ -10,11 +10,12 @@ import { withPublicPath } from "../lib/public-path";
 interface HeaderProps {
   currentPath: string;
   currentRoute?: string;
+  forceHomeHeader?: boolean;
 }
 
-export default function Header({ currentPath, currentRoute = currentPath }: HeaderProps) {
+export default function Header({ currentPath, currentRoute = currentPath, forceHomeHeader }: HeaderProps) {
   const authHref = withPublicPath(currentPath === "/auth" ? "/auth" : `/auth?next=${encodeURIComponent(withPublicPath(currentRoute))}`);
-  const isHome = currentPath === "/";
+  const isHome = currentPath === "/" || forceHomeHeader;
 
   return (
     <header className={`site-header sticky top-0 z-50 ${isHome ? "site-header--home-light" : "site-header--dark"}`}>

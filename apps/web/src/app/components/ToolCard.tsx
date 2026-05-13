@@ -185,7 +185,7 @@ function ToolCard({
           <Link
             href={withPublicPath(`/tools/${slug}`)}
             onClick={onDetailClick}
-            className="btn-token-primary inline-flex h-8 flex-1 items-center justify-center gap-1 rounded px-3 text-xs font-semibold transition sm:flex-none"
+            className="btn-token-accent inline-flex h-8 flex-1 items-center justify-center gap-1 rounded px-3 text-xs font-semibold transition sm:flex-none"
           >
             详情
             <ArrowRight className="h-3.5 w-3.5" />

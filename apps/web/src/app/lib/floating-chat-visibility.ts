@@ -1,8 +1,8 @@
 import { withoutPublicPath } from "./public-path";
 
-const HIDDEN_EXACT_PATHS = new Set<string>(["/", "/tools", "/matches", "/auth", "/admin"]);
+const HIDDEN_EXACT_PATHS = new Set<string>(["/", "/tools", "/experiences", "/matches", "/auth", "/admin"]);
 
-const HIDDEN_PREFIX_PATHS = ["/tools/", "/matches/", "/auth/", "/admin/"];
+const HIDDEN_PREFIX_PATHS = ["/tools/", "/experiences/", "/matches/", "/auth/", "/admin/"];
 
 function isHiddenPath(pathname: string): boolean {
   if (HIDDEN_EXACT_PATHS.has(pathname)) {

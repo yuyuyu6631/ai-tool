@@ -490,14 +490,14 @@
   .home-quick-dot,
   .home-preview-live,
   .home-preview-step-index {
-    color: var(--home-blue);
+    color: var(--home-gold-text);
   }
 
   .home-kicker {
-    border: 1px solid color-mix(in srgb, var(--home-blue) 34%, transparent);
-    background: color-mix(in srgb, var(--home-blue-soft) 82%, transparent);
-    color: var(--home-blue);
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--home-blue) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--home-gold) 34%, transparent);
+    background: color-mix(in srgb, var(--home-gold-soft) 82%, transparent);
+    color: var(--home-gold-text);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--home-gold) 12%, transparent);
   }
 
   .home-proof,
@@ -515,7 +515,7 @@
   }
 
   .home-search-form:focus-within {
-    border-color: color-mix(in srgb, var(--home-blue) 42%, var(--home-border));
+    border-color: color-mix(in srgb, var(--home-gold) 42%, var(--home-border));
     box-shadow: var(--home-search-shadow-focus);
   }
 
@@ -572,8 +572,8 @@
   }
 
   .home-entry-card--library {
-    border-color: color-mix(in srgb, var(--home-blue) 30%, var(--home-border));
-    background: color-mix(in srgb, var(--home-blue-soft) 68%, transparent);
+    border-color: color-mix(in srgb, var(--home-gold) 28%, var(--home-border));
+    background: color-mix(in srgb, var(--home-card) 74%, transparent);
   }
 
   .home-entry-eyebrow,
@@ -587,18 +587,18 @@
   }
 
   .home-quick-chip:hover {
-    border-color: color-mix(in srgb, var(--home-blue) 44%, var(--home-border));
-    background: var(--home-blue-soft);
-    color: var(--home-blue);
+    border-color: color-mix(in srgb, var(--home-gold) 44%, var(--home-border));
+    background: var(--home-gold-soft);
+    color: var(--home-gold-text);
   }
 
   .home-quick-chip:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--home-blue) 34%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--home-gold) 34%, transparent);
     outline-offset: 2px;
   }
 
   .home-quick-dot {
-    background: var(--home-blue);
+    background: var(--home-gold);
   }
 
   .home-preview {
@@ -787,7 +787,7 @@
   }
 
   .home-hero-spotlight {
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.58), transparent 66%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 66%);
   }
 
   .home-title {
@@ -1500,10 +1500,20 @@
     color: #111111;
   }
 
+  .dark .hero-brand-panel {
+    background:
+      radial-gradient(circle at 10% 20%, rgba(242, 197, 107, 0.16), transparent 30%),
+      radial-gradient(circle at 92% 8%, rgba(125, 162, 255, 0.10), transparent 34%),
+      rgba(17, 24, 39, 0.78);
+    border-color: rgba(242, 197, 107, 0.16);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.26);
+    color: var(--text);
+  }
+
   .hero-kicker {
-    border: 1px solid rgba(47, 117, 255, 0.28);
-    background: rgba(238, 244, 254, 0.86);
-    color: #2F75FF;
+    border: 1px solid var(--color-accent-border);
+    background: var(--accent-soft);
+    color: var(--color-accent);
   }
 
   .hero-kicker-accent {
@@ -1516,12 +1526,22 @@
     color: #4F4A42;
   }
 
+  .dark .hero-subtitle {
+    color: var(--text-muted);
+  }
+
   .hero-search-panel {
     background: rgba(255, 255, 255, 0.66);
     border: 1px solid rgba(45, 42, 36, 0.10);
     box-shadow: 0 16px 38px rgba(36, 31, 23, 0.08);
     backdrop-filter: blur(18px) saturate(118%);
     -webkit-backdrop-filter: blur(18px) saturate(118%);
+  }
+
+  .dark .hero-search-panel {
+    background: rgba(24, 33, 49, 0.74);
+    border-color: rgba(242, 197, 107, 0.14);
+    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.30);
   }
 
   .hero-search-input {
@@ -1537,6 +1557,16 @@
   .hero-search-input:focus {
     border-color: rgba(125, 162, 255, 0.54);
     box-shadow: 0 0 0 4px rgba(125, 162, 255, 0.12);
+  }
+
+  .dark .hero-search-input {
+    background: rgba(9, 13, 20, 0.72);
+    border-color: rgba(242, 197, 107, 0.14);
+    color: var(--text);
+  }
+
+  .dark .hero-search-input::placeholder {
+    color: var(--text-subtle);
   }
 
   .hero-search-button,
@@ -1588,6 +1618,24 @@
     color: var(--primary);
   }
 
+  .btn-token-accent {
+    background: var(--accent);
+    color: #1D1608;
+    border: 1px solid var(--color-accent-border);
+    box-shadow: 0 8px 20px color-mix(in srgb, var(--accent) 24%, transparent);
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .btn-token-accent:hover {
+    background: var(--color-accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 32%, transparent);
+  }
+
   .input-token {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -1614,6 +1662,36 @@
   .token-tag {
     background: var(--bg-subtle);
     color: var(--text-muted);
+  }
+
+  .token-tag--active {
+    background: var(--accent-soft);
+    color: var(--color-accent);
+    border: 1px solid var(--color-accent-border);
+  }
+
+  .task-chip {
+    display: inline-flex;
+    max-width: 100%;
+    align-items: center;
+    border-radius: 999px;
+    border: 1px solid var(--border-default);
+    background: var(--bg-surface-strong);
+    padding: 0.25rem 0.625rem;
+    font-size: 0.75rem;
+    line-height: 1.25rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease;
+  }
+
+  .group:hover .task-chip {
+    border-color: var(--color-accent-border);
+    background: var(--accent-soft);
+    color: var(--color-accent);
   }
 
   .badge-free,

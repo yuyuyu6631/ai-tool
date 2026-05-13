@@ -17,7 +17,7 @@ export default async function Page() {
 
   return (
     <div className="page-shell">
-      <Header currentPath="/scenarios" currentRoute="/scenarios" />
+      <Header currentPath="/scenarios" currentRoute="/scenarios" forceHomeHeader />
 
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">
@@ -72,7 +72,7 @@ export default async function Page() {
                 <p className="mt-2 text-sm leading-6 text-slate-600">任务场景用于快速缩小范围，完整工具库保留分类、价格和访问条件筛选。</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Link href={withPublicPath("/tools?page=2&page_size=24")} className="btn-primary rounded px-4 py-2.5 text-sm">
+                <Link href={withPublicPath("/tools?page=2&page_size=24")} className="btn-token-accent rounded px-4 py-2.5 text-sm">
                   下一页
                 </Link>
                 <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-secondary rounded px-4 py-2.5 text-sm">
@@ -101,7 +101,7 @@ export default async function Page() {
                 当前核心任务榜单已由前端兜底展示。你也可以提交常用工具，后续补进对应场景榜。
               </p>
               <div className="mt-5 flex flex-wrap justify-center gap-3">
-                <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-primary rounded px-5 py-3 text-sm">
+                <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-token-accent rounded px-5 py-3 text-sm">
                   去工具库
                 </Link>
                 <Link href={TOOL_SUBMISSION_URL} className="btn-secondary rounded px-5 py-3 text-sm">

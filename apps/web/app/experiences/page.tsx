@@ -15,7 +15,7 @@ function StatBadge({ icon: Icon, value }: { icon: typeof Eye; value: number }) {
 export default function Page() {
   return (
     <div className="page-shell">
-      <Header currentPath="/experiences" currentRoute="/experiences" />
+      <Header currentPath="/experiences" currentRoute="/experiences" forceHomeHeader />
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "经验社区" }]} />
@@ -33,14 +33,14 @@ export default function Page() {
                 </p>
               </div>
               <div className="hero-search-panel rounded-2xl p-5">
-                <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
+                <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-accent)]">
                   <Star className="h-4 w-4" />
                   发布经验
                 </div>
                 <p className="mt-3 text-sm leading-7 text-slate-600">
                   后续接入登录发布和审核流。当前先提供社区结构、内容样例和任务入口，避免页面空置。
                 </p>
-                <Link href={withPublicPath("/scenarios")} className="btn-token-primary mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold">
+                <Link href={withPublicPath("/scenarios")} className="btn-token-accent mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold">
                   先从任务场景进入
                 </Link>
               </div>
@@ -50,7 +50,7 @@ export default function Page() {
           <section className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {EXPERIENCE_CHANNELS.map((channel) => (
               <article key={channel.title} className="surface-card rounded-2xl p-5">
-                <p className="text-xs font-semibold text-blue-600">{channel.count} 条内容</p>
+                <p className="text-xs font-semibold text-[var(--color-accent)]">{channel.count} 条内容</p>
                 <h2 className="mt-3 text-lg font-semibold text-slate-950">{channel.title}</h2>
                 <p className="mt-2 text-sm leading-7 text-slate-600">{channel.description}</p>
               </article>
@@ -68,9 +68,9 @@ export default function Page() {
               {EXPERIENCE_POSTS.map((post) => (
                 <Link key={post.id} href={withPublicPath(`/experiences/${post.id}`)} className="surface-card block rounded-2xl p-5 transition hover:shadow-md">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{post.channel}</span>
+                    <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-1 text-xs font-semibold text-[var(--color-accent)]">{post.channel}</span>
                     <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">{post.scenario}</span>
-                    {post.isOfficial && <span className="inline-flex items-center gap-1 rounded-full bg-blue-600 px-2.5 py-1 text-xs font-semibold text-white"><Star className="h-3 w-3" />官方精选</span>}
+                    {post.isOfficial && <span className="inline-flex items-center gap-1 rounded-full bg-[var(--accent)] px-2.5 py-1 text-xs font-semibold text-[#1D1608]"><Star className="h-3 w-3" />官方精选</span>}
                   </div>
                   <h2 className="mt-3 text-xl font-semibold text-slate-950">{post.title}</h2>
                   <p className="mt-3 text-sm leading-7 text-slate-600">{post.summary}</p>
@@ -90,11 +90,11 @@ export default function Page() {
 
             <aside className="surface-card h-fit rounded-2xl p-5">
               <div className="flex items-center gap-2 text-sm font-semibold text-slate-950">
-                <Star className="h-4 w-4 text-blue-600" />
+                <Star className="h-4 w-4 text-[var(--color-accent)]" />
                 社区不是单独的论坛孤岛
               </div>
               <p className="mt-3 text-sm leading-7 text-slate-600">
-                每篇经验都要关联任务场景和工具，让用户能从"我要完成什么任务"一路走到"别人怎么做"和"我该试哪个工具"。
+                每篇经验都要关联任务场景和工具，让用户能从「我要完成什么任务」一路走到「别人怎么做」和「我该试哪个工具」。
               </p>
               <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-token-neutral mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
                 去工具库交叉验证

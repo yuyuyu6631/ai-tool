@@ -170,7 +170,7 @@ describe("ToolsPage", () => {
     render(<ToolsPage directory={imageDirectory} state={{ mode: "search", category: "ai-image", page: "1" }} />);
 
     expect(screen.getByText("分类：AI 图像")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: "AI 图像 324" })[0]).toHaveClass("bg-blue-50");
+    expect(screen.getAllByRole("link", { name: "AI 图像 324" })[0]).toHaveClass("bg-[var(--accent-soft)]");
   });
 
   it("clears the ai pending state after switching ai focus", () => {

@@ -7,7 +7,7 @@ import { mockProfiles } from "@/src/app/features/matches/mock-data";
 export default function MatchesPage() {
   return (
     <div className="page-shell">
-      <Header currentPath="/matches" currentRoute="/matches" />
+      <Header currentPath="/matches" currentRoute="/matches" forceHomeHeader />
 
       <main className="py-8 md:py-10">
         <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-4 sm:px-6 lg:px-8">

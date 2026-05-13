@@ -74,7 +74,7 @@ export default async function Page({ params }: ScenarioRouteProps) {
   return (
     <div className="page-shell">
       <CatalogScrollRestorer />
-      <Header currentPath={`/scenarios/${slug}`} currentRoute={`/scenarios/${slug}`} />
+      <Header currentPath={`/scenarios/${slug}`} currentRoute={`/scenarios/${slug}`} forceHomeHeader />
 
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">
@@ -115,7 +115,7 @@ export default async function Page({ params }: ScenarioRouteProps) {
             <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-sm font-semibold text-slate-900">快速入口</p>
               <div className="mt-4 space-y-2">
-                <Link href={toolSearchHref} className="btn-primary flex justify-center rounded px-4 py-2.5 text-sm">
+                <Link href={toolSearchHref} className="btn-token-accent flex justify-center rounded px-4 py-2.5 text-sm">
                   查看匹配工具
                 </Link>
                 <Link href={withPublicPath("/tools?page=2&page_size=24")} className="btn-secondary flex justify-center rounded px-4 py-2.5 text-sm">
@@ -154,7 +154,7 @@ export default async function Page({ params }: ScenarioRouteProps) {
                 <Link href={withPublicPath("/scenarios")} className="btn-secondary rounded px-4 py-2.5 text-sm">
                   返回任务场景
                 </Link>
-                <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-primary rounded px-4 py-2.5 text-sm">
+                <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-token-accent rounded px-4 py-2.5 text-sm">
                   全部工具库
                 </Link>
               </div>

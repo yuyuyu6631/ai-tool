@@ -21,7 +21,7 @@ export default async function Page({ searchParams }: SearchRouteProps) {
 
   return (
     <div className="page-shell">
-      <Header currentPath="/search" currentRoute={`/search${task ? `?task=${encodeURIComponent(task)}` : ""}`} />
+      <Header currentPath="/search" currentRoute={`/search${task ? `?task=${encodeURIComponent(task)}` : ""}`} forceHomeHeader />
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "任务场景" }]} />

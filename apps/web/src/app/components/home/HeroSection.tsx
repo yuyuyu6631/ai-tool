@@ -48,7 +48,7 @@ export default function HeroSection({
         <p className="home-kicker inline-flex rounded-full px-3 py-1 text-xs font-semibold motion-safe:animate-[agentReveal_380ms_ease-out_40ms_both]">
           给产品、运营、内容和开发的 AI 工具筛选台
         </p>
-        <h1 className="home-title mt-5 max-w-4xl text-[clamp(2.35rem,5vw,4.8rem)] font-semibold leading-[1.08] tracking-normal motion-safe:animate-[agentReveal_420ms_ease-out_60ms_both]">
+        <h1 className="home-title mt-5 max-w-4xl text-[clamp(2.35rem,5vw,4.8rem)] font-semibold leading-[1.08] tracking-normal text-balance motion-safe:animate-[agentReveal_420ms_ease-out_60ms_both]">
           {title}
         </h1>
 

@@ -22,7 +22,7 @@ export default async function FreeBenefitsPage({ currentPath }: FreeBenefitsPage
 
   return (
     <div className="page-shell">
-      <Header currentPath={currentPath} currentRoute={currentPath} />
+      <Header currentPath={currentPath} currentRoute={currentPath} forceHomeHeader />
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
           <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "免费福利" }]} />
@@ -41,8 +41,8 @@ export default async function FreeBenefitsPage({ currentPath }: FreeBenefitsPage
               </div>
               <div className="hero-search-panel rounded-2xl p-5">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-semibold text-blue-700">福利态势</p>
-                  <Radar className="h-5 w-5 text-blue-500" />
+                  <p className="text-sm font-semibold text-[var(--color-accent)]">福利态势</p>
+                  <Radar className="h-5 w-5 text-[var(--color-accent)]" />
                 </div>
                 <div className="mt-5 grid grid-cols-2 gap-3">
                   {[
@@ -102,7 +102,7 @@ export default async function FreeBenefitsPage({ currentPath }: FreeBenefitsPage
                 <p className="mt-3 text-sm leading-7 text-slate-600">
                   后续可接入厂商活动、私域领取、折扣码和专题页。当前版本先把福利心智和工具详情打通。
                 </p>
-                <Link href={withPublicPath("/tools?price=free&page=1&page_size=24")} className="btn-token-primary mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold">
+                <Link href={withPublicPath("/tools?price=free&page=1&page_size=24")} className="btn-token-accent mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold">
                   查看全部免费工具
                 </Link>
               </section>
