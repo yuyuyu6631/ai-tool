@@ -24,7 +24,7 @@ export default async function Page({ searchParams }: SearchRouteProps) {
       <Header currentPath="/search" currentRoute={`/search${task ? `?task=${encodeURIComponent(task)}` : ""}`} />
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1180px] px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "按任务找" }]} />
+          <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "任务场景" }]} />
 
           <section className="hero-brand-panel overflow-hidden rounded-[32px] p-6 md:p-8">
             <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">

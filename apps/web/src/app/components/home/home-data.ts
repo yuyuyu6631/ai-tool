@@ -1,21 +1,21 @@
 export const HOME_ENTRY_CARDS = [
   {
     href: "/scenarios",
-    title: "看场景榜单",
+    title: "看任务场景",
     lightBody: "按 PPT、写作、开发、数据分析这些真实任务看推荐",
     darkBody: "按真实任务看榜单，不用在同类工具里反复试错",
   },
   {
-    href: "/deals",
+    href: "/experiences",
+    title: "看经验社区",
+    lightBody: "真实用户分享的使用心得、避坑指南和工具组合方案",
+    darkBody: "看看别人怎么用、踩过什么坑、哪些组合更顺手",
+  },
+  {
+    href: "/benefits",
     title: "看免费福利",
     lightBody: "每天更新，哪些现在免费可用、哪些有坑，我们帮你盯着",
     darkBody: "哪些今天免费、哪些有额度、哪些国内能用，每天盯着给你更新",
-  },
-  {
-    href: "/tools?mode=search&page=1&page_size=24",
-    title: "逛工具库",
-    lightBody: "按你要做的事找，不用自己一个个试",
-    darkBody: "按你要做的事找工具，不用自己一个个踩坑",
   },
 ] as const;
 

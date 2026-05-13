@@ -108,11 +108,11 @@ describe("HomePage", () => {
     expect(screen.getAllByText(/说清楚要做什么/).length).toBeGreaterThan(0);
     expect(screen.getByText("给产品、运营、内容和开发的 AI 工具筛选台")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /找工具/ })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /看场景榜单/ })).toHaveAttribute("href", "/scenarios");
-    expect(screen.getByRole("link", { name: /看免费福利/ })).toHaveAttribute("href", "/deals");
-    expect(screen.getByRole("link", { name: /逛工具库/ })).toHaveAttribute("href", "/tools?mode=search&page=1&page_size=24");
+    expect(screen.getByRole("link", { name: /看任务场景/ })).toHaveAttribute("href", "/scenarios");
+    expect(screen.getByRole("link", { name: /看经验社区/ })).toHaveAttribute("href", "/experiences");
+    expect(screen.getByRole("link", { name: /看免费福利/ })).toHaveAttribute("href", "/benefits");
     expect(screen.getByText("描述任务")).toBeInTheDocument();
-    expect(screen.getAllByText("看场景榜单").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("看任务场景").length).toBeGreaterThan(0);
     expect(screen.queryByText("任务路线预览")).not.toBeInTheDocument();
     expect(screen.queryByText("LIVE")).not.toBeInTheDocument();
     expect(screen.queryByText("ChatGPT")).not.toBeInTheDocument();

@@ -20,10 +20,10 @@ describe("Header", () => {
 
     expect(screen.getByText("提交工具")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "首页" })).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "按任务找" })).toHaveAttribute("href", "/search");
-    expect(screen.getByRole("link", { name: "场景榜单" })).toHaveAttribute("href", "/scenarios");
-    expect(screen.getByRole("link", { name: "免费福利" })).toHaveAttribute("href", "/deals");
+    expect(screen.getByRole("link", { name: "任务场景" })).toHaveAttribute("href", "/scenarios");
     expect(screen.getByRole("link", { name: "工具库" })).toHaveAttribute("href", "/tools?mode=search&page=1&page_size=24");
+    expect(screen.getByRole("link", { name: "经验社区" })).toHaveAttribute("href", "/experiences");
+    expect(screen.getByRole("link", { name: "免费福利" })).toHaveAttribute("href", "/benefits");
     expect(screen.queryByText("搜索工具")).not.toBeInTheDocument();
     expect(screen.queryByText("Ctrl+G")).not.toBeInTheDocument();
   });

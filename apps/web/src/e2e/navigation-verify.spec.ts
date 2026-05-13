@@ -10,11 +10,11 @@ test.describe("Homepage-first navigation", () => {
     await page.waitForLoadState("networkidle");
 
     await expect(page).toHaveTitle(/星点评/);
-    await expect(page.getByRole("heading", { name: "按任务找到合适的 AI 工具" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "任务场景到合适的 AI 工具" })).toBeVisible();
     await expect(page.getByRole("button", { name: "找工具" })).toBeVisible();
     await expect(page.getByRole("link", { name: "PPT 初稿" })).toBeVisible();
     await expect(page.locator("header.site-header nav")).toBeVisible();
-    await expect(page.locator("header.site-header nav").getByRole("link", { name: "按任务找" })).toBeVisible();
+    await expect(page.locator("header.site-header nav").getByRole("link", { name: "任务场景" })).toBeVisible();
   });
 
   test("semantic search result and detail flow work from homepage", async ({ page }) => {

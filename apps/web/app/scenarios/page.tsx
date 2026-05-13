@@ -21,10 +21,10 @@ export default async function Page() {
 
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "场景榜单" }]} />
+          <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "任务场景" }]} />
 
           <section className="panel-base rounded-lg p-6 md:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">场景榜单</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">任务场景</p>
             <div className="mt-3 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">按真实任务看 AI 工具榜</h1>
@@ -69,7 +69,7 @@ export default async function Page() {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-slate-950">继续按条件筛工具</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">场景榜单用于快速缩小范围，完整工具库保留分类、价格和访问条件筛选。</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">任务场景用于快速缩小范围，完整工具库保留分类、价格和访问条件筛选。</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link href={withPublicPath("/tools?page=2&page_size=24")} className="btn-primary rounded px-4 py-2.5 text-sm">
@@ -96,7 +96,7 @@ export default async function Page() {
 
           {scenarios.length === 0 ? (
             <section className="panel-base mt-6 rounded-lg p-8 text-center">
-              <h2 className="text-xl font-semibold text-slate-900">场景榜单数据还在补充中</h2>
+              <h2 className="text-xl font-semibold text-slate-900">任务场景数据还在补充中</h2>
               <p className="mt-3 text-sm leading-7 text-slate-600">
                 当前核心任务榜单已由前端兜底展示。你也可以提交常用工具，后续补进对应场景榜。
               </p>

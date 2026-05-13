@@ -3,9 +3,10 @@ import { TOOL_SUBMISSION_URL } from "../lib/catalog-utils";
 import { withPublicPath } from "../lib/public-path";
 
 const footerLinks = [
-  { href: withPublicPath("/tools?view=hot&mode=search&page=1&page_size=24"), label: "热门榜" },
-  { href: withPublicPath("/tools?price=free&page=1&page_size=24"), label: "免费额度" },
   { href: withPublicPath("/scenarios"), label: "任务场景" },
+  { href: withPublicPath("/experiences"), label: "经验社区" },
+  { href: withPublicPath("/benefits"), label: "免费福利" },
+  { href: withPublicPath("/tools?mode=search&page=1&page_size=24"), label: "工具库" },
   { href: TOOL_SUBMISSION_URL, label: "提交工具" },
 ];
 
