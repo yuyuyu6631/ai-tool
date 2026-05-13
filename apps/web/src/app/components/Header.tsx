@@ -27,7 +27,7 @@ export default function Header({ currentPath, currentRoute = currentPath, forceH
           <PlatformLogo />
           <div className="hidden min-w-0 sm:block">
             <p className="home-header-brand-title text-sm font-semibold tracking-tight">星点评</p>
-            <p className="home-header-brand-subtitle text-[11px]">AI 工具发现</p>
+            <p className="home-header-brand-subtitle text-[11px]">AI 经验社区</p>
           </div>
         </a>
 

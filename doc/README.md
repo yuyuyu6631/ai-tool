@@ -13,6 +13,8 @@
 - 当前前端基于 `Next.js 15 + React 19 + Tailwind CSS 4`
 - 当前后端基于 `FastAPI + SQLAlchemy 2 + Alembic + MySQL`
 - 前端已接入真实 API，默认开发接口为 `http://localhost:8000`
+- 最新产品 PRD 以 [prd.md](./prd.md) 为准，定位为“面向互联网公司工作场景的 AI 工具使用经验社区”
+- 当前产品主轴是“任务场景 + AI 工具库 + 经验社区 + 免费 AI 福利 + 星启生态工具入口”
 - 当前公开页面包含首页、工具目录页、工具详情、场景页、对比页、匹配页、免费福利页、按任务搜索页、场景详情页、引导页和认证页
 - `/rankings` 是兼容重定向入口，当前承接到首页
 - `/guide` 是兼容入口，重定向到 `/tools?mode=ai`
@@ -53,8 +55,9 @@
 | [14-MVP-改动记录与预期.md](./14-MVP-改动记录与预期.md) | 本轮改动记录与下一阶段预期 |
 | [15-布局改版工作台.md](./15-布局改版工作台.md) | 本轮布局大改的统一口径、范围和落点 |
 | [16-公网部署与上线排障经验.md](./16-公网部署与上线排障经验.md) | 公网部署与 Railway 上线排障经验 |
-| [17-未来方向.md](./17-未来方向.md) | 下一阶段战略方向与规划路径 |
+| [17-未来方向.md](./17-未来方向.md) | 按最新 PRD 收敛后的下一阶段方向与规划路径 |
 | [18-生产部署运行手册.md](./18-生产部署运行手册.md) | 当前有效的生产登录、启动、验收与排障手册 |
+| [20-最新PRD上线落地计划.md](./20-最新PRD上线落地计划.md) | 将最新 PRD 拆成研发、运营、测试和迭代上线计划 |
 | [architecture/mvp-architecture.md](./architecture/mvp-architecture.md) | 面向 MVP 的简化架构说明 |
 | [prd.md](./prd.md) | 产品需求文档 |
 | [phase1-embedding-search-acceptance.md](./phase1-embedding-search-acceptance.md) | Phase1 向量搜索验收记录 |

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-05-07T09:32:16.365Z",
+  "generatedAt": "2026-05-13T10:05:18.865Z",
   "summary": {
-    "frontendRouteCount": 20,
+    "frontendRouteCount": 24,
     "apiEndpointCount": 42,
     "dataModelCount": 19,
-    "testFileCount": 55
+    "testFileCount": 57
   },
   "frontendRoutes": [
     {
@@ -62,6 +62,12 @@
       "source": "apps/web/app/auth/page.tsx"
     },
     {
+      "route": "/benefits",
+      "kind": "page",
+      "redirectTarget": null,
+      "source": "apps/web/app/benefits/page.tsx"
+    },
+    {
       "route": "/compare/[comparisonSlug]",
       "kind": "redirect",
       "redirectTarget": "[dynamic redirect]",
@@ -72,6 +78,18 @@
       "kind": "page",
       "redirectTarget": null,
       "source": "apps/web/app/deals/page.tsx"
+    },
+    {
+      "route": "/experiences",
+      "kind": "page",
+      "redirectTarget": null,
+      "source": "apps/web/app/experiences/page.tsx"
+    },
+    {
+      "route": "/experiences/[id]",
+      "kind": "page",
+      "redirectTarget": null,
+      "source": "apps/web/app/experiences/[id]/page.tsx"
     },
     {
       "route": "/guide",
@@ -114,6 +132,12 @@
       "kind": "page",
       "redirectTarget": null,
       "source": "apps/web/app/search/page.tsx"
+    },
+    {
+      "route": "/tasks",
+      "kind": "page",
+      "redirectTarget": null,
+      "source": "apps/web/app/tasks/page.tsx"
     },
     {
       "route": "/tools",
@@ -738,7 +762,7 @@
   "tests": [
     {
       "name": "Web unit/integration",
-      "count": 27,
+      "count": 29,
       "files": [
         "apps/web/src/app/components/__tests__/BackToResultsLink.test.tsx",
         "apps/web/src/app/components/__tests__/CommandPalette.test.tsx",
@@ -759,8 +783,10 @@
         "apps/web/src/app/lib/__tests__/catalog-api.test.ts",
         "apps/web/src/app/lib/__tests__/catalog-navigation.test.ts",
         "apps/web/src/app/lib/__tests__/compare-utils.test.ts",
+        "apps/web/src/app/lib/__tests__/experience-community.test.ts",
         "apps/web/src/app/lib/__tests__/floating-chat-visibility.test.ts",
         "apps/web/src/app/lib/__tests__/home-page-data.test.ts",
+        "apps/web/src/app/lib/__tests__/recent-tools.test.ts",
         "apps/web/src/app/lib/__tests__/tool-display.test.ts",
         "apps/web/src/app/pages/__tests__/HomePage.agent.test.tsx",
         "apps/web/src/app/pages/__tests__/HomePage.test.tsx",

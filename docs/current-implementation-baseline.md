@@ -5,11 +5,11 @@
 
 ## 摘要
 
-- 生成时间：2026-05-07T09:32:16.365Z
-- 前端路由：20
+- 生成时间：2026-05-13T10:05:18.865Z
+- 前端路由：24
 - API 端点：42
 - 数据模型：19
-- 测试文件：55
+- 测试文件：57
 
 ## 前端路由
 
@@ -24,8 +24,11 @@
 | /admin/tools/[id] | page | - | apps/web/app/admin/tools/[id]/page.tsx |
 | /admin/tools/new | page | - | apps/web/app/admin/tools/new/page.tsx |
 | /auth | page | - | apps/web/app/auth/page.tsx |
+| /benefits | page | - | apps/web/app/benefits/page.tsx |
 | /compare/[comparisonSlug] | redirect | [dynamic redirect] | apps/web/app/compare/[comparisonSlug]/page.tsx |
 | /deals | page | - | apps/web/app/deals/page.tsx |
+| /experiences | page | - | apps/web/app/experiences/page.tsx |
+| /experiences/[id] | page | - | apps/web/app/experiences/[id]/page.tsx |
 | /guide | redirect | [dynamic redirect] | apps/web/app/guide/page.tsx |
 | /matches | page | - | apps/web/app/matches/page.tsx |
 | /rankings | redirect | [dynamic redirect] | apps/web/app/rankings/page.tsx |
@@ -33,6 +36,7 @@
 | /scenarios/[slug] | page | - | apps/web/app/scenarios/[slug]/page.tsx |
 | /scene/[slug] | page | - | apps/web/app/scene/[slug]/page.tsx |
 | /search | page | - | apps/web/app/search/page.tsx |
+| /tasks | page | - | apps/web/app/tasks/page.tsx |
 | /tools | page | - | apps/web/app/tools/page.tsx |
 | /tools/[slug] | page | - | apps/web/app/tools/[slug]/page.tsx |
 
@@ -111,7 +115,7 @@
 
 ### Web unit/integration
 
-- 数量：27
+- 数量：29
 - `apps/web/src/app/components/__tests__/BackToResultsLink.test.tsx`
 - `apps/web/src/app/components/__tests__/CommandPalette.test.tsx`
 - `apps/web/src/app/components/__tests__/CompareToolsGrid.test.tsx`
@@ -131,8 +135,10 @@
 - `apps/web/src/app/lib/__tests__/catalog-api.test.ts`
 - `apps/web/src/app/lib/__tests__/catalog-navigation.test.ts`
 - `apps/web/src/app/lib/__tests__/compare-utils.test.ts`
+- `apps/web/src/app/lib/__tests__/experience-community.test.ts`
 - `apps/web/src/app/lib/__tests__/floating-chat-visibility.test.ts`
 - `apps/web/src/app/lib/__tests__/home-page-data.test.ts`
+- `apps/web/src/app/lib/__tests__/recent-tools.test.ts`
 - `apps/web/src/app/lib/__tests__/tool-display.test.ts`
 - `apps/web/src/app/pages/__tests__/HomePage.agent.test.tsx`
 - `apps/web/src/app/pages/__tests__/HomePage.test.tsx`

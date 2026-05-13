@@ -106,13 +106,14 @@ describe("HomePage", () => {
     expect(screen.getByTestId("hero-particle-scene")).toBeInTheDocument();
     expect(screen.getByText("按任务找到合适的 AI 工具")).toBeInTheDocument();
     expect(screen.getAllByText(/说清楚要做什么/).length).toBeGreaterThan(0);
-    expect(screen.getByText("给产品、运营、内容和开发的 AI 工具筛选台")).toBeInTheDocument();
+    expect(screen.getByText("给互联网团队的 AI 工具使用经验社区")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /找工具/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /看任务场景/ })).toHaveAttribute("href", "/scenarios");
     expect(screen.getByRole("link", { name: /看经验社区/ })).toHaveAttribute("href", "/experiences");
     expect(screen.getByRole("link", { name: /看免费福利/ })).toHaveAttribute("href", "/benefits");
     expect(screen.getByText("描述任务")).toBeInTheDocument();
-    expect(screen.getAllByText("看任务场景").length).toBeGreaterThan(0);
+    expect(screen.getByText("看经验与工具")).toBeInTheDocument();
+    expect(screen.getByText("领福利或收藏")).toBeInTheDocument();
     expect(screen.queryByText("任务路线预览")).not.toBeInTheDocument();
     expect(screen.queryByText("LIVE")).not.toBeInTheDocument();
     expect(screen.queryByText("ChatGPT")).not.toBeInTheDocument();
