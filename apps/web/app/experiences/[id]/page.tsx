@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Bookmark, Eye, Heart, MessageCircle, Star, User } from "lucide-react";
@@ -48,7 +49,11 @@ export default async function Page({ params }: PageProps) {
               </div>
             </div>
             <div className="relative min-h-72 overflow-hidden">
-              <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url("${withPublicPath(post.coverImageUrl || "/brand/logo.png")}")` }} />
+              <img
+                src={withPublicPath(post.coverImageUrl || "/brand/logo.png")}
+                alt=""
+                className="community-media-image"
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 to-transparent" />
             </div>
           </section>
@@ -65,7 +70,9 @@ export default async function Page({ params }: PageProps) {
                   <h2 className="text-lg font-semibold text-slate-950">图片参考</h2>
                   <div className="mt-4 grid gap-3 sm:grid-cols-2">
                     {post.imageUrls.map((url) => (
-                      <div key={url} className="h-48 rounded-2xl border border-[var(--border-default)] bg-cover bg-center" style={{ backgroundImage: `url("${withPublicPath(url)}")` }} />
+                      <div key={url} className="community-gallery-frame">
+                        <img src={withPublicPath(url)} alt="" className="community-media-image" loading="lazy" />
+                      </div>
                     ))}
                   </div>
                 </article>
@@ -81,7 +88,11 @@ export default async function Page({ params }: PageProps) {
                         <span className="text-xs text-slate-500">{formatDate(comment.createdAt)}</span>
                       </div>
                       <p className="mt-2 text-sm leading-7 text-slate-600">{comment.body}</p>
-                      {comment.imageUrl ? <div className="mt-3 h-32 rounded-xl bg-cover bg-center" style={{ backgroundImage: `url("${withPublicPath(comment.imageUrl)}")` }} /> : null}
+                      {comment.imageUrl ? (
+                        <div className="community-comment-image">
+                          <img src={withPublicPath(comment.imageUrl)} alt="" className="community-media-image" loading="lazy" />
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                   {comments.length === 0 ? <p className="text-sm text-slate-500">还没有讨论，登录后补充你的经验。</p> : null}
@@ -107,7 +118,7 @@ export default async function Page({ params }: PageProps) {
                 </div>
               </div>
               <div className="surface-card rounded-2xl p-5">
-                <Link href={withPublicPath("/experiences")} className="btn-token-accent flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
+                <Link href="/experiences" className="btn-token-accent flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
                   <ArrowLeft className="h-4 w-4" />
                   去经验社区
                 </Link>

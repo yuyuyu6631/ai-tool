@@ -813,48 +813,6 @@
     animation-delay: -5.5s;
   }
 
-  .home-route-node {
-    position: absolute;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    border: 1px solid var(--home-border-strong);
-    background: var(--home-motion-node);
-    color: var(--home-text);
-    box-shadow: var(--home-card-shadow);
-    padding: 0.45rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    animation: homeNodePulse 4.8s ease-in-out infinite;
-  }
-
-  .home-route-node::before {
-    content: "";
-    width: 0.45rem;
-    height: 0.45rem;
-    border-radius: 9999px;
-    background: var(--home-gold);
-    box-shadow: 0 0 18px color-mix(in srgb, var(--home-gold) 56%, transparent);
-  }
-
-  .home-route-node--task {
-    left: 14%;
-    top: 22%;
-  }
-
-  .home-route-node--tools {
-    right: 15%;
-    top: 22%;
-    animation-delay: -1.4s;
-  }
-
-  .home-route-node--proof {
-    right: 24%;
-    bottom: 24%;
-    animation-delay: -2.7s;
-  }
-
   .home-hero-spotlight {
     background: radial-gradient(circle, rgba(255, 255, 255, 0.35), transparent 66%);
   }
@@ -1004,31 +962,14 @@
     }
   }
 
-  @keyframes homeNodePulse {
-    0%,
-    100% {
-      transform: translateY(0);
-      opacity: 0.72;
-    }
-    50% {
-      transform: translateY(-7px);
-      opacity: 1;
-    }
-  }
-
   @media (max-width: 767px) {
     .home-motion-grid {
       height: 58%;
     }
-
-    .home-route-node {
-      display: none;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .home-broadcast-beam,
-    .home-route-node {
+    .home-broadcast-beam {
       animation: none;
     }
   }
@@ -1877,6 +1818,41 @@
     background:
       linear-gradient(135deg, color-mix(in srgb, var(--accent) 22%, transparent), transparent),
       color-mix(in srgb, var(--primary) 9%, var(--surface-raised));
+  }
+
+  .community-media-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    padding: 1.15rem;
+  }
+
+  .community-gallery-frame,
+  .community-comment-image {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background:
+      radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--surface-raised) 82%, transparent), transparent 68%),
+      var(--bg-subtle);
+  }
+
+  .community-gallery-frame {
+    height: 14rem;
+    border-radius: 1rem;
+  }
+
+  .community-comment-image {
+    height: 9rem;
+    border-radius: 0.875rem;
+  }
+
+  .community-gallery-frame .community-media-image,
+  .community-comment-image .community-media-image {
+    padding: 0.75rem;
   }
 
   .community-detail-hero {

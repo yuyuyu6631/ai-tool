@@ -35,6 +35,7 @@ describe("experiences page", () => {
     expect(screen.getAllByRole("link", { name: /MCP 社区/ }).some((link) => link.getAttribute("href") === "/experiences?board=mcp-community")).toBe(true);
     expect(screen.getByText(/MCP 社区周报/)).toBeInTheDocument();
     expect(screen.getByText(/图片帖/)).toBeInTheDocument();
+    expect(document.querySelectorAll(".community-post-cover img")).toHaveLength(4);
   });
 
   it("keeps the selected channel active through query state", async () => {

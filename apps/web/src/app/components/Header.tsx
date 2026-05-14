@@ -14,7 +14,7 @@ interface HeaderProps {
 }
 
 export default function Header({ currentPath, currentRoute = currentPath, forceHomeHeader }: HeaderProps) {
-  const authHref = withPublicPath(currentPath === "/auth" ? "/auth" : `/auth?next=${encodeURIComponent(withPublicPath(currentRoute))}`);
+  const authHref = currentPath === "/auth" ? "/auth" : `/auth?next=${encodeURIComponent(currentRoute)}`;
   const isHome = currentPath === "/" || forceHomeHeader;
 
   return (

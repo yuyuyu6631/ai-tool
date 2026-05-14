@@ -67,7 +67,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
               ) : (
                 <Link
                   key={item.href}
-                  href={withPublicPath(item.href)}
+                  href={item.href}
                   className={`rounded-2xl px-3 py-2.5 text-sm font-medium transition ${
                     isHeaderNavActive(currentPath, item.href)
                       ? "home-nav-active"
@@ -88,7 +88,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
             </Link>
             {mounted && currentUser?.role === "admin" ? (
               <Link
-                href={withPublicPath("/admin")}
+                href="/admin"
                 className="home-nav-link rounded-2xl px-3 py-2.5 text-sm font-medium transition"
                 onClick={() => setOpen(false)}
               >

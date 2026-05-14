@@ -1,5 +1,6 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import { useState, type FormEvent } from "react";
 import { Send } from "lucide-react";
 import { useAuth } from "./auth/AuthProvider";
@@ -83,7 +84,11 @@ export default function ExperienceCommentForm({ postSlug }: ExperienceCommentFor
             <article key={comment.id} className="rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface)] p-4">
               <p className="text-sm font-semibold text-slate-950">{comment.author.username}</p>
               <p className="mt-2 text-sm leading-6 text-slate-600">{comment.body}</p>
-              {comment.imageUrl ? <div className="mt-3 h-28 rounded-xl bg-cover bg-center" style={{ backgroundImage: `url("${withPublicPath(comment.imageUrl)}")` }} /> : null}
+              {comment.imageUrl ? (
+                <div className="community-comment-image mt-3">
+                  <img src={withPublicPath(comment.imageUrl)} alt="" className="community-media-image" loading="lazy" />
+                </div>
+              ) : null}
             </article>
           ))}
         </div>

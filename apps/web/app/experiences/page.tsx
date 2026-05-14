@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { ArrowRight, Bookmark, Eye, Heart, MessageCircle, MessageSquareText, Radio, Sparkles, Star, type LucideIcon } from "lucide-react";
 import Header from "@/src/app/components/Header";
@@ -23,7 +24,7 @@ function buildCommunityHref(next: { channel?: string | null; board?: string | nu
   if (next.channel) params.set("channel", next.channel);
   if (next.board) params.set("board", next.board);
   const query = params.toString();
-  return withPublicPath(`/experiences${query ? `?${query}` : ""}`);
+  return `/experiences${query ? `?${query}` : ""}`;
 }
 
 function formatDate(value?: string | null) {
@@ -37,9 +38,14 @@ function StatBadge({ icon: Icon, value }: { icon: LucideIcon; value: number }) {
 
 function ExperienceCard({ post }: { post: ExperiencePostItem }) {
   return (
-    <Link href={withPublicPath(`/experiences/${post.slug}`)} className="community-post-card group grid overflow-hidden rounded-[22px] transition md:grid-cols-[216px_minmax(0,1fr)]">
+    <Link href={`/experiences/${post.slug}`} className="community-post-card group grid overflow-hidden rounded-[22px] transition md:grid-cols-[216px_minmax(0,1fr)]">
       <div className="community-post-cover relative min-h-44 overflow-hidden md:min-h-full">
-        <div className="absolute inset-0 bg-cover bg-center transition duration-500 group-hover:scale-105" style={{ backgroundImage: `url("${withPublicPath(post.coverImageUrl || "/brand/logo.png")}")` }} />
+        <img
+          src={withPublicPath(post.coverImageUrl || "/brand/logo.png")}
+          alt=""
+          className="community-media-image transition duration-500 group-hover:scale-[1.03]"
+          loading="lazy"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent" />
         <span className="absolute left-3 top-3 rounded-full bg-white/88 px-2.5 py-1 text-xs font-semibold text-slate-950">{post.boardTitle}</span>
       </div>
@@ -112,7 +118,7 @@ export default async function Page({ searchParams }: PageProps) {
                 <p className="mt-3 text-sm leading-7 text-slate-600">
                   {hotPost ? `热帖：${hotPost.title}` : "社区正在补充新的任务经验。"}
                 </p>
-                <Link href={withPublicPath("/auth?next=/experiences")} className="btn-token-accent mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold">
+                <Link href="/auth?next=/experiences" className="btn-token-accent mt-4 inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-sm font-semibold">
                   登录后发布经验
                 </Link>
               </div>
@@ -155,7 +161,7 @@ export default async function Page({ searchParams }: PageProps) {
               <p className="mt-3 text-sm leading-7 text-slate-600">
                 每篇经验都关联板块、任务和工具，支持图文展示与评论交流。先看别人怎么做，再决定自己该试哪个工具。
               </p>
-              <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-token-neutral mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
+              <Link href="/tools?mode=search&page=1&page_size=24" className="btn-token-neutral mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold">
                 去工具库交叉验证
                 <ArrowRight className="h-4 w-4" />
               </Link>
