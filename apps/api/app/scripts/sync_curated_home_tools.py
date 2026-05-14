@@ -15,7 +15,6 @@ from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.models import Tool, ToolReview
 
-
 DEFAULT_PAYLOAD_PATH = Path(__file__).resolve().parents[1] / "data" / "homepage_curated_tools.json"
 CACHE_PATTERNS = ("catalog:*", "ai-search:*")
 EDITOR_REVIEW_TITLE_PREFIX = "运营核验："
@@ -74,7 +73,11 @@ def upsert_editor_review(session: Session, tool: Tool, item: dict[str, Any]) -> 
     expected_audience = str(payload.get("audience") or "").strip()
     expected_task = str(payload.get("task") or "").strip()
     editor_reviews = list(
-        session.scalars(select(ToolReview).where(ToolReview.tool_id == tool.id, ToolReview.source_type == "editor"))
+        session.scalars(
+            select(ToolReview).where(
+                ToolReview.tool_id == tool.id, ToolReview.source_type == "editor"
+            )
+        )
     )
     reviews = [
         review
@@ -103,7 +106,9 @@ def upsert_editor_review(session: Session, tool: Tool, item: dict[str, Any]) -> 
 
 def clear_catalog_cache() -> int:
     try:
-        client = Redis.from_url(settings.redis_url, decode_responses=True, socket_connect_timeout=1, socket_timeout=1)
+        client = Redis.from_url(
+            settings.redis_url, decode_responses=True, socket_connect_timeout=1, socket_timeout=1
+        )
         keys: list[str] = []
         for pattern in CACHE_PATTERNS:
             keys.extend(client.scan_iter(match=pattern))
@@ -148,7 +153,9 @@ def sync_payload(payload_path: Path, *, dry_run: bool) -> dict[str, int]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Sync curated homepage tool metadata into the database.")
+    parser = argparse.ArgumentParser(
+        description="Sync curated homepage tool metadata into the database."
+    )
     parser.add_argument("--payload", type=Path, default=DEFAULT_PAYLOAD_PATH)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
