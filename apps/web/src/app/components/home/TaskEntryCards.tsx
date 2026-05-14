@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ArrowRight, BadgeCheck, Gift, MessageSquareText } from "lucide-react";
-import { withPublicPath } from "../../lib/public-path";
 import { HOME_ENTRY_CARDS } from "./home-data";
 
 export default function TaskEntryCards() {
@@ -14,7 +13,7 @@ export default function TaskEntryCards() {
         return (
           <Link
             key={entry.href}
-            href={withPublicPath(entry.href)}
+            href={entry.href}
             prefetch
             className={`home-entry-card group relative overflow-hidden rounded-[8px] border p-5 text-left backdrop-blur-xl transition duration-150 hover:-translate-y-0.5 ${tone}`}
           >
