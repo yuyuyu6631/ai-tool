@@ -322,7 +322,7 @@ def list_experience_posts(
     total = db.scalar(count_query) or 0
     posts = db.scalars(
         query.options(selectinload(ExperiencePost.board), selectinload(ExperiencePost.author))
-        .order_by(ExperiencePost.published_at.desc().nullslast(), ExperiencePost.id.desc())
+        .order_by(ExperiencePost.published_at.is_(None), ExperiencePost.published_at.desc(), ExperiencePost.id.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
     ).all()
