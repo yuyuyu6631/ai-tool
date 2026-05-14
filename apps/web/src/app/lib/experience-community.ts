@@ -99,7 +99,7 @@ export const EXPERIENCE_POSTS: ExperiencePostItem[] = [
     scenario: "团队工具栈",
     tools: ["Hammers", "Notion AI", "Cursor"],
     roles: ["研发管理", "运营"],
-    coverImageUrl: "/logos/Cosine Genie.png",
+    coverImageUrl: "/logos/_Cosine Genie.png",
     imageUrls: ["/logos/Flowin.png"],
     author: { username: "效率工具主理人" },
     status: "published",

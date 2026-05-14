@@ -121,7 +121,7 @@ DEFAULT_POSTS = [
         "scenario": "团队工具栈",
         "tools": ["Hammers", "Notion AI", "Cursor"],
         "roles": ["研发管理", "运营"],
-        "cover": "/logos/Cosine Genie.png",
+        "cover": "/logos/_Cosine Genie.png",
         "images": ["/logos/Flowin.png"],
         "author": "效率工具主理人",
         "views": 167,
