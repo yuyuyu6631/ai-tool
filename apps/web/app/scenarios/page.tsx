@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BarChart3, Sparkles } from "lucide-react";
 import Header from "@/src/app/components/Header";
 import Footer from "@/src/app/components/Footer";
 import Breadcrumbs from "@/src/app/components/Breadcrumbs";
@@ -10,10 +10,15 @@ import { withPublicPath } from "@/src/app/lib/public-path";
 
 export const dynamic = "force-dynamic";
 
+function compactKeyword(text: string) {
+  return text.replace(/榜 TOP5|工具榜 TOP5|用什么AI/g, "").trim();
+}
+
 export default async function Page() {
   const scenarios = await fetchScenarios().catch(() => []);
   const scenarioCounts = new Map(scenarios.map((scenario) => [scenario.slug, scenario.toolCount]));
-  const otherScenarios = scenarios.filter((scenario) => !FEATURED_SCENARIOS.some((featured) => featured.slug === scenario.slug));
+  const visibleFeaturedScenarios = FEATURED_SCENARIOS.slice(0, 3);
+  const otherScenarios = scenarios.filter((scenario) => !visibleFeaturedScenarios.some((featured) => featured.slug === scenario.slug));
 
   return (
     <div className="page-shell">
@@ -39,27 +44,37 @@ export default async function Page() {
           </section>
 
           <section className="mt-6 grid gap-4 lg:grid-cols-3">
-            {FEATURED_SCENARIOS.map((scenario) => (
+            {visibleFeaturedScenarios.map((scenario, index) => (
               <Link
                 key={scenario.slug}
                 href={withPublicPath(`/scenarios/${scenario.slug}`)}
-                className="group card-base rounded-lg p-5 transition hover:-translate-y-0.5 hover:shadow-lg"
+                className="scenario-showcase-card group relative overflow-hidden rounded-2xl p-5"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold text-slate-500">{scenarioCounts.get(scenario.slug) || "推荐"} 个候选工具</p>
-                    <h2 className="mt-3 text-xl font-semibold text-slate-950">{scenario.title}</h2>
-                  </div>
-                  <ArrowRight className="mt-1 h-4 w-4 text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900" />
+                <div className="flex items-start justify-between gap-4">
+                  <div className="scenario-art-number">{String(index + 1).padStart(2, "0")}</div>
+                  <ArrowRight className="mt-1 h-4 w-4 transition group-hover:translate-x-0.5" />
                 </div>
-                <p className="mt-3 text-sm leading-7 text-slate-600">{scenario.description}</p>
-                <div className="mt-4 space-y-2">
-                  {scenario.workflow.slice(0, 2).map((step, index) => (
-                    <div key={step.title} className="rounded border border-slate-200 bg-slate-50 px-3 py-2">
-                      <p className="text-xs font-semibold text-slate-500">步骤 {index + 1}</p>
-                      <p className="mt-1 text-sm font-medium text-slate-900">{step.title}</p>
+                <p className="mt-5 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  {scenarioCounts.get(scenario.slug) || "推荐"} 个候选工具
+                </p>
+                <h2 className="mt-3 text-xl font-semibold tracking-tight">{scenario.title}</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {scenario.targetAudience.slice(0, 3).map((audience) => (
+                    <span key={audience} className="scenario-data-tag">{audience}</span>
+                  ))}
+                </div>
+                <div className="scenario-matrix mt-5">
+                  {scenario.workflow.slice(0, 3).map((step, stepIndex) => (
+                    <div key={step.title} className="scenario-matrix-row">
+                      <span>{stepIndex + 1}</span>
+                      <b>{step.title}</b>
                     </div>
                   ))}
+                </div>
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  <span className="scenario-signal-chip">收益：提速</span>
+                  <span className="scenario-signal-chip">风险：可核验</span>
                 </div>
               </Link>
             ))}
@@ -85,10 +100,26 @@ export default async function Page() {
           {otherScenarios.length > 0 ? (
             <section className="mt-6 grid gap-4 md:grid-cols-2">
               {otherScenarios.map((scenario) => (
-                <Link key={scenario.slug} href={withPublicPath(`/scenarios/${scenario.slug}`)} className="card-base rounded-lg p-5">
-                  <p className="text-xs font-semibold text-slate-500">{scenario.toolCount} 个工具</p>
-                  <h2 className="mt-3 text-xl font-semibold text-slate-950">{scenario.title}</h2>
-                  <p className="mt-3 text-sm leading-7 text-slate-600">{scenario.description}</p>
+                <Link key={scenario.slug} href={withPublicPath(`/scenarios/${scenario.slug}`)} className="scenario-compact-card rounded-2xl p-5">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold">
+                      <BarChart3 className="h-3.5 w-3.5" />
+                      {scenario.toolCount} 个工具
+                    </span>
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                  <h2 className="mt-3 text-xl font-semibold">{scenario.title}</h2>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="scenario-data-tag">{compactKeyword(scenario.title)}</span>
+                    <span className="scenario-data-tag">候选对比</span>
+                    <span className="scenario-data-tag">避坑先看</span>
+                  </div>
+                  <div className="scenario-mini-table mt-4">
+                    <span>任务关键词</span>
+                    <b>{scenario.title}</b>
+                    <span>查看路径</span>
+                    <b>工具榜 + 经验</b>
+                  </div>
                 </Link>
               ))}
             </section>

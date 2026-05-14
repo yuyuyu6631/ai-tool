@@ -52,16 +52,11 @@ export default function HeroSection({
           {title}
         </h1>
 
-        <p className="home-subtitle mt-4 max-w-3xl text-base leading-8 motion-safe:animate-[agentReveal_460ms_ease-out_120ms_both] md:text-lg">
-          {subtitle ? (
-            subtitle
-          ) : (
-            <>
-              <span className="dark:hidden">说清楚要做什么，先看任务场景、真实经验、适用工具和免费福利，少花时间试错。</span>
-              <span className="hidden dark:inline">说清楚要做什么，先看任务场景、真实经验、适用工具和免费福利。</span>
-            </>
-          )}
-        </p>
+        {subtitle ? (
+          <p className="home-subtitle mt-4 max-w-3xl text-base leading-8 motion-safe:animate-[agentReveal_460ms_ease-out_120ms_both] md:text-lg">
+            {subtitle}
+          </p>
+        ) : null}
 
         <SearchSection
           query={query}

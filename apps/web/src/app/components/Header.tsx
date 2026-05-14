@@ -18,7 +18,7 @@ export default function Header({ currentPath, currentRoute = currentPath, forceH
   const isHome = currentPath === "/" || forceHomeHeader;
 
   return (
-    <header className={`site-header sticky top-0 z-50 ${isHome ? "site-header--home-light" : "site-header--dark"}`}>
+    <header className="site-header site-header--home-light sticky top-0 z-50">
       <div className="mx-auto flex h-[68px] w-full max-w-[1440px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <a
           href={withPublicPath("/")}
@@ -39,12 +39,8 @@ export default function Header({ currentPath, currentRoute = currentPath, forceH
               aria-current={isHeaderNavActive(currentRoute, item.href) ? "page" : undefined}
               className={`rounded-full px-3 py-2 text-sm font-medium transition ${
                 isHeaderNavActive(currentRoute, item.href)
-                  ? isHome
-                    ? "home-nav-active"
-                    : "bg-slate-950 text-white"
-                  : isHome
-                    ? "home-nav-link"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                  ? "home-nav-active"
+                  : "home-nav-link"
               }`}
             >
               {item.label}
@@ -64,7 +60,7 @@ export default function Header({ currentPath, currentRoute = currentPath, forceH
           <HeaderAuthControls authHref={authHref} />
         </div>
 
-        <HeaderMobileMenu currentPath={currentPath} authHref={authHref} />
+        <HeaderMobileMenu currentPath={isHome ? currentRoute : currentPath} authHref={authHref} />
       </div>
     </header>
   );

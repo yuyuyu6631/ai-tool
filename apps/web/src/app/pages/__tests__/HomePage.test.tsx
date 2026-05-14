@@ -105,7 +105,7 @@ describe("HomePage", () => {
     expect(screen.queryByText("Footer")).not.toBeInTheDocument();
     expect(screen.getByTestId("hero-particle-scene")).toBeInTheDocument();
     expect(screen.getByText("按任务找到合适的 AI 工具")).toBeInTheDocument();
-    expect(screen.getAllByText(/说清楚要做什么/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/说清楚要做什么，先看任务场景/)).not.toBeInTheDocument();
     expect(screen.getByText("给互联网团队的 AI 工具使用经验社区")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /找工具/ })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /看任务场景/ })).toHaveAttribute("href", "/scenarios");

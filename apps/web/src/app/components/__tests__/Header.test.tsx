@@ -28,9 +28,11 @@ describe("Header", () => {
     expect(screen.queryByText("Ctrl+G")).not.toBeInTheDocument();
   });
 
-  it("uses the dark header treatment away from the homepage", () => {
-    const { container } = render(<Header currentPath="/tools" currentRoute="/tools" />);
+  it("uses the same header treatment away from the homepage", () => {
+    const { container } = render(<Header currentPath="/tools" currentRoute="/tools?mode=search&page=1&page_size=24" />);
 
-    expect(container.querySelector("header")).toHaveClass("site-header--dark");
+    expect(container.querySelector("header")).toHaveClass("site-header--home-light");
+    expect(container.querySelector("header")).not.toHaveClass("site-header--dark");
+    expect(screen.getByRole("link", { name: "工具库" })).toHaveClass("home-nav-active");
   });
 });

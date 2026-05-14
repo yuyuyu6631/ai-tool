@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 import AppProviders from "@/src/app/components/AppProviders";
 import RouteFeedback from "@/src/app/components/RouteFeedback";
-import FloatingChatBot from "@/src/app/components/chat/FloatingChatBot";
 import { withPublicPath } from "@/src/app/lib/public-path";
 import "./globals.css";
 
@@ -73,9 +72,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </Suspense>
             {children}
           </AppProviders>
-          <Suspense fallback={null}>
-            <FloatingChatBot />
-          </Suspense>
         </body>
       </html>
     </ViewTransitions>

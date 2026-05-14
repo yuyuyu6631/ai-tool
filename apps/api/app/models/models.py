@@ -192,6 +192,66 @@ class MatchPlanTool(Base):
     tool: Mapped["Tool"] = relationship()
 
 
+class ExperienceBoard(Base, TimestampMixin):
+    __tablename__ = "experience_boards"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(String(512), default="")
+    accent: Mapped[str] = mapped_column(String(32), default="blue")
+    sort_order: Mapped[int] = mapped_column(Integer, default=0, index=True)
+
+    posts: Mapped[list["ExperiencePost"]] = relationship(back_populates="board")
+
+
+class ExperiencePost(Base, TimestampMixin):
+    __tablename__ = "experience_posts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    summary: Mapped[str] = mapped_column(String(512), default="")
+    body: Mapped[str] = mapped_column(Text, default="")
+    channel: Mapped[str] = mapped_column(String(80), index=True)
+    board_id: Mapped[int | None] = mapped_column(ForeignKey("experience_boards.id", ondelete="SET NULL"), nullable=True, index=True)
+    scenario: Mapped[str] = mapped_column(String(160), default="", index=True)
+    tools_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    roles_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    cover_image_url: Mapped[str] = mapped_column(String(512), default="")
+    image_urls_json: Mapped[list[str] | None] = mapped_column(JSON, nullable=True)
+    author_name: Mapped[str] = mapped_column(String(120), default="")
+    author_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    status: Mapped[str] = mapped_column(String(32), default="published", index=True)
+    view_count: Mapped[int] = mapped_column(Integer, default=0)
+    like_count: Mapped[int] = mapped_column(Integer, default=0)
+    favorite_count: Mapped[int] = mapped_column(Integer, default=0)
+    comment_count: Mapped[int] = mapped_column(Integer, default=0)
+    is_official: Mapped[bool] = mapped_column(Boolean, default=False)
+    published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+
+    board: Mapped["ExperienceBoard | None"] = relationship(back_populates="posts")
+    author: Mapped["User | None"] = relationship()
+    comments: Mapped[list["ExperienceComment"]] = relationship(back_populates="post", cascade="all, delete-orphan")
+
+
+class ExperienceComment(Base, TimestampMixin):
+    __tablename__ = "experience_comments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    post_id: Mapped[int] = mapped_column(ForeignKey("experience_posts.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("experience_comments.id", ondelete="SET NULL"), nullable=True, index=True)
+    body: Mapped[str] = mapped_column(Text, default="")
+    image_url: Mapped[str] = mapped_column(String(512), default="")
+    status: Mapped[str] = mapped_column(String(32), default="published", index=True)
+    like_count: Mapped[int] = mapped_column(Integer, default=0)
+
+    post: Mapped["ExperiencePost"] = relationship(back_populates="comments", foreign_keys=[post_id])
+    user: Mapped["User | None"] = relationship(foreign_keys=[user_id])
+    parent: Mapped["ExperienceComment | None"] = relationship(remote_side=[id])
+
+
 class Source(Base, TimestampMixin):
     __tablename__ = "sources"
 

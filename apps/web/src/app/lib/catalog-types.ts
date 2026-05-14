@@ -245,6 +245,70 @@ export interface ToolReviewsResponse {
   userReviews?: ToolReviewItem[];
 }
 
+export interface ExperienceBoardItem {
+  id: number;
+  slug: string;
+  title: string;
+  description: string;
+  accent: string;
+  sortOrder: number;
+  postCount: number;
+}
+
+export interface ExperienceAuthor {
+  id?: number | null;
+  username: string;
+}
+
+export interface ExperiencePostItem {
+  id: number;
+  slug: string;
+  title: string;
+  summary: string;
+  body: string;
+  channel: string;
+  boardSlug: string;
+  boardTitle: string;
+  scenario: string;
+  tools: string[];
+  roles: string[];
+  coverImageUrl: string;
+  imageUrls: string[];
+  author: ExperienceAuthor;
+  status: string;
+  viewCount: number;
+  likeCount: number;
+  favoriteCount: number;
+  commentCount: number;
+  isOfficial: boolean;
+  publishedAt?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ExperienceListResponse {
+  items: ExperiencePostItem[];
+  boards: ExperienceBoardItem[];
+  channels: string[];
+  total: number;
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+}
+
+export interface ExperienceCommentItem {
+  id: number;
+  postId: number;
+  parentId?: number | null;
+  body: string;
+  imageUrl: string;
+  status: string;
+  likeCount: number;
+  author: ExperienceAuthor;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface CategorySummary {
   slug: string;
   name: string;

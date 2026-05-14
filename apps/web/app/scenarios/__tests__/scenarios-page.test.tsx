@@ -90,7 +90,11 @@ describe("scenario pages", () => {
     expect(screen.getByRole("link", { name: /PPT 制作榜 TOP5/ })).toHaveAttribute("href", "/scenarios/make-ppt");
     expect(screen.getByRole("link", { name: /AI 写作工具榜 TOP5/ })).toHaveAttribute("href", "/scenarios/paper-format");
     expect(screen.getByRole("link", { name: /数据分析工具榜 TOP5/ })).toHaveAttribute("href", "/scenarios/excel-analysis");
-    expect(screen.getByRole("link", { name: /开发工具榜 TOP5/ })).toHaveAttribute("href", "/scenarios/coding-debug");
+    expect(screen.queryByRole("link", { name: /开发工具榜 TOP5/ })).not.toBeInTheDocument();
+    expect(screen.getByText("01")).toBeInTheDocument();
+    expect(screen.getAllByText("收益：提速").length).toBeGreaterThan(0);
+    expect(screen.getByText("梳理汇报目标")).toBeInTheDocument();
+    expect(document.querySelectorAll(".scenario-showcase-card")).toHaveLength(3);
     expect(screen.getByRole("link", { name: /下一页/ })).toHaveAttribute("href", "/tools?page=2&page_size=24");
   });
 
