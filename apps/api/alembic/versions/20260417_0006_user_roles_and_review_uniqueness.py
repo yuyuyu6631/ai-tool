@@ -15,10 +15,13 @@ def upgrade() -> None:
         "users", sa.Column("role", sa.String(length=32), nullable=False, server_default="user")
     )
     op.create_index("ix_users_role", "users", ["role"], unique=False)
-    op.create_unique_constraint("uq_tool_review_user", "tool_reviews", ["tool_id", "user_id"])
+
+    with op.batch_alter_table("tool_reviews") as batch_op:
+        batch_op.create_unique_constraint("uq_tool_review_user", ["tool_id", "user_id"])
 
 
 def downgrade() -> None:
-    op.drop_constraint("uq_tool_review_user", "tool_reviews", type_="unique")
+    with op.batch_alter_table("tool_reviews") as batch_op:
+        batch_op.drop_constraint("uq_tool_review_user", type_="unique")
     op.drop_index("ix_users_role", table_name="users")
     op.drop_column("users", "role")

@@ -28,8 +28,15 @@ def upgrade() -> None:
         END
         """
     )
-    op.alter_column("tools", "logo_status", server_default=None)
-    op.alter_column("tools", "logo_source", server_default=None)
+
+    connection = op.get_bind()
+    if connection.dialect.name != "sqlite":
+        op.alter_column("tools", "logo_status", server_default=None)
+        op.alter_column("tools", "logo_source", server_default=None)
+    else:
+        with op.batch_alter_table("tools") as batch_op:
+            batch_op.alter_column("logo_status", server_default=None)
+            batch_op.alter_column("logo_source", server_default=None)
 
 
 def downgrade() -> None:

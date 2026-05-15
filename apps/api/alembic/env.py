@@ -4,7 +4,8 @@ from sqlalchemy import engine_from_config, pool
 
 from alembic import context
 from app.core.config import settings
-from app.db.base import Base
+from app.db.session import Base
+from app.models import models # ensure models are imported to be registered with Base
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
