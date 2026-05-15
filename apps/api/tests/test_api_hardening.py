@@ -7,7 +7,6 @@ os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 from app.main import create_app
 from app.services import auth_service
 
-
 app = create_app()
 app.dependency_overrides[auth_service.current_admin_dependency] = lambda: None
 client = TestClient(app)

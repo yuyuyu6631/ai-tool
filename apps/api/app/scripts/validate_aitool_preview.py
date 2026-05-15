@@ -10,7 +10,6 @@ from typing import Any
 from urllib import error, request
 from urllib.parse import urlparse
 
-
 _SCRIPT_PATH = Path(__file__).resolve()
 _WORKSPACE_ROOT = _SCRIPT_PATH.parents[min(4, len(_SCRIPT_PATH.parents) - 1)]
 
@@ -130,12 +129,17 @@ def collect_required_field_issues(payload_tool: dict[str, Any]) -> list[str]:
         issues.append("invalid_url")
     if not payload_tool.get("summary"):
         issues.append("missing_summary")
-    if not payload_tool.get("category_name") or payload_tool.get("category_name") == "uncategorized":
+    if (
+        not payload_tool.get("category_name")
+        or payload_tool.get("category_name") == "uncategorized"
+    ):
         issues.append("missing_category")
     return issues
 
 
-def collect_warnings(tool_row: dict[str, str], payload_tool: dict[str, Any], url_result: dict[str, Any]) -> list[str]:
+def collect_warnings(
+    tool_row: dict[str, str], payload_tool: dict[str, Any], url_result: dict[str, Any]
+) -> list[str]:
     warnings: list[str] = []
     import_meta = payload_tool.get("import_meta", {})
     if tool_row.get("logo_status") != "exact_match":
@@ -173,8 +177,12 @@ def build_stats(items: list[dict[str, Any]], total_rows: int) -> dict[str, int]:
         "importReadyRows": sum(1 for item in items if item["importReady"]),
         "urlReachableRows": sum(1 for item in items if item["urlReachable"]),
         "urlRestrictedRows": sum(1 for item in items if item["urlCheckStatus"] == "restricted"),
-        "urlErrorRows": sum(1 for item in items if item["urlCheckStatus"] in {"error", "invalid", "missing"}),
-        "highRiskLogoRows": sum(1 for item in items if item["logoRiskLevel"] in {"high", "critical"}),
+        "urlErrorRows": sum(
+            1 for item in items if item["urlCheckStatus"] in {"error", "invalid", "missing"}
+        ),
+        "highRiskLogoRows": sum(
+            1 for item in items if item["logoRiskLevel"] in {"high", "critical"}
+        ),
         "missingRequiredFieldRows": sum(1 for item in items if item["requiredFieldIssues"]),
     }
 
@@ -189,7 +197,9 @@ def build_report(
     tools = payload.get("tools", [])
     items: list[dict[str, Any]] = []
 
-    for row_number, (tool_row, payload_tool) in enumerate(zip(tool_logo_rows[:limit], tools[:limit]), start=2):
+    for row_number, (tool_row, payload_tool) in enumerate(
+        zip(tool_logo_rows[:limit], tools[:limit]), start=2
+    ):
         required_field_issues = collect_required_field_issues(payload_tool)
         url_result = check_url(str(payload_tool.get("official_url", "")), timeout=timeout)
         warnings = collect_warnings(tool_row, payload_tool, url_result)
@@ -218,7 +228,9 @@ def build_report(
                 "logoRef": tool_row.get("logo_ref", ""),
                 "logoStatus": tool_row.get("logo_status", "missing"),
                 "logoRiskLevel": logo_risk_level,
-                "logoRiskReasons": [item for item in str(tool_row.get("logo_risk_reasons", "")).split("|") if item],
+                "logoRiskReasons": [
+                    item for item in str(tool_row.get("logo_risk_reasons", "")).split("|") if item
+                ],
                 "developer": payload_tool.get("import_meta", {}).get("developer", ""),
                 "country": payload_tool.get("import_meta", {}).get("country", ""),
                 "city": payload_tool.get("import_meta", {}).get("city", ""),
@@ -227,7 +239,9 @@ def build_report(
                 "vpnRequired": payload_tool.get("import_meta", {}).get("vpn_required", ""),
                 "detailPage": payload_tool.get("import_meta", {}).get("detail_page", ""),
                 "parentRecord": payload_tool.get("import_meta", {}).get("parent_record", ""),
-                "homepageScreenshot": payload_tool.get("import_meta", {}).get("homepage_screenshot", ""),
+                "homepageScreenshot": payload_tool.get("import_meta", {}).get(
+                    "homepage_screenshot", ""
+                ),
                 "requiredFieldIssues": sorted(set(required_field_issues)),
                 "warnings": sorted(set(warnings)),
                 "importReady": import_ready,
@@ -236,7 +250,9 @@ def build_report(
 
     sheets = asset_summary.get("sheets", [])
     primary_sheet = sheets[0] if sheets else {}
-    total_rows = int(asset_summary.get("tool_logo_summary", {}).get("tool_rows", len(tool_logo_rows)))
+    total_rows = int(
+        asset_summary.get("tool_logo_summary", {}).get("tool_rows", len(tool_logo_rows))
+    )
 
     return {
         "generatedAt": datetime.now(timezone.utc).isoformat(),

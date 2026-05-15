@@ -24,7 +24,9 @@ def ensure_category(session: Session, payload: dict) -> Category:
     if row is None:
         row = session.scalar(select(Category).where(Category.name == payload["name"]))
     if row is None:
-        row = Category(slug=payload["slug"], name=payload["name"], description=payload.get("description") or "")
+        row = Category(
+            slug=payload["slug"], name=payload["name"], description=payload.get("description") or ""
+        )
         session.add(row)
         session.flush()
         return row
@@ -145,13 +147,21 @@ def sync_payload(payload_path: Path) -> dict[str, int]:
                 tool.best_for_json = item.get("best_for_json")
                 tool.deal_summary = item.get("deal_summary") or ""
                 tool.media_items_json = item.get("media_items_json")
-                tool.created_on = parse_date(item.get("created_on")) or tool.created_on or date.today()
+                tool.created_on = (
+                    parse_date(item.get("created_on")) or tool.created_on or date.today()
+                )
                 tool.last_verified_at = parse_date(item.get("last_verified_at")) or date.today()
 
             session.flush()
-            session.query(ToolCategory).filter(ToolCategory.tool_id == tool.id).delete(synchronize_session=False)
-            session.query(ToolTag).filter(ToolTag.tool_id == tool.id).delete(synchronize_session=False)
-            session.query(Source).filter(Source.tool_id == tool.id).delete(synchronize_session=False)
+            session.query(ToolCategory).filter(ToolCategory.tool_id == tool.id).delete(
+                synchronize_session=False
+            )
+            session.query(ToolTag).filter(ToolTag.tool_id == tool.id).delete(
+                synchronize_session=False
+            )
+            session.query(Source).filter(Source.tool_id == tool.id).delete(
+                synchronize_session=False
+            )
 
             category = categories_by_name.get(item["category_name"])
             if category is None:
@@ -190,7 +200,9 @@ def sync_payload(payload_path: Path) -> dict[str, int]:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Sync local snapshot payload into the current database.")
+    parser = argparse.ArgumentParser(
+        description="Sync local snapshot payload into the current database."
+    )
     parser.add_argument("--payload", type=Path, required=True)
     args = parser.parse_args()
     result = sync_payload(args.payload.resolve())

@@ -9,7 +9,6 @@ from redis.exceptions import RedisError
 
 from app.core.config import settings
 
-
 # Global connection pool - created once at app startup
 _redis_pool: ConnectionPool | None = None
 _redis_client: Redis | None = None
@@ -61,7 +60,9 @@ def get_redis_client() -> Redis | None:
     return _redis_client
 
 
-def build_recommendation_cache_key(query: str, scenario: str | None, tags: list[str], candidates: list[str]) -> str:
+def build_recommendation_cache_key(
+    query: str, scenario: str | None, tags: list[str], candidates: list[str]
+) -> str:
     payload = json.dumps(
         {
             "query": query,

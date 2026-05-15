@@ -17,7 +17,6 @@ from app.schemas.admin import (
 from app.schemas.tool import ToolDetail
 from app.services import admin_service, auth_service, match_plan_service
 
-
 router = APIRouter(prefix="/admin", dependencies=[Depends(auth_service.current_admin_dependency)])
 
 
@@ -108,4 +107,6 @@ def preview_match_plan(
     payload: AdminMatchPlanPreviewRequest | None = None,
     db: Session = Depends(get_db),
 ):
-    return match_plan_service.preview_match_plan(db, plan_id, payload or AdminMatchPlanPreviewRequest())
+    return match_plan_service.preview_match_plan(
+        db, plan_id, payload or AdminMatchPlanPreviewRequest()
+    )

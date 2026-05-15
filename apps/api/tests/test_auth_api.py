@@ -14,7 +14,7 @@ os.environ.setdefault("SESSION_COOKIE_NAME", "xingdianping_session")
 os.environ.setdefault("COOKIE_SECURE", "false")
 
 import app.db.session as session_mod  # noqa: E402
-from app.db.session import Base, get_db  # noqa: E402
+from app.db.session import Base  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import models  # noqa: E402, F401
 from app.models.models import User, UserSession  # noqa: E402
@@ -65,7 +65,9 @@ def _has_error_for_field(detail: object, field: str) -> bool:
     if isinstance(detail, dict):
         return field in detail
     if isinstance(detail, list):
-        return any(item.get("loc", [None])[-1] == field for item in detail if isinstance(item, dict))
+        return any(
+            item.get("loc", [None])[-1] == field for item in detail if isinstance(item, dict)
+        )
     return False
 
 
@@ -90,7 +92,9 @@ def _register(client: TestClient, **overrides):
     return client.post("/api/auth/register", json=_register_payload(**overrides))
 
 
-def _login(client: TestClient, identifier: str = "demo-user", password: str = "password123", **headers):
+def _login(
+    client: TestClient, identifier: str = "demo-user", password: str = "password123", **headers
+):
     return client.post(
         "/api/auth/login",
         json={"identifier": identifier, "password": password},
@@ -123,7 +127,10 @@ def test_register_creates_user_and_session(client: TestClient):
         sessions = db.scalars(select(UserSession).where(UserSession.user_id == user.id)).all()
         assert len(sessions) == 1
         assert sessions[0].revoked_at is None
-        assert sessions[0].session_token_hash == hashlib.sha256(session_cookie.encode("utf-8")).hexdigest()
+        assert (
+            sessions[0].session_token_hash
+            == hashlib.sha256(session_cookie.encode("utf-8")).hexdigest()
+        )
 
 
 def test_register_rejects_duplicate_username(client: TestClient):
@@ -160,7 +167,9 @@ def test_register_rejects_duplicate_email(client: TestClient):
         ({"agreed": False}, "agreed"),
     ],
 )
-def test_register_validation_errors_cover_required_auth_fields(client: TestClient, overrides: dict, field: str):
+def test_register_validation_errors_cover_required_auth_fields(
+    client: TestClient, overrides: dict, field: str
+):
     response = _register(client, **overrides)
 
     assert response.status_code == 422
@@ -169,7 +178,9 @@ def test_register_validation_errors_cover_required_auth_fields(client: TestClien
 
 def test_register_rejects_password_longer_than_128_chars(client: TestClient):
     too_long_password = "p" * 129
-    response = _register(client, username="long-pass-user", email="long-pass@example.com", password=too_long_password)
+    response = _register(
+        client, username="long-pass-user", email="long-pass@example.com", password=too_long_password
+    )
 
     assert response.status_code == 422
 
@@ -271,8 +282,12 @@ def test_login_rejects_inactive_user(client: TestClient):
 
 
 def test_login_parameter_validation_is_enforced(client: TestClient):
-    short_identifier = client.post("/api/auth/login", json={"identifier": "a", "password": "password123"})
-    blank_password = client.post("/api/auth/login", json={"identifier": "demo-user", "password": ""})
+    short_identifier = client.post(
+        "/api/auth/login", json={"identifier": "a", "password": "password123"}
+    )
+    blank_password = client.post(
+        "/api/auth/login", json={"identifier": "demo-user", "password": ""}
+    )
 
     assert short_identifier.status_code == 422
     assert blank_password.status_code == 422
@@ -287,7 +302,9 @@ def test_login_revokes_previous_active_sessions(client: TestClient):
 
     with _db_session() as db:
         user = db.scalar(select(User).where(User.username == "demo-user"))
-        sessions = db.scalars(select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.id.asc())).all()
+        sessions = db.scalars(
+            select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.id.asc())
+        ).all()
         assert len(sessions) >= 2
         assert sessions[-1].revoked_at is None
         assert all(session.revoked_at is not None for session in sessions[:-1])
@@ -330,7 +347,9 @@ def test_logout_revokes_session_and_future_me_is_unauthorized(client: TestClient
 
     logout_response = client.post("/api/auth/logout")
     assert logout_response.status_code == 204
-    assert logout_response.headers["set-cookie"].startswith(f"{auth_service.settings.session_cookie_name}=")
+    assert logout_response.headers["set-cookie"].startswith(
+        f"{auth_service.settings.session_cookie_name}="
+    )
 
     me_response = client.get("/api/auth/me")
     assert me_response.status_code == 401
@@ -359,7 +378,11 @@ def test_expired_session_is_not_usable(client: TestClient):
     session_token = login_response.cookies.get(auth_service.settings.session_cookie_name)
 
     with _db_session() as db:
-        session = db.scalar(select(UserSession).where(UserSession.session_token_hash.is_not(None)).order_by(UserSession.id.desc()))
+        session = db.scalar(
+            select(UserSession)
+            .where(UserSession.session_token_hash.is_not(None))
+            .order_by(UserSession.id.desc())
+        )
         session.expires_at = datetime.now(UTC) - timedelta(minutes=1)
         db.commit()
 
@@ -375,7 +398,11 @@ def test_revoked_session_is_not_usable(client: TestClient):
     session_token = login_response.cookies.get(auth_service.settings.session_cookie_name)
 
     with _db_session() as db:
-        session = db.scalar(select(UserSession).where(UserSession.session_token_hash.is_not(None)).order_by(UserSession.id.desc()))
+        session = db.scalar(
+            select(UserSession)
+            .where(UserSession.session_token_hash.is_not(None))
+            .order_by(UserSession.id.desc())
+        )
         session.revoked_at = datetime.now(UTC)
         db.commit()
 
@@ -476,7 +503,9 @@ def test_login_records_user_agent_and_forwarded_ip(client: TestClient):
     with _db_session() as db:
         user = db.scalar(select(User).where(User.username == "demo-user"))
         session = db.scalar(
-            select(UserSession).where(UserSession.user_id == user.id).order_by(UserSession.id.desc())
+            select(UserSession)
+            .where(UserSession.user_id == user.id)
+            .order_by(UserSession.id.desc())
         )
         assert session.user_agent == "pytest-login-agent"
         assert session.ip_address == "198.51.100.10"
@@ -488,11 +517,15 @@ def test_deleting_user_cascades_sessions(client: TestClient):
 
     with _db_session() as db:
         user = db.scalar(select(User).where(User.username == "cascade-user"))
-        session_count = db.scalar(select(func.count()).select_from(UserSession).where(UserSession.user_id == user.id))
+        session_count = db.scalar(
+            select(func.count()).select_from(UserSession).where(UserSession.user_id == user.id)
+        )
         assert session_count == 1
 
         db.delete(user)
         db.commit()
 
-        remaining_sessions = db.scalar(select(func.count()).select_from(UserSession).where(UserSession.user_id == user.id))
+        remaining_sessions = db.scalar(
+            select(func.count()).select_from(UserSession).where(UserSession.user_id == user.id)
+        )
         assert remaining_sessions == 0

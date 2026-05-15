@@ -8,8 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.db.session import Base
 from app.models.models import Category, Tool, ToolCategory
 from app.schemas.catalog import SearchMeta
-from app.services import catalog_service
-from app.services import meilisearch_service
+from app.services import catalog_service, meilisearch_service
 from app.services.meilisearch_service import MeiliSearchResult
 
 
@@ -236,4 +235,7 @@ def test_meilisearch_category_filter_accepts_legacy_image_slug():
         price_range_slug=None,
     )
 
-    assert filters == ['status = "published"', '(categorySlug = "ai-image" OR categorySlug = "ai-图像")']
+    assert filters == [
+        'status = "published"',
+        '(categorySlug = "ai-image" OR categorySlug = "ai-图像")',
+    ]

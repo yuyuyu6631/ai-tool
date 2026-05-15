@@ -26,7 +26,11 @@ def build_report() -> dict[str, object]:
 
         if tool.logo_path and normalized != tool.logo_path:
             invalid_paths.append(
-                {"slug": tool.slug, "storedPath": str(tool.logo_path), "normalizedPath": str(normalized)}
+                {
+                    "slug": tool.slug,
+                    "storedPath": str(tool.logo_path),
+                    "normalizedPath": str(normalized),
+                }
             )
 
         if status == "invalid":
@@ -58,7 +62,9 @@ def build_report() -> dict[str, object]:
         "invalidCount": status_counter["invalid"],
         "missingFiles": missing_files,
         "invalidPaths": invalid_paths,
-        "oversizedFiles": sorted(oversized_files, key=lambda item: int(item["sizeBytes"]), reverse=True),
+        "oversizedFiles": sorted(
+            oversized_files, key=lambda item: int(item["sizeBytes"]), reverse=True
+        ),
     }
 
 

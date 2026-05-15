@@ -2,14 +2,27 @@ from __future__ import annotations
 
 from datetime import UTC, date, datetime
 
-from sqlalchemy import JSON, Boolean, Date, DateTime, Float, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    Date,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.session import Base
 
 
 class TimestampMixin:
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(UTC)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(UTC),
@@ -54,16 +67,24 @@ class Tool(Base, TimestampMixin):
     created_on: Mapped[date] = mapped_column(Date, index=True)
     last_verified_at: Mapped[date] = mapped_column(Date)
 
-    tags: Mapped[list["ToolTag"]] = relationship(back_populates="tool", cascade="all, delete-orphan")
-    categories: Mapped[list["ToolCategory"]] = relationship(back_populates="tool", cascade="all, delete-orphan")
-    reviews: Mapped[list["ToolReview"]] = relationship(back_populates="tool", cascade="all, delete-orphan")
+    tags: Mapped[list["ToolTag"]] = relationship(
+        back_populates="tool", cascade="all, delete-orphan"
+    )
+    categories: Mapped[list["ToolCategory"]] = relationship(
+        back_populates="tool", cascade="all, delete-orphan"
+    )
+    reviews: Mapped[list["ToolReview"]] = relationship(
+        back_populates="tool", cascade="all, delete-orphan"
+    )
 
 
 class ToolEmbedding(Base, TimestampMixin):
     __tablename__ = "tool_embeddings"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    tool_id: Mapped[int] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), unique=True, index=True)
+    tool_id: Mapped[int] = mapped_column(
+        ForeignKey("tools.id", ondelete="CASCADE"), unique=True, index=True
+    )
     provider: Mapped[str] = mapped_column(String(32), default="stub")
     model: Mapped[str] = mapped_column(String(120), default="semantic-hash-v1")
     content_hash: Mapped[str] = mapped_column(String(64), index=True)
@@ -79,7 +100,9 @@ class Category(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(120), unique=True)
     description: Mapped[str] = mapped_column(String(255))
 
-    tools: Mapped[list["ToolCategory"]] = relationship(back_populates="category", cascade="all, delete-orphan")
+    tools: Mapped[list["ToolCategory"]] = relationship(
+        back_populates="category", cascade="all, delete-orphan"
+    )
 
 
 class ToolCategory(Base):
@@ -88,7 +111,9 @@ class ToolCategory(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     tool_id: Mapped[int] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), index=True)
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id", ondelete="CASCADE"), index=True)
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), index=True
+    )
 
     tool: Mapped["Tool"] = relationship(back_populates="categories")
     category: Mapped["Category"] = relationship(back_populates="tools")
@@ -100,7 +125,9 @@ class Tag(Base, TimestampMixin):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(80), unique=True)
 
-    tools: Mapped[list["ToolTag"]] = relationship(back_populates="tag", cascade="all, delete-orphan")
+    tools: Mapped[list["ToolTag"]] = relationship(
+        back_populates="tag", cascade="all, delete-orphan"
+    )
 
 
 class ToolTag(Base):
@@ -131,7 +158,9 @@ class ScenarioTool(Base):
     __table_args__ = (UniqueConstraint("scenario_id", "tool_id", name="uq_scenario_tool"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    scenario_id: Mapped[int] = mapped_column(ForeignKey("scenarios.id", ondelete="CASCADE"), index=True)
+    scenario_id: Mapped[int] = mapped_column(
+        ForeignKey("scenarios.id", ondelete="CASCADE"), index=True
+    )
     tool_id: Mapped[int] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), index=True)
     is_primary: Mapped[bool] = mapped_column(Boolean, default=True)
 
@@ -152,7 +181,9 @@ class RankingItem(Base):
     __table_args__ = (UniqueConstraint("ranking_id", "tool_id", name="uq_ranking_tool"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    ranking_id: Mapped[int] = mapped_column(ForeignKey("rankings.id", ondelete="CASCADE"), index=True)
+    ranking_id: Mapped[int] = mapped_column(
+        ForeignKey("rankings.id", ondelete="CASCADE"), index=True
+    )
     tool_id: Mapped[int] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), index=True)
     rank_order: Mapped[int] = mapped_column(Integer)
     reason: Mapped[str] = mapped_column(String(255))
@@ -174,7 +205,9 @@ class MatchPlan(Base, TimestampMixin):
     sort_order: Mapped[int] = mapped_column(Integer, default=0, index=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    tools: Mapped[list["MatchPlanTool"]] = relationship(back_populates="plan", cascade="all, delete-orphan")
+    tools: Mapped[list["MatchPlanTool"]] = relationship(
+        back_populates="plan", cascade="all, delete-orphan"
+    )
 
 
 class MatchPlanTool(Base):
@@ -182,7 +215,9 @@ class MatchPlanTool(Base):
     __table_args__ = (UniqueConstraint("match_plan_id", "tool_id", name="uq_match_plan_tool"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    match_plan_id: Mapped[int] = mapped_column(ForeignKey("match_plans.id", ondelete="CASCADE"), index=True)
+    match_plan_id: Mapped[int] = mapped_column(
+        ForeignKey("match_plans.id", ondelete="CASCADE"), index=True
+    )
     tool_id: Mapped[int] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), index=True)
     reason: Mapped[str] = mapped_column(String(255), default="")
     sort_order: Mapped[int] = mapped_column(Integer, default=0)
@@ -196,7 +231,9 @@ class Source(Base, TimestampMixin):
     __tablename__ = "sources"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    tool_id: Mapped[int | None] = mapped_column(ForeignKey("tools.id", ondelete="SET NULL"), nullable=True, index=True)
+    tool_id: Mapped[int | None] = mapped_column(
+        ForeignKey("tools.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     source_type: Mapped[str] = mapped_column(String(64))
     source_url: Mapped[str] = mapped_column(String(255))
 
@@ -216,7 +253,9 @@ class CrawlSnapshot(Base, TimestampMixin):
     __tablename__ = "crawl_snapshots"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    crawl_job_id: Mapped[int | None] = mapped_column(ForeignKey("crawl_jobs.id", ondelete="SET NULL"), nullable=True, index=True)
+    crawl_job_id: Mapped[int | None] = mapped_column(
+        ForeignKey("crawl_jobs.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     tool_slug: Mapped[str] = mapped_column(String(120))
     raw_payload: Mapped[str] = mapped_column(Text)
     parsed_payload: Mapped[str] = mapped_column(Text)
@@ -238,7 +277,9 @@ class ToolReview(Base, TimestampMixin):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     tool_id: Mapped[int] = mapped_column(ForeignKey("tools.id", ondelete="CASCADE"), index=True)
-    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     source_type: Mapped[str] = mapped_column(String(16), default="editor", index=True)
     status: Mapped[str] = mapped_column(String(32), default="draft", index=True)
     rating: Mapped[float | None] = mapped_column(Float, nullable=True)
@@ -266,7 +307,9 @@ class User(Base, TimestampMixin):
     agreed_terms_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    sessions: Mapped[list["UserSession"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    sessions: Mapped[list["UserSession"]] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
+    )
 
 
 class UserSession(Base, TimestampMixin):

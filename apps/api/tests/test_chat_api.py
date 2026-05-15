@@ -9,7 +9,6 @@ os.environ.setdefault("AI_API_KEY", "")
 
 from app.main import create_app
 
-
 client = TestClient(create_app())
 
 
