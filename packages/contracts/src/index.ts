@@ -524,7 +524,13 @@ export const tools: ToolDetail[] = [
 function pickTools(slugs: string[]): ToolSummary[] {
   return slugs
     .map((slug) => tools.find((tool) => tool.slug === slug))
-    .filter((tool): tool is ToolSummary => Boolean(tool));
+    .filter((tool): tool is ToolDetail => tool !== undefined)
+    .map((tool) => {
+      // Cast the tool explicitly to ToolSummary, as ToolDetail extends ToolSummary
+      // It is safe because structural typing accepts excess properties, but some TS strict settings might complain if returning union directly.
+      const summary: ToolSummary = tool;
+      return summary;
+    });
 }
 
 export const scenarios: ScenarioSummary[] = [
