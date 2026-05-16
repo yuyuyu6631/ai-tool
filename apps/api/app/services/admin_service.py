@@ -5,7 +5,7 @@ from datetime import UTC, date, datetime
 from urllib.parse import urlparse
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 
@@ -147,9 +147,7 @@ def _commit_with_guard(
         db.rollback()
         logger.warning("%s_integrity_error error=%s", action, type(error).__name__)
         error_status = (
-            status.HTTP_409_CONFLICT
-            if conflict_detail
-            else status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_409_CONFLICT if conflict_detail else status.HTTP_500_INTERNAL_SERVER_ERROR
         )
         raise HTTPException(
             status_code=error_status,
@@ -349,8 +347,7 @@ def delete_review(db: Session, review_id: int) -> None:
     db.delete(row)
     db.flush()
     ratings = db.execute(
-        select(func.avg(ToolReview.rating), func.count(ToolReview.id))
-        .where(
+        select(func.avg(ToolReview.rating), func.count(ToolReview.id)).where(
             ToolReview.tool_id == tool_id,
             ToolReview.status == "published",
             ToolReview.rating.is_not(None),
@@ -457,11 +454,8 @@ def upsert_ranking(
             detail=f"Unknown tool slug: {missing_slugs[0]}",
         )
 
-    existing_items = db.scalars(
-        select(RankingItem).where(RankingItem.ranking_id == ranking.id)
-    ).all()
-    for existing in existing_items:
-        db.delete(existing)
+    # ⚡ Bolt 性能优化：使用批量删除替代循环逐条删除，减少数据库往返次数
+    db.execute(delete(RankingItem).where(RankingItem.ranking_id == ranking.id))
     db.flush()
 
     for item in payload.items:
