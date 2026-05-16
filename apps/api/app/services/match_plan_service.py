@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Iterable, Sequence, TypeVar
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 
@@ -21,7 +21,6 @@ from app.schemas.admin import (
     AdminOverviewRecentMatchPlanItem,
 )
 from app.services.cache_service import clear_recommendation_caches
-
 
 VALID_MATCH_PLAN_STATUSES = {"draft", "published", "archived"}
 PUBLIC_TOOL_STATUS = "published"
@@ -52,11 +51,15 @@ def _plan_keywords(plan: MatchPlan) -> list[str]:
     return _normalize_keywords(values)
 
 
-def _build_match_text(*, query: str, scenario: str | None = None, tags: Sequence[str] | None = None) -> str:
+def _build_match_text(
+    *, query: str, scenario: str | None = None, tags: Sequence[str] | None = None
+) -> str:
     return _normalize_text(" ".join([query, scenario or "", " ".join(tags or [])]))
 
 
-def _matched_keywords(plan: MatchPlan, *, query: str, scenario: str | None = None, tags: Sequence[str] | None = None) -> list[str]:
+def _matched_keywords(
+    plan: MatchPlan, *, query: str, scenario: str | None = None, tags: Sequence[str] | None = None
+) -> list[str]:
     text = _build_match_text(query=query, scenario=scenario, tags=tags)
     if not text:
         return []
@@ -127,13 +130,19 @@ def get_match_plan_payload(db: Session, plan_id: int) -> AdminMatchPlanPayload:
     return _payload_from_plan(_load_plan(db, plan_id))
 
 
-def _validate_payload(db: Session, payload: AdminMatchPlanPayload, *, plan_id: int | None = None) -> None:
+def _validate_payload(
+    db: Session, payload: AdminMatchPlanPayload, *, plan_id: int | None = None
+) -> None:
     if payload.status not in VALID_MATCH_PLAN_STATUSES:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Invalid match plan status")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Invalid match plan status"
+        )
 
     duplicate = db.scalar(select(MatchPlan).where(MatchPlan.slug == payload.slug))
     if duplicate and duplicate.id != plan_id:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Match plan slug already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Match plan slug already exists"
+        )
 
     seen: set[str] = set()
     for item in payload.tools:
@@ -145,7 +154,9 @@ def _validate_payload(db: Session, payload: AdminMatchPlanPayload, *, plan_id: i
         seen.add(item.toolSlug)
 
 
-def upsert_match_plan(db: Session, payload: AdminMatchPlanPayload, *, plan_id: int | None = None) -> AdminMatchPlanPayload:
+def upsert_match_plan(
+    db: Session, payload: AdminMatchPlanPayload, *, plan_id: int | None = None
+) -> AdminMatchPlanPayload:
     _validate_payload(db, payload, plan_id=plan_id)
     plan = db.get(MatchPlan, plan_id) if plan_id is not None else None
     if plan is None and plan_id is not None:
@@ -166,41 +177,57 @@ def upsert_match_plan(db: Session, payload: AdminMatchPlanPayload, *, plan_id: i
     if plan.status != "published":
         plan.published_at = None
 
-    for existing in db.scalars(select(MatchPlanTool).where(MatchPlanTool.match_plan_id == plan.id)).all():
-        db.delete(existing)
+    # ⚡ Bolt 性能优化：使用批量删除替代循环逐条删除，减少数据库往返次数
+    db.execute(delete(MatchPlanTool).where(MatchPlanTool.match_plan_id == plan.id))
     db.flush()
 
-    for index, item in enumerate(payload.tools):
-        tool = db.scalar(select(Tool).where(Tool.slug == item.toolSlug))
-        if tool is None:
-            db.rollback()
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"Unknown tool slug: {item.toolSlug}")
-        db.add(
-            MatchPlanTool(
-                match_plan_id=plan.id,
-                tool_id=tool.id,
-                reason=item.reason,
-                sort_order=item.sortOrder if item.sortOrder else index,
-                weight=item.weight,
+    if payload.tools:
+        # ⚡ Bolt 性能优化：通过 in_ 操作预先提取所有需要的 Tool 实体以避免 N+1 查询问题
+        tool_slugs = [item.toolSlug for item in payload.tools]
+        tools_by_slug = {
+            t.slug: t for t in db.scalars(select(Tool).where(Tool.slug.in_(tool_slugs))).all()
+        }
+        for index, item in enumerate(payload.tools):
+            tool = tools_by_slug.get(item.toolSlug)
+            if tool is None:
+                db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                    detail=f"Unknown tool slug: {item.toolSlug}",
+                )
+            db.add(
+                MatchPlanTool(
+                    match_plan_id=plan.id,
+                    tool_id=tool.id,
+                    reason=item.reason,
+                    sort_order=item.sortOrder if item.sortOrder else index,
+                    weight=item.weight,
+                )
             )
-        )
 
     try:
         db.commit()
     except IntegrityError as error:
         db.rollback()
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Match plan conflicts with existing data") from error
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Match plan conflicts with existing data"
+        ) from error
     except SQLAlchemyError as error:
         db.rollback()
         logger.exception("match_plan_upsert_database_error")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Match plan save failed") from error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Match plan save failed"
+        ) from error
 
     return get_match_plan_payload(db, plan.id)
 
 
 def _validate_publishable(plan: MatchPlan) -> None:
     if not plan.tools:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="Published match plan requires at least one tool")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Published match plan requires at least one tool",
+        )
     invalid = [
         item.tool.slug if item.tool else str(item.tool_id)
         for item in plan.tools
@@ -223,14 +250,20 @@ def publish_match_plan(db: Session, plan_id: int) -> AdminMatchPlanPayload:
     except SQLAlchemyError as error:
         db.rollback()
         logger.exception("match_plan_publish_database_error")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Match plan publish failed") from error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Match plan publish failed"
+        ) from error
     clear_recommendation_caches()
     return get_match_plan_payload(db, plan.id)
 
 
-def preview_match_plan(db: Session, plan_id: int, payload: AdminMatchPlanPreviewRequest) -> AdminMatchPlanPreviewResponse:
+def preview_match_plan(
+    db: Session, plan_id: int, payload: AdminMatchPlanPreviewRequest
+) -> AdminMatchPlanPreviewResponse:
     plan = _load_plan(db, plan_id)
-    matched = _matched_keywords(plan, query=payload.query, scenario=payload.scenario, tags=payload.tags)
+    matched = _matched_keywords(
+        plan, query=payload.query, scenario=payload.scenario, tags=payload.tags
+    )
     tools = [
         AdminMatchPlanToolPreviewItem(
             toolSlug=item.tool.slug if item.tool else "",
@@ -240,7 +273,9 @@ def preview_match_plan(db: Session, plan_id: int, payload: AdminMatchPlanPreview
             weight=item.weight,
             status=item.tool.status if item.tool else "missing",
             available=item.tool is not None and item.tool.status == PUBLIC_TOOL_STATUS,
-            issue=None if item.tool is not None and item.tool.status == PUBLIC_TOOL_STATUS else "工具不存在或未发布",
+            issue=None
+            if item.tool is not None and item.tool.status == PUBLIC_TOOL_STATUS
+            else "工具不存在或未发布",
         )
         for item in sorted(plan.tools, key=lambda row: (row.sort_order, row.id))
     ]
@@ -258,22 +293,31 @@ def preview_match_plan(db: Session, plan_id: int, payload: AdminMatchPlanPreview
 
 def count_match_plans(db: Session) -> tuple[int, int, list[AdminOverviewRecentMatchPlanItem]]:
     total = int(db.scalar(select(func.count()).select_from(MatchPlan)) or 0)
-    published = int(db.scalar(select(func.count()).select_from(MatchPlan).where(MatchPlan.status == "published")) or 0)
+    published = int(
+        db.scalar(
+            select(func.count()).select_from(MatchPlan).where(MatchPlan.status == "published")
+        )
+        or 0
+    )
     recent = db.scalars(
         select(MatchPlan)
         .where(MatchPlan.status == "published")
         .order_by(MatchPlan.published_at.desc(), MatchPlan.updated_at.desc())
         .limit(5)
     ).all()
-    return total, published, [
-        AdminOverviewRecentMatchPlanItem(
-            id=row.id,
-            slug=row.slug,
-            title=row.title,
-            publishedAt=row.published_at,
-        )
-        for row in recent
-    ]
+    return (
+        total,
+        published,
+        [
+            AdminOverviewRecentMatchPlanItem(
+                id=row.id,
+                slug=row.slug,
+                title=row.title,
+                publishedAt=row.published_at,
+            )
+            for row in recent
+        ],
+    )
 
 
 def _matching_published_plans(
