@@ -522,9 +522,12 @@ export const tools: ToolDetail[] = [
 ];
 
 function pickTools(slugs: string[]): ToolSummary[] {
-  return slugs
+  const picked = slugs
     .map((slug) => tools.find((tool) => tool.slug === slug))
-    .filter((tool): tool is ToolSummary => Boolean(tool));
+    .filter((tool): tool is ToolDetail => tool !== undefined);
+
+  // Explicitly cast to ToolSummary[] to avoid strict type predicate errors
+  return picked as ToolSummary[];
 }
 
 export const scenarios: ScenarioSummary[] = [
