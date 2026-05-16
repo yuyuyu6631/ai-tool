@@ -1,0 +1,4 @@
+## 2024-05-18 - SSRF Vulnerability via Local Domain Resolution
+**Vulnerability:** URL validator `validate_public_url` in `tool_parser_service.py` was vulnerable to Server-Side Request Forgery (SSRF) bypass because it did not resolve hostnames to IPs before checking if the IP was private. Domains like `localtest.me` pointing to `127.0.0.1` could bypass the localhost text check and trigger a `ValueError` in `ipaddress.ip_address` which was being caught and incorrectly returning the malicious URL as valid.
+**Learning:** Checking for "localhost" or specific domain endings is insufficient. `ipaddress.ip_address` does not do DNS resolution.
+**Prevention:** Always resolve the hostname to an IP address (e.g. using `socket.gethostbyname()`) and validate the *resolved IP* against private/local network ranges before fetching URLs.
