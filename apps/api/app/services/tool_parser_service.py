@@ -1,5 +1,6 @@
 import json
 import ipaddress
+import socket
 import logging
 import os
 import re
@@ -25,9 +26,10 @@ def validate_public_url(url: str) -> str:
         raise ValueError("不允许抓取本机或局域网地址")
 
     try:
-        host_ip = ipaddress.ip_address(hostname)
-    except ValueError:
-        return parsed.geturl()
+        ip_str = socket.gethostbyname(hostname)
+        host_ip = ipaddress.ip_address(ip_str)
+    except (socket.gaierror, ValueError):
+        raise ValueError("无法解析该域名或无效的IP")
 
     if (
         host_ip.is_private
