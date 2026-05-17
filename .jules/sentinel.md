@@ -1,0 +1,4 @@
+## 2024-05-17 - SSRF Vulnerability via Hostname Resolution Bypass
+**Vulnerability:** The `validate_public_url` function relied solely on `ipaddress.ip_address` to check if a URL pointed to a private/local IP. If a valid domain name (e.g., `127.0.0.1.nip.io` or `example.com`) was provided, `ipaddress.ip_address` raised a `ValueError` which was caught, and the URL was erroneously treated as valid and safe, bypassing the private IP checks completely.
+**Learning:** `ipaddress.ip_address` expects IP strings, not hostnames. When validating URLs to prevent Server-Side Request Forgery (SSRF), catching `ValueError` from `ipaddress` on valid domains creates a critical bypass because attackers can use custom domains that resolve to internal IPs.
+**Prevention:** Always resolve the hostname to an IP address using `socket.gethostbyname()` before passing it to `ipaddress.ip_address()`. Catch `socket.gaierror` for unresolvable domains and reject them.
