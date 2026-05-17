@@ -25,8 +25,12 @@ def validate_public_url(url: str) -> str:
     if hostname in {"localhost", "0.0.0.0"} or hostname.endswith(".local"):
         raise ValueError("不允许抓取本机或局域网地址")
 
+    if not hostname:
+        raise ValueError("无法解析的主机名")
+
     try:
-        resolved_ip = socket.gethostbyname(hostname)
+        addr_info = socket.getaddrinfo(hostname, None)
+        resolved_ip = addr_info[0][4][0]
         host_ip = ipaddress.ip_address(resolved_ip)
     except socket.gaierror:
         raise ValueError("无法解析的主机名")
