@@ -40,7 +40,7 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
     <button
       type="button"
       onClick={toggleTheme}
-      className={`header-utility-button inline-flex items-center justify-center gap-2 rounded-full text-sm font-medium ${compact ? "h-11 w-11 px-0" : "px-4 py-2"}`}
+      className={`header-utility-button inline-flex items-center justify-center gap-2 rounded-full text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${compact ? "h-11 w-11 px-0" : "px-4 py-2"}`}
       aria-label={isLight ? "切换深色模式" : "切换浅色模式"}
       title={isLight ? "切换深色模式" : "切换浅色模式"}
     >
