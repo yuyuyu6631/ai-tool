@@ -3,6 +3,7 @@ import ipaddress
 import logging
 import os
 import re
+import socket
 from urllib.parse import urlparse
 from urllib import request
 
@@ -25,9 +26,12 @@ def validate_public_url(url: str) -> str:
         raise ValueError("不允许抓取本机或局域网地址")
 
     try:
-        host_ip = ipaddress.ip_address(hostname)
+        resolved_ip = socket.gethostbyname(hostname)
+        host_ip = ipaddress.ip_address(resolved_ip)
+    except socket.gaierror:
+        raise ValueError("无法解析的主机名")
     except ValueError:
-        return parsed.geturl()
+        raise ValueError("无效的IP地址")
 
     if (
         host_ip.is_private
