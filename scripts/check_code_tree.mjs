@@ -8,6 +8,7 @@ const allowedTopLevel = new Set([
   ".gitignore",
   ".prettierrc",
   ".railwayignore",
+  ".jules",
   ".env.example",
   "AGENTS.md",
   "CLAUDE.md",
