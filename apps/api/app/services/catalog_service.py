@@ -72,6 +72,15 @@ LEGACY_CATEGORY_SLUGS: dict[str, list[str]] = {
     "chatbot": ["ai-chat", "general-assistants"],
     "ai-图像": ["ai-image", "image", "image-video"],
 }
+
+# 预计算类别别名的反向映射字典，将原先 _matches_category 中 O(N) 的
+# 生成器遍历查找优化为 O(1) 的字典查询，提高热点路径中的匹配性能。
+_REVERSE_CATEGORY_SLUGS: dict[str, str] = {}
+for canonical, aliases in LEGACY_CATEGORY_SLUGS.items():
+    _REVERSE_CATEGORY_SLUGS[canonical] = canonical
+    for alias in aliases:
+        _REVERSE_CATEGORY_SLUGS[alias] = canonical
+
 HOME_SIDEBAR_ORDER = ["chatbot", "office"]
 
 PRESET_DEFINITIONS = {
@@ -614,14 +623,7 @@ def _expand_with_relaxed_query_recall(
 
 def _matches_category(tool: ToolSummary, category_slug: str) -> bool:
     normalized = _slugify(category_slug)
-    canonical_slug = next(
-        (
-            slug
-            for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
-            if normalized == slug or normalized in aliases
-        ),
-        normalized,
-    )
+    canonical_slug = _REVERSE_CATEGORY_SLUGS.get(normalized, normalized)
     category_values = {
         _slugify(tool.categorySlug or ""),
         _slugify(tool.category),
@@ -1244,14 +1246,7 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
 
 def list_tools_by_category(*, db, category_slug: str) -> list[ToolSummary]:
     normalized = _slugify(category_slug)
-    canonical_slug = next(
-        (
-            slug
-            for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
-            if normalized == slug or normalized in aliases
-        ),
-        normalized,
-    )
+    canonical_slug = _REVERSE_CATEGORY_SLUGS.get(normalized, normalized)
     # status already filtered by _load_summaries default to PUBLIC_TOOL_STATUS
     tools = [
         tool
@@ -1289,14 +1284,7 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
     category_sections = []
     for item in categories:
         normalized = _slugify(item.slug)
-        canonical_slug = next(
-            (
-                slug
-                for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
-                if normalized == slug or normalized in aliases
-            ),
-            normalized,
-        )
+        canonical_slug = _REVERSE_CATEGORY_SLUGS.get(normalized, normalized)
         category_sections.append(
             HomeCategorySection(
                 homeSlug=item.slug,
