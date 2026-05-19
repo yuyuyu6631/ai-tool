@@ -50,7 +50,8 @@
     ]
   },
   "dependencies": {
-    "docx": "^9.6.1"
+    "docx": "^9.6.1",
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
     "lint-staged": "^15.5.0",
