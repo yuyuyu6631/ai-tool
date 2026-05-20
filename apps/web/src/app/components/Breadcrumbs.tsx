@@ -24,7 +24,7 @@ export default function Breadcrumbs({ items }: BreadcrumbsProps) {
                   {item.label}
                 </a>
               ) : item.href && !isLast ? (
-                <Link href={withPublicPath(item.href)} className="hover:text-slate-900">
+                <Link href={item.href} className="hover:text-slate-900">
                   {item.label}
                 </Link>
               ) : (

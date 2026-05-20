@@ -11,7 +11,7 @@ test("home hero renders semantic search without exposing workflow internals", as
   await expect(page.getByRole("button", { name: "找工具" })).toBeVisible();
   await expect(page.getByText("任务路线预览")).toHaveCount(0);
   await expect(page.getByText("LIVE")).toHaveCount(0);
-  await expect(page.getByRole("link", { name: /看场景榜单/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /看任务场景/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /逛工具库/ })).toBeVisible();
   await expect(page.getByRole("link", { name: "写作润色" })).toBeVisible();
 });

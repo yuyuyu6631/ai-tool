@@ -48,10 +48,10 @@ export default async function Page({ params }: SceneRouteProps) {
 
   return (
     <div className="page-shell">
-      <Header currentPath={`/scene/${slug}`} currentRoute={`/scene/${slug}`} />
+      <Header currentPath={`/scene/${slug}`} currentRoute={`/scene/${slug}`} forceHomeHeader />
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1280px] px-4 sm:px-6 lg:px-8">
-          <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "按任务找", href: "/search" }, { label: scene.title }]} />
+          <Breadcrumbs items={[{ label: "首页", href: "/" }, { label: "任务场景", href: "/search" }, { label: scene.title }]} />
 
           <section className="overflow-hidden rounded-[32px] border border-slate-900 bg-[#05070f] p-6 text-white shadow-[0_28px_80px_rgba(15,23,42,0.22)] md:p-8">
             <p className="inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1 text-xs font-semibold text-sky-100">

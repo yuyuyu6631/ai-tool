@@ -146,6 +146,11 @@ def _validate_payload(db: Session, payload: AdminMatchPlanPayload, *, plan_id: i
 
 
 def upsert_match_plan(db: Session, payload: AdminMatchPlanPayload, *, plan_id: int | None = None) -> AdminMatchPlanPayload:
+    if payload.status == "published":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Cannot update status to 'published' directly. Please use the publish endpoint.",
+        )
     _validate_payload(db, payload, plan_id=plan_id)
     plan = db.get(MatchPlan, plan_id) if plan_id is not None else None
     if plan is None and plan_id is not None:

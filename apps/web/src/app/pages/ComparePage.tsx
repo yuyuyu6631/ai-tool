@@ -66,7 +66,7 @@ function getRowValue(tool: ToolDetail, key: (typeof ROWS)[number]["key"]) {
 export default function ComparePage({ tools, comparisonSlug }: ComparePageProps) {
   return (
     <div className="page-shell">
-      <Header currentPath={`/compare/${comparisonSlug}`} currentRoute={`/compare/${comparisonSlug}`} />
+      <Header currentPath={`/compare/${comparisonSlug}`} currentRoute={`/compare/${comparisonSlug}`} forceHomeHeader />
 
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">

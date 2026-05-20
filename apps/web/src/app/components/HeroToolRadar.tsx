@@ -47,6 +47,8 @@ export default function HeroToolRadar({ query = "", phase = "idle", progress }: 
   const [demoIndex, setDemoIndex] = useState(0);
   const [state, setState] = useState<CockpitState>(() => createInitialState(query));
   const previousQueryRef = useRef(query);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
     if (!expanded) return;
@@ -63,7 +65,7 @@ export default function HeroToolRadar({ query = "", phase = "idle", progress }: 
   useEffect(() => {
     const targetQuery = query.trim();
     if (!targetQuery) return;
-    if (previousQueryRef.current === targetQuery && state.query === targetQuery && state.phase === "matched") return;
+    if (previousQueryRef.current === targetQuery && stateRef.current.query === targetQuery && stateRef.current.phase === "matched") return;
     previousQueryRef.current = targetQuery;
 
     const timers: number[] = [];
@@ -79,7 +81,7 @@ export default function HeroToolRadar({ query = "", phase = "idle", progress }: 
     });
     timers.push(window.setTimeout(() => setState(buildMatchedState(targetQuery)), elapsed + 360));
     return () => timers.forEach((timer) => window.clearTimeout(timer));
-  }, [progress, query, state.phase, state.query]);
+  }, [progress, query]);
 
   useEffect(() => {
     if (query.trim()) return;

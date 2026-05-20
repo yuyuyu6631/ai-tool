@@ -36,10 +36,6 @@ jobs:
         working-directory: apps/web
         run: npx tsc --noEmit
 
-      - name: Contracts type check
-        working-directory: packages/contracts
-        run: npx tsc --noEmit
-
       - name: Prettier check changed source files
         shell: bash
         run: |
@@ -52,8 +48,7 @@ jobs:
           mapfile -t files < <(
             git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- \
               "apps/web/src/**/*.ts" \
-              "apps/web/src/**/*.tsx" \
-              "packages/contracts/src/**/*.ts"
+              "apps/web/src/**/*.tsx"
           )
 
           if [ "${#files[@]}" -eq 0 ]; then

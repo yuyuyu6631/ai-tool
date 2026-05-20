@@ -45,7 +45,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
       </button>
 
       {open ? (
-        <div className="fixed inset-x-0 top-[68px] z-[60] border-t border-[var(--border-default)] bg-[var(--bg-elevated)] shadow-[var(--shadow-glass)] backdrop-blur-xl md:hidden">
+        <div className="site-header-mobile-panel fixed inset-x-0 top-[68px] z-[60] border-t shadow-[var(--home-header-shadow)] backdrop-blur-xl md:hidden">
           <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-4 py-4 sm:px-6">
             <div className="mb-1 flex justify-end">
               <ThemeToggle />
@@ -57,8 +57,8 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
                   href={withPublicPath(item.href)}
                   className={`rounded-2xl px-3 py-2.5 text-sm font-medium transition ${
                     isHeaderNavActive(currentPath, item.href)
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-700 hover:bg-slate-100/90"
+                      ? "home-nav-active"
+                      : "home-nav-link"
                   }`}
                   onClick={() => setOpen(false)}
                 >
@@ -67,11 +67,11 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
               ) : (
                 <Link
                   key={item.href}
-                  href={withPublicPath(item.href)}
+                  href={item.href}
                   className={`rounded-2xl px-3 py-2.5 text-sm font-medium transition ${
                     isHeaderNavActive(currentPath, item.href)
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-700 hover:bg-slate-100/90"
+                      ? "home-nav-active"
+                      : "home-nav-link"
                   }`}
                   onClick={() => setOpen(false)}
                 >
@@ -81,15 +81,15 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
             ))}
             <Link
               href={authHref}
-              className="rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100/90"
+              className="home-nav-link rounded-2xl px-3 py-2.5 text-sm font-medium transition"
               onClick={() => setOpen(false)}
             >
               {authLabel}
             </Link>
             {mounted && currentUser?.role === "admin" ? (
               <Link
-                href={withPublicPath("/admin")}
-                className="rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100/90"
+                href="/admin"
+                className="home-nav-link rounded-2xl px-3 py-2.5 text-sm font-medium transition"
                 onClick={() => setOpen(false)}
               >
                 后台
@@ -99,7 +99,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100/90"
+                className="home-nav-link rounded-2xl px-3 py-2.5 text-left text-sm font-medium transition"
               >
                 退出
               </button>

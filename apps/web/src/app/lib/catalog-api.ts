@@ -11,6 +11,9 @@ import type {
   ScenarioSummary,
   AiSearchResponse,
   CategorySummary,
+  ExperienceCommentItem,
+  ExperienceListResponse,
+  ExperiencePostItem,
   HomeCatalogResponse,
   ToolSummary,
   ToolDetail,
@@ -30,6 +33,11 @@ import {
   getFallbackSearchIndex,
   getFallbackToolDetail,
 } from "./fallback-catalog";
+import {
+  getFallbackExperienceComments,
+  getFallbackExperienceList,
+  getFallbackExperiencePost,
+} from "./experience-community";
 import { buildApiUrl } from "./api-base";
 
 export const CATALOG_CACHE_TAG = "catalog";
@@ -178,6 +186,44 @@ export async function fetchToolReviews(slug: string): Promise<ToolReviewsRespons
   return requestJson<ToolReviewsResponse>(`/api/tools/${slug}/reviews`, { method: "GET", cache: "no-store" });
 }
 
+export async function fetchExperiences(queryString = ""): Promise<ExperienceListResponse> {
+  try {
+    return await fetchJson<ExperienceListResponse>(`/api/experiences${queryString ? `?${queryString}` : ""}`, { cache: "no-store" });
+  } catch {
+    const params = new URLSearchParams(queryString);
+    return getFallbackExperienceList(params.get("channel"), params.get("board"));
+  }
+}
+
+export async function fetchExperiencePost(slug: string): Promise<ExperiencePostItem | null> {
+  try {
+    return await fetchJson<ExperiencePostItem>(`/api/experiences/${slug}`, { cache: "no-store" });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 404) {
+      return null;
+    }
+    return getFallbackExperiencePost(slug);
+  }
+}
+
+export async function fetchExperienceComments(slug: string): Promise<ExperienceCommentItem[]> {
+  try {
+    return await requestJson<ExperienceCommentItem[]>(`/api/experiences/${slug}/comments`, { method: "GET", cache: "no-store" });
+  } catch {
+    return getFallbackExperienceComments(slug);
+  }
+}
+
+export async function saveExperienceComment(
+  slug: string,
+  payload: { body: string; imageUrl?: string; parentId?: number | null },
+): Promise<ExperienceCommentItem> {
+  return requestJson<ExperienceCommentItem>(`/api/experiences/${slug}/comments`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function fetchMyToolReview(slug: string): Promise<ToolReviewItem | null> {
   try {
     return await requestJson<ToolReviewItem | null>(`/api/tools/${slug}/reviews/me`, { method: "GET", cache: "no-store" });
@@ -312,6 +358,21 @@ function resolveReadFallback<T>(path: string): T | null {
 
   if (pathname === "/api/rankings") {
     return getFallbackRankings() as T;
+  }
+
+  if (pathname === "/api/experiences") {
+    const params = new URLSearchParams(queryString);
+    return getFallbackExperienceList(params.get("channel"), params.get("board")) as T;
+  }
+
+  if (pathname.startsWith("/api/experiences/") && pathname.endsWith("/comments")) {
+    const slug = pathname.replace("/api/experiences/", "").replace("/comments", "");
+    return getFallbackExperienceComments(slug) as T;
+  }
+
+  if (pathname.startsWith("/api/experiences/")) {
+    const slug = pathname.replace("/api/experiences/", "");
+    return getFallbackExperiencePost(slug) as T;
   }
 
   if (pathname === "/api/admin/tools") {

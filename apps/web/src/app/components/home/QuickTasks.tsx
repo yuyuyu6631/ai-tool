@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { withPublicPath } from "../../lib/public-path";
 import { QUICK_TASKS, type QuickTask } from "./home-data";
 
 interface QuickTasksProps {
@@ -16,7 +15,7 @@ export default function QuickTasks({ onTaskActivate, onTaskClick, onTaskPress }:
       {QUICK_TASKS.map((task, index) => (
         <Link
           key={task.id}
-          href={withPublicPath(task.href)}
+          href={task.href}
           prefetch
           aria-label={task.label}
           onPointerDown={() => onTaskPress(task)}

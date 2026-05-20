@@ -1,20 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BadgeCheck, Gift, Library } from "lucide-react";
-import { withPublicPath } from "../../lib/public-path";
+import { ArrowRight, BadgeCheck, Gift, MessageSquareText } from "lucide-react";
 import { HOME_ENTRY_CARDS } from "./home-data";
 
 export default function TaskEntryCards() {
   return (
     <div className="mx-auto mt-7 grid w-full max-w-5xl gap-3 motion-safe:animate-[agentReveal_520ms_ease-out_360ms_both] md:grid-cols-3">
       {HOME_ENTRY_CARDS.map((entry, index) => {
-        const Icon = index === 0 ? BadgeCheck : index === 1 ? Gift : Library;
-        const tone = index === 0 ? "home-entry-card--tests" : index === 1 ? "home-entry-card--deals" : "home-entry-card--library";
+        const Icon = index === 0 ? BadgeCheck : index === 1 ? MessageSquareText : Gift;
+        const tone = index === 0 ? "home-entry-card--tests" : index === 1 ? "home-entry-card--library" : "home-entry-card--deals";
         return (
           <Link
             key={entry.href}
-            href={withPublicPath(entry.href)}
+            href={entry.href}
             prefetch
             className={`home-entry-card group relative overflow-hidden rounded-[8px] border p-5 text-left backdrop-blur-xl transition duration-150 hover:-translate-y-0.5 ${tone}`}
           >

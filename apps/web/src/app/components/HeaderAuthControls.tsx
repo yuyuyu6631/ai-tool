@@ -4,7 +4,6 @@ import Link from "next/link";
 import { LogOut, UserRound } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "./auth/AuthProvider";
-import { withPublicPath } from "../lib/public-path";
 
 interface HeaderAuthControlsProps {
   authHref: string;
@@ -47,7 +46,7 @@ export default function HeaderAuthControls({ authHref }: HeaderAuthControlsProps
   return (
     <>
       {currentUser.role === "admin" ? (
-        <Link href={withPublicPath("/admin")} className="header-utility-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800">
+        <Link href="/admin" className="header-utility-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800">
           后台
         </Link>
       ) : null}

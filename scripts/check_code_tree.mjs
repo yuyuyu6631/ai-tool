@@ -51,7 +51,7 @@ const forbiddenTrackedPatterns = [
   /\.(?:7z|zip|tar|tgz|tar\.gz|db|sqlite|sqlite3)$/i,
 ];
 
-const activeRuntimePatterns = [/^apps\/api\//, /^apps\/web\//, /^packages\/contracts\//];
+const activeRuntimePatterns = [/^apps\/api\//, /^apps\/web\//];
 const sourceExtensions = /\.(?:py|ts|tsx|js|jsx|mjs|cjs|css|json|sql|yml|yaml)$/i;
 
 function git(args) {

@@ -5,10 +5,10 @@
 
 ## 摘要
 
-- 生成时间：2026-05-07T09:32:16.365Z
-- 前端路由：20
-- API 端点：42
-- 数据模型：19
+- 生成时间：2026-05-14T02:44:45.246Z
+- 前端路由：24
+- API 端点：46
+- 数据模型：22
 - 测试文件：55
 
 ## 前端路由
@@ -24,8 +24,11 @@
 | /admin/tools/[id] | page | - | apps/web/app/admin/tools/[id]/page.tsx |
 | /admin/tools/new | page | - | apps/web/app/admin/tools/new/page.tsx |
 | /auth | page | - | apps/web/app/auth/page.tsx |
+| /benefits | page | - | apps/web/app/benefits/page.tsx |
 | /compare/[comparisonSlug] | redirect | [dynamic redirect] | apps/web/app/compare/[comparisonSlug]/page.tsx |
 | /deals | page | - | apps/web/app/deals/page.tsx |
+| /experiences | page | - | apps/web/app/experiences/page.tsx |
+| /experiences/[id] | page | - | apps/web/app/experiences/[id]/page.tsx |
 | /guide | redirect | [dynamic redirect] | apps/web/app/guide/page.tsx |
 | /matches | page | - | apps/web/app/matches/page.tsx |
 | /rankings | redirect | [dynamic redirect] | apps/web/app/rankings/page.tsx |
@@ -33,6 +36,7 @@
 | /scenarios/[slug] | page | - | apps/web/app/scenarios/[slug]/page.tsx |
 | /scene/[slug] | page | - | apps/web/app/scene/[slug]/page.tsx |
 | /search | page | - | apps/web/app/search/page.tsx |
+| /tasks | page | - | apps/web/app/tasks/page.tsx |
 | /tools | page | - | apps/web/app/tools/page.tsx |
 | /tools/[slug] | page | - | apps/web/app/tools/[slug]/page.tsx |
 
@@ -64,8 +68,12 @@
 | POST | /api/auth/register | register | AuthUserResponse | 201 | apps/api/app/api/routes/auth.py |
 | GET | /api/categories | get_categories | list[CategorySummary] | - | apps/api/app/api/routes/catalog.py |
 | GET | /api/categories/{slug}/tools | get_category_tools | list[ToolSummary] | - | apps/api/app/api/routes/catalog.py |
-| POST | /api/chat | chat_stream | - | - | apps/api/app/api/routes/chat.py |
 | POST | /api/crawl/jobs | create_crawl_job | - | - | apps/api/app/api/routes/crawl.py |
+| GET | /api/experiences | get_experiences | ExperienceListResponse | - | apps/api/app/api/routes/experiences.py |
+| POST | /api/experiences | post_experience | ExperiencePostItem | 201 | apps/api/app/api/routes/experiences.py |
+| GET | /api/experiences/{slug} | get_experience | ExperiencePostItem | - | apps/api/app/api/routes/experiences.py |
+| GET | /api/experiences/{slug}/comments | get_comments | list[ExperienceCommentItem] | - | apps/api/app/api/routes/experiences.py |
+| POST | /api/experiences/{slug}/comments | post_comment | ExperienceCommentItem | 201 | apps/api/app/api/routes/experiences.py |
 | GET | /api/home | get_home_catalog | HomeCatalogResponse | - | apps/api/app/api/routes/catalog.py |
 | POST | /api/parser/extract | extract_tool_metadata | ParseToolResponse | - | apps/api/app/api/routes/parser.py |
 | GET | /api/rankings | get_rankings | list[RankingSection] | - | apps/api/app/api/routes/catalog.py |
@@ -90,6 +98,9 @@
 | categories | Category | 5 | id, slug, name, description, tools | apps/api/app/models/models.py |
 | crawl_jobs | CrawlJob | 6 | id, source_name, status, started_at, finished_at, error_message | apps/api/app/models/models.py |
 | crawl_snapshots | CrawlSnapshot | 6 | id, crawl_job_id, tool_slug, raw_payload, parsed_payload, diff_summary | apps/api/app/models/models.py |
+| experience_boards | ExperienceBoard | 7 | id, slug, title, description, accent, sort_order, posts | apps/api/app/models/models.py |
+| experience_comments | ExperienceComment | 11 | id, post_id, user_id, parent_id, body, image_url, status, like_count | apps/api/app/models/models.py |
+| experience_posts | ExperiencePost | 24 | id, slug, title, summary, body, channel, board_id, scenario | apps/api/app/models/models.py |
 | match_plan_tools | MatchPlanTool | 8 | id, match_plan_id, tool_id, reason, sort_order, weight, plan, tool | apps/api/app/models/models.py |
 | match_plans | MatchPlan | 11 | id, slug, title, description, persona, scenario, trigger_keywords_json, status | apps/api/app/models/models.py |
 | ranking_items | RankingItem | 6 | id, ranking_id, tool_id, rank_order, reason, tool | apps/api/app/models/models.py |
@@ -111,7 +122,7 @@
 
 ### Web unit/integration
 
-- 数量：27
+- 数量：29
 - `apps/web/src/app/components/__tests__/BackToResultsLink.test.tsx`
 - `apps/web/src/app/components/__tests__/CommandPalette.test.tsx`
 - `apps/web/src/app/components/__tests__/CompareToolsGrid.test.tsx`
@@ -125,14 +136,16 @@
 - `apps/web/src/app/components/admin/__tests__/AdminShell.test.tsx`
 - `apps/web/src/app/components/admin/__tests__/AdminToolEditor.test.tsx`
 - `apps/web/src/app/components/auth/__tests__/AuthCard.test.tsx`
+- `apps/web/src/app/components/home/__tests__/HeroParticleScene.test.tsx`
 - `apps/web/src/app/components/home/__tests__/HeroSection.test.tsx`
 - `apps/web/src/app/features/matches/components/__tests__/MatchFeed.test.tsx`
 - `apps/web/src/app/lib/__tests__/api-base.test.ts`
 - `apps/web/src/app/lib/__tests__/catalog-api.test.ts`
 - `apps/web/src/app/lib/__tests__/catalog-navigation.test.ts`
 - `apps/web/src/app/lib/__tests__/compare-utils.test.ts`
-- `apps/web/src/app/lib/__tests__/floating-chat-visibility.test.ts`
+- `apps/web/src/app/lib/__tests__/experience-community.test.ts`
 - `apps/web/src/app/lib/__tests__/home-page-data.test.ts`
+- `apps/web/src/app/lib/__tests__/recent-tools.test.ts`
 - `apps/web/src/app/lib/__tests__/tool-display.test.ts`
 - `apps/web/src/app/pages/__tests__/HomePage.agent.test.tsx`
 - `apps/web/src/app/pages/__tests__/HomePage.test.tsx`
@@ -151,8 +164,7 @@
 
 ### API pytest
 
-- 数量：23
-- `apps/api/tests/test_ai_integration.py`
+- 数量：21
 - `apps/api/tests/test_ai_search_agent_recommendation.py`
 - `apps/api/tests/test_api_hardening.py`
 - `apps/api/tests/test_api.py`
@@ -161,11 +173,10 @@
 - `apps/api/tests/test_cache_service.py`
 - `apps/api/tests/test_catalog_cases.py`
 - `apps/api/tests/test_catalog_view_seed.py`
-- `apps/api/tests/test_chat_api.py`
-- `apps/api/tests/test_chat_rag.py`
 - `apps/api/tests/test_demo_ai_search.py`
 - `apps/api/tests/test_dev_admin_seed.py`
 - `apps/api/tests/test_embedding_service.py`
+- `apps/api/tests/test_experience_api.py`
 - `apps/api/tests/test_import_preview_validation.py`
 - `apps/api/tests/test_logo_assets.py`
 - `apps/api/tests/test_match_plan_admin_api.py`

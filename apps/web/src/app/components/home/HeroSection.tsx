@@ -46,22 +46,17 @@ export default function HeroSection({
 
       <div className="relative mx-auto flex w-full max-w-[1180px] flex-col items-center px-4 pb-10 pt-10 text-center sm:px-6 md:pt-14 lg:min-h-[calc(100svh-92px)] lg:justify-center lg:px-8">
         <p className="home-kicker inline-flex rounded-full px-3 py-1 text-xs font-semibold motion-safe:animate-[agentReveal_380ms_ease-out_40ms_both]">
-          给产品、运营、内容和开发的 AI 工具筛选台
+          给互联网团队的 AI 工具使用经验社区
         </p>
-        <h1 className="home-title mt-5 max-w-4xl text-[clamp(2.35rem,5vw,4.8rem)] font-semibold leading-[1.08] tracking-normal motion-safe:animate-[agentReveal_420ms_ease-out_60ms_both]">
+        <h1 className="home-title mt-5 max-w-4xl text-[clamp(2.35rem,5vw,4.8rem)] font-semibold leading-[1.08] tracking-normal text-balance motion-safe:animate-[agentReveal_420ms_ease-out_60ms_both]">
           {title}
         </h1>
 
-        <p className="home-subtitle mt-4 max-w-3xl text-base leading-8 motion-safe:animate-[agentReveal_460ms_ease-out_120ms_both] md:text-lg">
-          {subtitle ? (
-            subtitle
-          ) : (
-            <>
-              <span className="dark:hidden">说清楚要做什么，先看适合场景、价格门槛、真实限制和横向对比，少花时间试错。</span>
-              <span className="hidden dark:inline">说清楚要做什么，先看适合场景、价格门槛、真实限制和横向对比。</span>
-            </>
-          )}
-        </p>
+        {subtitle ? (
+          <p className="home-subtitle mt-4 max-w-3xl text-base leading-8 motion-safe:animate-[agentReveal_460ms_ease-out_120ms_both] md:text-lg">
+            {subtitle}
+          </p>
+        ) : null}
 
         <SearchSection
           query={query}
@@ -81,12 +76,12 @@ export default function HeroSection({
           <ArrowRight className="home-flow-arrow h-4 w-4" />
           <span className="home-flow-step">
             <span>2</span>
-            <b>看场景榜单</b>
+            <b>看经验与工具</b>
           </span>
           <ArrowRight className="home-flow-arrow h-4 w-4" />
           <span className="home-flow-step">
             <span>3</span>
-            <b>进入详情或对比</b>
+            <b>领福利或收藏</b>
           </span>
         </div>
 

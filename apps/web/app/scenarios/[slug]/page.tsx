@@ -74,20 +74,20 @@ export default async function Page({ params }: ScenarioRouteProps) {
   return (
     <div className="page-shell">
       <CatalogScrollRestorer />
-      <Header currentPath={`/scenarios/${slug}`} currentRoute={`/scenarios/${slug}`} />
+      <Header currentPath={`/scenarios/${slug}`} currentRoute={`/scenarios/${slug}`} forceHomeHeader />
 
       <main className="py-8 md:py-10">
         <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">
           <Breadcrumbs
             items={[
               { label: "首页", href: "/" },
-              { label: "场景榜单", href: "/scenarios" },
+              { label: "任务场景", href: "/scenarios" },
               { label: scenarioView.title },
             ]}
           />
 
           <section className="panel-base rounded-lg p-6 md:p-8">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">场景榜单</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">任务场景</p>
             <div className="mt-3 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
               <div>
                 <h1 className="text-3xl font-semibold tracking-tight text-slate-950 md:text-4xl">{scenarioView.title}</h1>
@@ -115,7 +115,7 @@ export default async function Page({ params }: ScenarioRouteProps) {
             <div className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
               <p className="text-sm font-semibold text-slate-900">快速入口</p>
               <div className="mt-4 space-y-2">
-                <Link href={toolSearchHref} className="btn-primary flex justify-center rounded px-4 py-2.5 text-sm">
+                <Link href={toolSearchHref} className="btn-token-accent flex justify-center rounded px-4 py-2.5 text-sm">
                   查看匹配工具
                 </Link>
                 <Link href={withPublicPath("/tools?page=2&page_size=24")} className="btn-secondary flex justify-center rounded px-4 py-2.5 text-sm">
@@ -148,13 +148,13 @@ export default async function Page({ params }: ScenarioRouteProps) {
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-slate-950">继续查找</h2>
-                <p className="mt-2 text-sm leading-6 text-slate-600">从当前任务回到场景榜单，或直接进入完整工具库继续筛选。</p>
+                <p className="mt-2 text-sm leading-6 text-slate-600">从当前任务回到任务场景，或直接进入完整工具库继续筛选。</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Link href={withPublicPath("/scenarios")} className="btn-secondary rounded px-4 py-2.5 text-sm">
-                  返回场景榜单
+                  返回任务场景
                 </Link>
-                <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-primary rounded px-4 py-2.5 text-sm">
+                <Link href={withPublicPath("/tools?mode=search&page=1&page_size=24")} className="btn-token-accent rounded px-4 py-2.5 text-sm">
                   全部工具库
                 </Link>
               </div>

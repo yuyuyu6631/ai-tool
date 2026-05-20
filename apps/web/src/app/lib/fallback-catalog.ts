@@ -59,8 +59,6 @@ const FALLBACK_TOOLS: ToolDetail[] = [
     ],
     ratingSummary: {
       average: 4.8,
-      count: 128,
-      distribution: { "5": 92, "4": 28, "3": 6, "2": 1, "1": 1 },
       reviewCount: 128,
       ratingDistribution: { "5": 92, "4": 28, "3": 6, "2": 1, "1": 1 },
     },
@@ -111,8 +109,6 @@ const FALLBACK_TOOLS: ToolDetail[] = [
     ],
     ratingSummary: {
       average: 4.7,
-      count: 86,
-      distribution: { "5": 58, "4": 22, "3": 5, "2": 1, "1": 0 },
       reviewCount: 86,
       ratingDistribution: { "5": 58, "4": 22, "3": 5, "2": 1, "1": 0 },
     },
@@ -163,8 +159,6 @@ const FALLBACK_TOOLS: ToolDetail[] = [
     ],
     ratingSummary: {
       average: 4.6,
-      count: 74,
-      distribution: { "5": 45, "4": 21, "3": 7, "2": 1, "1": 0 },
       reviewCount: 74,
       ratingDistribution: { "5": 45, "4": 21, "3": 7, "2": 1, "1": 0 },
     },
@@ -215,8 +209,6 @@ const FALLBACK_TOOLS: ToolDetail[] = [
     ],
     ratingSummary: {
       average: 4.5,
-      count: 63,
-      distribution: { "5": 35, "4": 21, "3": 6, "2": 1, "1": 0 },
       reviewCount: 63,
       ratingDistribution: { "5": 35, "4": 21, "3": 6, "2": 1, "1": 0 },
     },
@@ -267,8 +259,6 @@ const FALLBACK_TOOLS: ToolDetail[] = [
     ],
     ratingSummary: {
       average: 4.5,
-      count: 92,
-      distribution: { "5": 55, "4": 28, "3": 8, "2": 1, "1": 0 },
       reviewCount: 92,
       ratingDistribution: { "5": 55, "4": 28, "3": 8, "2": 1, "1": 0 },
     },
@@ -334,8 +324,6 @@ const FALLBACK_RANKINGS: RankingSection[] = [
 const EMPTY_REVIEWS: ToolReviewsResponse = {
   summary: {
     average: 0,
-    count: 0,
-    distribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
     reviewCount: 0,
     ratingDistribution: { "5": 0, "4": 0, "3": 0, "2": 0, "1": 0 },
   },
@@ -497,12 +485,35 @@ export function getFallbackSearchIndex(): ToolSummary[] {
 }
 
 export function getFallbackHomeCatalog(): HomeCatalogResponse {
+  const tools = FALLBACK_TOOLS.map((tool) => toSummary(tool.slug));
+  const hotTools = sortTools(tools, "featured", "hot").slice(0, 4);
+  const latestTools = sortTools(tools, "latest", "latest").slice(0, 4);
+
+  const sidebarCategories = FALLBACK_CATEGORIES.map((cat) => ({
+    homeSlug: cat.slug,
+    label: cat.name,
+    count: tools.filter((t) => t.categorySlug === cat.slug).length,
+    sectionId: `sec-${cat.slug}`,
+    description: cat.description || "",
+    navigationType: "anchor" as const,
+    href: `#sec-${cat.slug}`,
+  }));
+
+  const categorySections = FALLBACK_CATEGORIES.map((cat) => ({
+    homeSlug: cat.slug,
+    label: cat.name,
+    description: cat.description || "",
+    sectionId: `sec-${cat.slug}`,
+    browseCategorySlug: cat.slug,
+    items: tools.filter((t) => t.categorySlug === cat.slug).slice(0, 4),
+    moreHref: `/category/${cat.slug}`,
+  }));
+
   return {
-    featuredTools: sortTools(FALLBACK_TOOLS.map((tool) => toSummary(tool.slug)), "featured", "hot").slice(0, 4),
-    latestTools: sortTools(FALLBACK_TOOLS.map((tool) => toSummary(tool.slug)), "latest", "latest").slice(0, 4),
-    rankings: FALLBACK_RANKINGS,
-    scenarios: FALLBACK_SCENARIOS,
-    categories: FALLBACK_CATEGORIES,
+    hotTools,
+    latestTools,
+    sidebarCategories,
+    categorySections,
   };
 }
 

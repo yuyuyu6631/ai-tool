@@ -7,18 +7,17 @@
 from __future__ import annotations
 
 import argparse
-import csv
 import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import List
 
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.session import SessionLocal
 from app.models.models import (
-    Category, Ranking, RankingItem, Source, Tag, Tool, ToolCategory, ToolReview, ToolTag, User
+    Category, Tool, ToolCategory, ToolReview, ToolTag
 )
 
 

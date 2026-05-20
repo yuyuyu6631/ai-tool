@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Clock3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { readRecentTools, type RecentToolItem } from "../../lib/recent-tools";
-import { withPublicPath } from "../../lib/public-path";
 
 export default function RecentToolsStrip() {
   const [items, setItems] = useState<RecentToolItem[]>([]);
@@ -26,7 +25,7 @@ export default function RecentToolsStrip() {
           {items.map((item) => (
             <Link
               key={item.slug}
-              href={withPublicPath(`/tools/${item.slug}`)}
+              href={`/tools/${item.slug}`}
               className="home-recent-tool block min-w-0 rounded px-3 py-2 transition hover:-translate-y-0.5"
             >
               <div className="truncate text-sm font-semibold">{item.name}</div>

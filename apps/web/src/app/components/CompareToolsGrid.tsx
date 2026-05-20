@@ -112,7 +112,7 @@ export default function CompareToolsGrid({
                   {section.emptyDescription || "你可以先去看热门工具，或者把你常用的工具提交给我们补录。"}
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">
-                  <Link href={withPublicPath("/?view=hot")} className="btn-primary rounded-full px-5 py-3 text-sm">
+                  <Link href={withPublicPath("/?view=hot")} className="btn-token-accent rounded-full px-5 py-3 text-sm">
                     去看热门工具
                   </Link>
                   <Link
@@ -163,7 +163,7 @@ export default function CompareToolsGrid({
               {comparisonSlug ? (
                 <Link
                   href={withPublicPath(`/compare/${comparisonSlug}`)}
-                  className="btn-primary inline-flex h-9 items-center justify-center rounded px-5 text-sm font-semibold"
+                  className="btn-token-accent inline-flex h-9 items-center justify-center rounded px-5 text-sm font-semibold"
                 >
                   查看对比
                 </Link>
