@@ -3,8 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "workspaces": [
-    "apps/web",
-    "packages/contracts"
+    "apps/web"
   ],
   "scripts": {
     "prepare": "node scripts/install_git_hooks.js",

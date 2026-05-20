@@ -19,12 +19,11 @@ describe("AdminAccessGate", () => {
     expect(screen.getByText("正在验证后台权限...")).toBeInTheDocument();
   });
 
-  it("shows a login redirect hint for guests", () => {
+  it("renders nothing (null) for guests while redirecting", () => {
     mockUseAuth.mockReturnValue({ currentUser: null, status: "guest" });
     const { container } = render(<AdminAccessGate redirectPath="/admin/reviews">content</AdminAccessGate>);
 
-    expect(container.textContent).toContain("正在跳转到登录页。若页面未自动跳转，可前往");
-    expect(screen.getByRole("link", { name: "登录后台" })).toHaveAttribute("href", "/auth?next=%2Fadmin%2Freviews");
+    expect(container.firstChild).toBeNull();
   });
 
   it("blocks non-admin users", () => {

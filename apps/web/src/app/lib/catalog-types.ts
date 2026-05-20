@@ -219,8 +219,6 @@ export interface AiSearchResponse {
 
 export interface ToolRatingSummary {
   average: number;
-  count: number;
-  distribution: Record<string, number>;
   reviewCount: number;
   ratingDistribution: Record<string, number>;
 }
@@ -317,11 +315,10 @@ export interface CategorySummary {
 }
 
 export interface HomeCatalogResponse {
-  featuredTools: ToolSummary[];
+  hotTools: ToolSummary[];
   latestTools: ToolSummary[];
-  rankings: RankingSection[];
-  scenarios: ScenarioSummary[];
-  categories?: CategorySummary[];
+  sidebarCategories: HomeSidebarCategory[];
+  categorySections: HomeCategorySection[];
 }
 
 export interface HomeQuickEntry {
@@ -347,7 +344,7 @@ export interface HomeSidebarCategory {
   count: number;
   sectionId: string;
   description: string;
-  navigationType: "anchor" | "link";
+  navigationType: "anchor" | "route";
   href: string;
 }
 

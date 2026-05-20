@@ -30,6 +30,7 @@ from app.schemas.admin import (
 )
 from app.schemas.tool import ToolDetail
 from app.services import catalog_service, match_plan_service
+from app.services.cache_service import clear_recommendation_caches
 
 VALID_TOOL_STATUSES = {"published", "draft", "archived"}
 logger = logging.getLogger(__name__)
@@ -311,6 +312,7 @@ def upsert_tool(
     )
     catalog_service.clear_catalog_runtime_cache()
     catalog_service.sync_tool_search_index(db, tool.id)
+    clear_recommendation_caches()
     return get_tool_detail(db, tool.id)
 
 
@@ -368,6 +370,7 @@ def delete_review(db: Session, review_id: int) -> None:
     catalog_service.clear_catalog_runtime_cache()
     if tool is not None:
         catalog_service.sync_tool_search_index(db, tool.id)
+    clear_recommendation_caches()
 
 
 def list_rankings(db: Session) -> list[AdminRankingListItem]:

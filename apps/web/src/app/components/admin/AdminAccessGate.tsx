@@ -26,16 +26,8 @@ export default function AdminAccessGate({
     return <div className="rounded-[28px] border border-slate-200 bg-white p-8 text-sm text-slate-500">正在验证后台权限...</div>;
   }
 
-  if (!currentUser) {
-    return (
-      <div className="rounded-[28px] border border-slate-200 bg-white p-8 text-sm text-slate-600">
-        正在跳转到登录页。若页面未自动跳转，可前往
-        <Link href={withPublicPath(`/auth?next=${encodeURIComponent(withPublicPath(redirectPath))}`)} className="font-medium text-slate-900">
-          登录后台
-        </Link>
-        。
-      </div>
-    );
+  if (status === "guest" || !currentUser) {
+    return null;
   }
 
   if (!["admin", "operator", "administrator"].includes(currentUser.role ?? "")) {

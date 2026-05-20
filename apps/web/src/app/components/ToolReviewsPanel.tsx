@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "./auth/AuthProvider";
 import { fetchMyToolReview, fetchToolReviews, saveMyToolReview } from "../lib/catalog-api";
@@ -43,6 +43,15 @@ export default function ToolReviewsPanel({ toolSlug, reviews, summary }: ToolRev
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [currentReviews, setCurrentReviews] = useState<ToolReviewsResponse | null>(reviews);
+  const messageTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     setCurrentReviews(reviews);
@@ -102,9 +111,22 @@ export default function ToolReviewsPanel({ toolSlug, reviews, summary }: ToolRev
       setMessage("评论已发布");
 
       // Auto clear message after 3 seconds
-      setTimeout(() => setMessage(null), 3000);
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current);
+      }
+      messageTimeoutRef.current = setTimeout(() => {
+        setMessage(null);
+        messageTimeoutRef.current = null;
+      }, 3000);
     } catch {
       setMessage("提交失败，请稍后重试");
+      if (messageTimeoutRef.current) {
+        clearTimeout(messageTimeoutRef.current);
+      }
+      messageTimeoutRef.current = setTimeout(() => {
+        setMessage(null);
+        messageTimeoutRef.current = null;
+      }, 3000);
     } finally {
       setSubmitting(false);
     }

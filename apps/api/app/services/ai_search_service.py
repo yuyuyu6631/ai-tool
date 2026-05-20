@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import hashlib
 import json
@@ -57,7 +57,6 @@ BUSINESS_MAPPINGS = {
     "邮件": "office-productivity 邮件 email 销售 客户 外联 文案",
     "客户开发": "office-productivity 客户 销售 外联 邮件 crm sales outreach",
     "销售": "office-productivity 销售 客户 crm sales outreach 邮件",
-    "公众号": "office-productivity 公众号 文章 写作 文案 内容",
     "思维导图": "office-productivity 思维导图 脑图 mindmap diagram",
     "excel": "data-analysis excel 表格 数据 分析 spreadsheet",
     "Excel": "data-analysis excel 表格 数据 分析 spreadsheet",
@@ -82,6 +81,7 @@ TASK_KEYWORDS = {
     "agent": {"agent", "自动化", "工作流", "智能体", "插件", "任务执行"},
     "report-writing": {"周报", "报告", "总结", "写作", "文档"},
     "video-editing": {"视频", "剪辑", "字幕", "配音", "高光"},
+    "wechat-writing": {"公众号", "微信", "写作", "自媒体", "润色", "新媒体"},
 }
 
 TOOL_ALIASES = {
@@ -263,6 +263,8 @@ def _build_default_intent(user_query: str, normalized_query: str) -> tuple[dict,
             task = "report-writing"
         elif "video" in normalized_query or "视频" in normalized_query:
             task = "video-editing"
+        elif "wechat" in normalized_query or "公众号" in normalized_query:
+            task = "wechat-writing"
 
     actions: list[dict[str, str]] = [
         {"label": "只看免费", "type": "set_filter", "key": "pricing", "value": "free"},
@@ -551,6 +553,8 @@ def _build_reason(tool: ToolSummary, intent_constraints: dict[str, str], task: s
         return "适合数据分析/报表，可用于 BI、SQL 或可视化"
     if task == "agent":
         return "适合智能体和工作流自动化，便于验证任务执行场景"
+    if task == "wechat-writing":
+        return "适合微信公众号和自媒体写作，覆盖文案生成、润色和排版场景"
     if "限制" in normalized_query and tool.limitations:
         return f"主要限制是{tool.limitations[0]}"
     if tool.bestFor:
@@ -590,6 +594,7 @@ TASK_LABELS = {
     "agent": "智能体与工作流",
     "report-writing": "报告写作",
     "video-editing": "视频剪辑",
+    "wechat-writing": "微信公众号与自媒体写作",
     "general": "通用工具选择",
 }
 
