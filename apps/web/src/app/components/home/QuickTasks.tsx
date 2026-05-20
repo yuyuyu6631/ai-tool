@@ -26,7 +26,7 @@ export default function QuickTasks({ onTaskActivate, onTaskClick, onTaskPress }:
             onTaskPress(task);
           }}
           onClick={() => onTaskClick(task.id)}
-          className="home-quick-chip inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium backdrop-blur transition duration-150 hover:-translate-y-0.5 focus:outline-none"
+          className="home-quick-chip inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium backdrop-blur transition duration-150 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
           style={{ animationDelay: `${360 + index * 45}ms` }}
         >
           <span className="home-quick-dot h-1.5 w-1.5 rounded-full" />
