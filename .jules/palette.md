@@ -1,0 +1,3 @@
+## 2025-02-23 - Add Focus Visible Ring to Search UI and Quick Tasks
+**Learning:** Found that `focus:outline-none` was widely used on core interactive elements in the home page (Search button, Task Breakdown button, Quick Task chips) without any alternative focus state, making them completely inaccessible for keyboard users navigating via Tab.
+**Action:** Always replace pure `focus:outline-none` with `focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2` (or matching color) to ensure keyboard navigation visibility while preserving intended mouse click aesthetics.
