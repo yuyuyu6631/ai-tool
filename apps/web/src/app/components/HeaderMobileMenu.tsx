@@ -37,7 +37,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
     <>
       <button
         type="button"
-        className="header-utility-button relative z-[70] grid h-11 w-11 place-items-center rounded-full md:hidden"
+        className="header-utility-button relative z-[70] grid h-11 w-11 place-items-center rounded-full md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
         onClick={() => setOpen((value) => !value)}
         aria-label={open ? "关闭导航" : "打开导航"}
       >
@@ -55,7 +55,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
                 <a
                   key={item.href}
                   href={withPublicPath(item.href)}
-                  className={`rounded-2xl px-3 py-2.5 text-sm font-medium transition ${
+                  className={`rounded-2xl px-3 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${
                     isHeaderNavActive(currentPath, item.href)
                       ? "bg-slate-900 text-white"
                       : "text-slate-700 hover:bg-slate-100/90"
@@ -68,7 +68,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
                 <Link
                   key={item.href}
                   href={withPublicPath(item.href)}
-                  className={`rounded-2xl px-3 py-2.5 text-sm font-medium transition ${
+                  className={`rounded-2xl px-3 py-2.5 text-sm font-medium transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 ${
                     isHeaderNavActive(currentPath, item.href)
                       ? "bg-slate-900 text-white"
                       : "text-slate-700 hover:bg-slate-100/90"
@@ -81,7 +81,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
             ))}
             <Link
               href={authHref}
-              className="rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100/90"
+              className="rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
               onClick={() => setOpen(false)}
             >
               {authLabel}
@@ -89,7 +89,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
             {mounted && currentUser?.role === "admin" ? (
               <Link
                 href={withPublicPath("/admin")}
-                className="rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100/90"
+                className="rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
                 onClick={() => setOpen(false)}
               >
                 后台
@@ -99,7 +99,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
               <button
                 type="button"
                 onClick={() => void handleLogout()}
-                className="rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100/90"
+                className="rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-100/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
               >
                 退出
               </button>
