@@ -12,7 +12,7 @@ interface HeaderAuthControlsProps {
 
 function GuestAction({ authHref }: HeaderAuthControlsProps) {
   return (
-    <Link href={authHref} className="header-auth-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
+    <Link href={authHref} className="header-auth-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
       <UserRound className="h-4 w-4" />
       登录
     </Link>
@@ -47,18 +47,18 @@ export default function HeaderAuthControls({ authHref }: HeaderAuthControlsProps
   return (
     <>
       {currentUser.role === "admin" ? (
-        <Link href={withPublicPath("/admin")} className="header-utility-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800">
+        <Link href={withPublicPath("/admin")} className="header-utility-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
           后台
         </Link>
       ) : null}
-      <Link href={authHref} className="user-chip inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800">
+      <Link href={authHref} className="user-chip inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2">
         <UserRound className="h-4 w-4" />
         {currentUser.username}
       </Link>
       <button
         type="button"
         onClick={() => void handleLogout()}
-        className="header-utility-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800"
+        className="header-utility-button inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium text-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
       >
         <LogOut className="h-4 w-4" />
         退出
