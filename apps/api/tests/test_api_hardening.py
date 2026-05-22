@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import os
 
 from fastapi.testclient import TestClient
@@ -31,7 +32,6 @@ def test_parser_extract_rejects_localhost_targets():
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
 
-from unittest.mock import patch
 
 @patch("app.services.tool_parser_service.socket.getaddrinfo")
 def test_parser_extract_rejects_resolved_local_targets(mock_getaddrinfo):
