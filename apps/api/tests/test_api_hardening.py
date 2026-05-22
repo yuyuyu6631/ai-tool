@@ -1,3 +1,4 @@
+from unittest.mock import patch
 import os
 
 from fastapi.testclient import TestClient
@@ -25,6 +26,18 @@ def test_http_errors_preserve_detail_and_expose_stable_error_fields():
 
 def test_parser_extract_rejects_localhost_targets():
     response = client.post("/api/parser/extract", json={"url": "http://127.0.0.1/internal"})
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["code"] == "bad_request"
+    assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+
+@patch("app.services.tool_parser_service.socket.getaddrinfo")
+def test_parser_extract_rejects_resolved_local_targets(mock_getaddrinfo):
+    # Simulate a seemingly normal domain that resolves to a local IP
+    mock_getaddrinfo.return_value = [(2, 1, 6, '', ('127.0.0.1', 0))]
+    response = client.post("/api/parser/extract", json={"url": "http://localtest.me/admin"})
 
     assert response.status_code == 400
     payload = response.json()

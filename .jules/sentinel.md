@@ -1,0 +1,4 @@
+## 2025-05-22 - SSRF Bypass via DNS Resolution
+**Vulnerability:** Server-Side Request Forgery (SSRF) bypass due to insufficient URL validation. The application checked if the parsed hostname was an IP address, and if `ipaddress.ip_address` raised a `ValueError` (because the hostname was a domain string like "localtest.me"), it bypassed the private IP check completely.
+**Learning:** Checking a hostname directly against IP parsing functions allows domain names that resolve to local IPs to bypass security checks. This allows attackers to access internal services by providing a custom domain that resolves to 127.0.0.1 or internal ranges.
+**Prevention:** Always resolve the hostname to an IP address using `socket.getaddrinfo()` (or `socket.gethostbyname()`) and then validate the resolved IP against private address spaces.
