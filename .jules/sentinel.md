@@ -1,0 +1,4 @@
+## 2024-05-23 - DNS Resolution Fail Open Bypass
+**Vulnerability:** A previous Server-Side Request Forgery (SSRF) validation logic caught `socket.gaierror` when resolving a hostname but returned the URL (failing open) instead of blocking it. This could allow attackers to bypass private IP checks by controlling a DNS server to timeout or return SERVFAIL during validation, and then resolving to an internal IP (like 127.0.0.1) when the actual HTTP request is made (a form of DNS Rebinding or Time-of-Check to Time-of-Use).
+**Learning:** Security controls like DNS validation for SSRF mitigation must always 'fail closed'. If a target cannot be resolved to verify it's safe, it must be assumed unsafe.
+**Prevention:** Always raise an exception or block the request when `socket.getaddrinfo` or `socket.gethostbyname` fails during SSRF validation.

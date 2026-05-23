@@ -23,8 +23,20 @@ def test_http_errors_preserve_detail_and_expose_stable_error_fields():
     assert payload["message"] == "登录状态无效或已过期"
 
 
+from unittest.mock import patch
+
 def test_parser_extract_rejects_localhost_targets():
     response = client.post("/api/parser/extract", json={"url": "http://127.0.0.1/internal"})
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["code"] == "bad_request"
+    assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+@patch('app.services.tool_parser_service.socket.getaddrinfo')
+def test_parser_extract_rejects_dns_rebinding_targets(mock_getaddrinfo):
+    mock_getaddrinfo.return_value = [(2, 1, 6, '', ('127.0.0.1', 0))]
+    response = client.post("/api/parser/extract", json={"url": "http://local.nip.io/internal"})
 
     assert response.status_code == 400
     payload = response.json()
