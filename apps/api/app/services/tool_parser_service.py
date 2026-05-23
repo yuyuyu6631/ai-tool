@@ -3,6 +3,7 @@ import ipaddress
 import logging
 import os
 import re
+import socket
 from urllib.parse import urlparse
 from urllib import request
 
@@ -18,26 +19,30 @@ _TEST_CHAT_BASE_URL = "https://codex.testing.invalid/v1"
 def validate_public_url(url: str) -> str:
     parsed = urlparse(url.strip())
     hostname = parsed.hostname.casefold() if parsed.hostname else ""
-    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc or not hostname:
         raise ValueError("只支持公开的 http(s) 地址")
 
     if hostname in {"localhost", "0.0.0.0"} or hostname.endswith(".local"):
         raise ValueError("不允许抓取本机或局域网地址")
 
     try:
-        host_ip = ipaddress.ip_address(hostname)
-    except ValueError:
-        return parsed.geturl()
+        addr_info = socket.getaddrinfo(hostname, None)
+    except socket.gaierror:
+        # Fail closed on DNS resolution failures to prevent DNS timeout/SERVFAIL bypasses
+        raise ValueError("无法解析目标主机地址")
 
-    if (
-        host_ip.is_private
-        or host_ip.is_loopback
-        or host_ip.is_link_local
-        or host_ip.is_multicast
-        or host_ip.is_reserved
-        or host_ip.is_unspecified
-    ):
-        raise ValueError("不允许抓取本机或局域网地址")
+    for res in addr_info:
+        ip_str = res[4][0]
+        host_ip = ipaddress.ip_address(ip_str)
+        if (
+            host_ip.is_private
+            or host_ip.is_loopback
+            or host_ip.is_link_local
+            or host_ip.is_multicast
+            or host_ip.is_reserved
+            or host_ip.is_unspecified
+        ):
+            raise ValueError("不允许抓取本机或局域网地址")
 
     return parsed.geturl()
 
