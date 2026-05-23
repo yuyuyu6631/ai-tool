@@ -524,7 +524,7 @@ export const tools: ToolDetail[] = [
 function pickTools(slugs: string[]): ToolSummary[] {
   return slugs
     .map((slug) => tools.find((tool) => tool.slug === slug))
-    .filter((tool): tool is ToolSummary => Boolean(tool));
+    .filter((tool): tool is ToolDetail => Boolean(tool)) as unknown as ToolSummary[];
 }
 
 export const scenarios: ScenarioSummary[] = [

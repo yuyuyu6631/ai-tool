@@ -140,7 +140,8 @@ export default function CompareToolsGrid({
                       key={tool.slug}
                       type="button"
                       onClick={() => toggleTool(tool.slug)}
-                      className="btn-token-neutral inline-flex h-9 max-w-[150px] items-center gap-2 rounded px-3 text-xs font-medium transition"
+                      className="btn-token-neutral inline-flex h-9 max-w-[150px] items-center gap-2 rounded px-3 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
+                      aria-label={`移除 ${tool.name}`}
                     >
                       <span className="truncate">{tool.name}</span>
                       <X className="h-3 w-3 shrink-0" />
@@ -156,7 +157,7 @@ export default function CompareToolsGrid({
                 type="button"
                 onClick={() => setSelectedSlugs([])}
                 disabled={selectedSlugs.length === 0}
-                className="btn-token-neutral inline-flex h-9 items-center justify-center rounded px-4 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50"
+                className="btn-token-neutral inline-flex h-9 items-center justify-center rounded px-4 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
               >
                 清空
               </button>
