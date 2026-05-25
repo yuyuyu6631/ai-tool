@@ -1262,6 +1262,18 @@ def list_tools_by_category(*, db, category_slug: str) -> list[ToolSummary]:
 
 
 def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
+    redis_client = get_redis_client()
+    cache_key = f"catalog:home:v1:{_database_cache_namespace(db)}:{section_size}"
+    cache_ttl = 300  # 5 minutes
+
+    if redis_client:
+        try:
+            cached = redis_client.get(cache_key)
+            if cached:
+                return HomeCatalogResponse.model_validate_json(cached)
+        except Exception as error:
+            mark_redis_unavailable(error)
+
     all_tools = _load_summaries(db)
     hot_tools = _sort_tools(all_tools, sort="featured", view="hot")[:section_size]
     latest_tools = _sort_tools(all_tools, sort="featured", view="latest")[:section_size]
@@ -1311,12 +1323,21 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
             )
         )
 
-    return HomeCatalogResponse(
+    result = HomeCatalogResponse(
         hotTools=hot_tools,
         latestTools=latest_tools,
         sidebarCategories=sidebar_categories,
         categorySections=category_sections,
     )
+
+    if redis_client:
+        try:
+            serialized = result.model_dump_json()
+            redis_client.setex(cache_key, cache_ttl, serialized)
+        except Exception as error:
+            mark_redis_unavailable(error)
+
+    return result
 
 
 def _build_scenario_summary(scenario: Scenario, links: list[ScenarioTool]) -> ScenarioSummary:
