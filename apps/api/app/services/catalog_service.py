@@ -1195,7 +1195,7 @@ def get_tool(*, db, slug: str) -> ToolDetail | None:
     return _tool_row_to_detail(row) if row else None
 
 
-def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]:
+def list_categories(*, db, include_empty: bool = False, _published_tools: list[ToolSummary] | None = None) -> list[CategorySummary]:
     redis_client = get_redis_client()
     cache_key = f"catalog:categories:{'all' if include_empty else 'non-empty'}"
     cache_ttl = 300  # 5 minutes
@@ -1210,7 +1210,7 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
             mark_redis_unavailable(error)
 
     rows = db.scalars(select(Category)).all()
-    published_tools = _load_summaries(db)
+    published_tools = _published_tools if _published_tools is not None else _load_summaries(db)
     category_counts = Counter(
         tool.categorySlug or _slugify(tool.category) for tool in published_tools
     )
@@ -1265,7 +1265,7 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
     all_tools = _load_summaries(db)
     hot_tools = _sort_tools(all_tools, sort="featured", view="hot")[:section_size]
     latest_tools = _sort_tools(all_tools, sort="featured", view="latest")[:section_size]
-    categories = list_categories(db=db, include_empty=False)
+    categories = list_categories(db=db, include_empty=False, _published_tools=all_tools)
 
     sidebar_categories = [
         HomeSidebarCategory(
