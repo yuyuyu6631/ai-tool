@@ -299,8 +299,9 @@ export default function ChatBot() {
               {/* 新对话按钮 */}
               <button
                 onClick={handleReset}
-                className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                className="p-1.5 rounded-lg text-white/70 transition-all hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-1 focus-visible:ring-offset-indigo-600"
                 title="新对话"
+                aria-label="新对话"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -309,7 +310,9 @@ export default function ChatBot() {
               {/* 关闭按钮 */}
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                className="p-1.5 rounded-lg text-white/70 transition-all hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 focus-visible:ring-offset-1 focus-visible:ring-offset-indigo-600"
+                title="关闭"
+                aria-label="关闭 AI 助手"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
