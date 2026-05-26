@@ -30,3 +30,23 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+
+def test_cors_configuration_is_restricted():
+    response = client.options(
+        "/api/health",
+        headers={
+            "Origin": "http://localhost:3000",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "Content-Type",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-methods") == "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+
+    # CORS middleware inherently adds safelisted headers (Accept, Accept-Language, Content-Language).
+    assert "Content-Type" in response.headers.get("access-control-allow-headers")
+    assert "Authorization" in response.headers.get("access-control-allow-headers")
+    assert "X-Requested-With" in response.headers.get("access-control-allow-headers")
+    assert "Accept" in response.headers.get("access-control-allow-headers")
