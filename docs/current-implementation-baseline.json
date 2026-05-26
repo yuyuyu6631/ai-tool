@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-05-07T09:32:16.365Z",
+  "generatedAt": "2026-05-26T15:31:37.955Z",
   "summary": {
     "frontendRouteCount": 20,
     "apiEndpointCount": 42,
     "dataModelCount": 19,
-    "testFileCount": 55
+    "testFileCount": 56
   },
   "frontendRoutes": [
     {
@@ -738,7 +738,7 @@
   "tests": [
     {
       "name": "Web unit/integration",
-      "count": 27,
+      "count": 28,
       "files": [
         "apps/web/src/app/components/__tests__/BackToResultsLink.test.tsx",
         "apps/web/src/app/components/__tests__/CommandPalette.test.tsx",
@@ -761,6 +761,7 @@
         "apps/web/src/app/lib/__tests__/compare-utils.test.ts",
         "apps/web/src/app/lib/__tests__/floating-chat-visibility.test.ts",
         "apps/web/src/app/lib/__tests__/home-page-data.test.ts",
+        "apps/web/src/app/lib/__tests__/recent-tools.test.ts",
         "apps/web/src/app/lib/__tests__/tool-display.test.ts",
         "apps/web/src/app/pages/__tests__/HomePage.agent.test.tsx",
         "apps/web/src/app/pages/__tests__/HomePage.test.tsx",
