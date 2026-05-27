@@ -39,7 +39,7 @@ export default function SearchSection({ query, inputRef, onQueryChange, onSubmit
         </div>
         <button
           type="submit"
-          className="home-cta inline-flex min-h-14 shrink-0 items-center justify-center gap-2 rounded-[18px] px-6 py-3 text-base font-semibold transition duration-200 hover:-translate-y-0.5 focus:outline-none"
+          className="home-cta inline-flex min-h-14 shrink-0 items-center justify-center gap-2 rounded-[18px] px-6 py-3 text-base font-semibold transition duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
         >
           <Sparkles className="h-4 w-4" />
           找工具

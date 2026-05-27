@@ -32,6 +32,7 @@ const allowedTopLevel = new Set([
   "workflow",
   "start_podman_prod.sh",
   "xingdp_proxy_server.cjs",
+  ".Jules",
 ]);
 
 const forbiddenTrackedPatterns = [
