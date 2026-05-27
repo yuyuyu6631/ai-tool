@@ -30,3 +30,27 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+
+def test_cors_configuration_is_restricted():
+    headers = {
+        "Origin": "http://localhost:3000",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "Authorization",
+    }
+    response = client.options("/api/auth/me", headers=headers)
+
+    assert response.status_code == 200
+
+    # Assert allowed methods does not contain wildcard and contains explicitly defined methods
+    allow_methods = response.headers.get("access-control-allow-methods", "")
+    assert allow_methods
+    assert "*" not in allow_methods
+    assert "POST" in allow_methods
+    assert "GET" in allow_methods
+
+    # Assert allowed headers does not contain wildcard and contains requested header
+    allow_headers = response.headers.get("access-control-allow-headers", "")
+    assert allow_headers
+    assert "*" not in allow_headers
+    assert "authorization" in allow_headers.lower()
