@@ -11,17 +11,17 @@ type CockpitControlsProps = {
 export function CockpitControls({ expanded, onZoomIn, onZoomOut, onExpand, onClose }: CockpitControlsProps) {
   return (
     <div className="absolute right-3 top-3 z-30 flex gap-2 md:right-4 md:top-4">
-      <button type="button" aria-label="放大雷达" onClick={onZoomIn} className="grid h-9 w-9 place-items-center rounded bg-white/10 text-white hover:bg-white/20">
+      <button type="button" aria-label="放大雷达" onClick={onZoomIn} className="grid h-9 w-9 place-items-center rounded bg-white/10 text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none">
         <Plus className="h-4 w-4" />
       </button>
-      <button type="button" aria-label="缩小雷达" onClick={onZoomOut} className="grid h-9 w-9 place-items-center rounded bg-white/10 text-white hover:bg-white/20">
+      <button type="button" aria-label="缩小雷达" onClick={onZoomOut} className="grid h-9 w-9 place-items-center rounded bg-white/10 text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none">
         <Minus className="h-4 w-4" />
       </button>
-      <button type="button" aria-label="全屏探索雷达" onClick={onExpand} className="grid h-9 w-9 place-items-center rounded bg-white/10 text-white hover:bg-white/20">
+      <button type="button" aria-label="全屏探索雷达" onClick={onExpand} className="grid h-9 w-9 place-items-center rounded bg-white/10 text-white hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none">
         <Maximize2 className="h-4 w-4" />
       </button>
       {expanded ? (
-        <button type="button" aria-label="关闭雷达探索" onClick={onClose} className="grid h-9 w-9 place-items-center rounded bg-lime-300 text-slate-950 hover:bg-lime-200">
+        <button type="button" aria-label="关闭雷达探索" onClick={onClose} className="grid h-9 w-9 place-items-center rounded bg-lime-300 text-slate-950 hover:bg-lime-200 focus-visible:ring-2 focus-visible:ring-lime-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900 focus:outline-none">
           <X className="h-4 w-4" />
         </button>
       ) : null}
