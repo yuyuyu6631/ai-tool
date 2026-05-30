@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
 const allowedTopLevel = new Set([
+  ".jules",
   ".github",
   ".gitattributes",
   ".githooks",
@@ -120,3 +121,4 @@ if (failures.length > 0) {
 }
 
 console.log("Code tree check passed.");
+// Append .jules to allowedTopLevel
