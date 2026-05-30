@@ -30,3 +30,33 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+from unittest.mock import patch
+
+def test_parser_extract_rejects_ssrf_bypass_integer():
+    with patch('app.services.tool_parser_service.socket.getaddrinfo') as mock_dns:
+        mock_dns.return_value = [(2, 1, 6, '', ('127.0.0.1', 0))]
+        response = client.post("/api/parser/extract", json={"url": "http://2130706433/internal"})
+        assert response.status_code == 400
+        payload = response.json()
+        assert payload["code"] == "bad_request"
+        assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+def test_parser_extract_rejects_ssrf_bypass_hex():
+    with patch('app.services.tool_parser_service.socket.getaddrinfo') as mock_dns:
+        mock_dns.return_value = [(2, 1, 6, '', ('127.0.0.1', 0))]
+        response = client.post("/api/parser/extract", json={"url": "http://0x7f000001/internal"})
+        assert response.status_code == 400
+        payload = response.json()
+        assert payload["code"] == "bad_request"
+        assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+def test_parser_extract_accepts_valid_domain():
+    with patch('app.services.tool_parser_service.socket.getaddrinfo') as mock_dns:
+        mock_dns.return_value = [(2, 1, 6, '', ('8.8.8.8', 0))]
+        with patch('app.services.tool_parser_service.fetch_webpage_text') as mock_fetch:
+            mock_fetch.return_value = "Title: Test\nDescription: Desc"
+            response = client.post("/api/parser/extract", json={"url": "http://google.com"})
+            assert response.status_code == 200
+            payload = response.json()
+            assert payload["success"] is False # because AI extraction might return {}, but no 400 error
