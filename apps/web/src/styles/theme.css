@@ -1327,6 +1327,13 @@
     border-color: rgba(15, 23, 42, 0.08);
   }
 
+  .header-search-trigger:focus-visible,
+  .header-utility-button:focus-visible,
+  .header-auth-button:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+  }
+
   .header-auth-button {
     color: #1d1d1f;
   }
