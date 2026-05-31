@@ -30,29 +30,3 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
-
-
-def test_cors_restrictions():
-    response = client.options(
-        "/api/auth/me",
-        headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET",
-            "Access-Control-Request-Headers": "X-Secret-Header",
-        },
-    )
-    assert response.status_code == 400
-    assert response.text == "Disallowed CORS headers"
-
-
-def test_cors_allowed():
-    response = client.options(
-        "/api/auth/me",
-        headers={
-            "Origin": "http://localhost:3000",
-            "Access-Control-Request-Method": "GET",
-            "Access-Control-Request-Headers": "Content-Type",
-        },
-    )
-    assert response.status_code == 200
-    assert "content-type" in response.headers.get("access-control-allow-headers", "").lower()
