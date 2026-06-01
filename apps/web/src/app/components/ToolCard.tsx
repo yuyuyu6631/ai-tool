@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "next-view-transitions";
-import { ArrowRight, ExternalLink, Plus, Star } from "lucide-react";
+import { ArrowRight, ExternalLink, Plus, Star, Check } from "lucide-react";
 import { memo } from "react";
 import type { AccessFlags, AgentToolPlanItem, ToolMediaItem } from "../lib/catalog-types";
 import { repairDisplayList, repairDisplayText } from "../lib/catalog-utils";
@@ -159,7 +159,8 @@ function ToolCard({
               onClick={onCompareToggle}
               disabled={!compareSelected && compareDisabled}
               aria-pressed={compareSelected}
-              title={compareDisabled ? "最多可选 4 个工具" : undefined}
+              aria-label={compareSelected ? "取消对比" : "加入对比"}
+              title={compareDisabled ? "最多可选 4 个工具" : compareSelected ? "取消对比" : "加入对比"}
               className={`inline-flex h-8 flex-1 items-center justify-center gap-1 rounded px-3 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 sm:flex-none ${
                 compareSelected
                   ? "btn-token-selected"
@@ -168,7 +169,7 @@ function ToolCard({
                     : "btn-token-neutral"
               }`}
             >
-              <Plus className="h-3.5 w-3.5" />
+              {compareSelected ? <Check className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
               {compareSelected ? "已加入" : "对比"}
             </button>
           ) : null}
