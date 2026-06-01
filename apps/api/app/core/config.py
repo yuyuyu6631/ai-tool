@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Annotated
 
-from pydantic import Field, field_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     database_url: str = "sqlite+pysqlite:///:memory:"
     redis_url: str = "redis://localhost:6379/0"
-    auth_secret_key: str = "dev-auth-secret-key"
+    auth_secret_key: str
     session_cookie_name: str = "xingdianping_session"
     session_ttl_seconds: int = 604800
     cookie_secure: bool = False
@@ -127,6 +127,15 @@ class Settings(BaseSettings):
             or os.getenv("RAILWAY_PROJECT_ID")
             or os.getenv("RAILWAY_SERVICE_ID")
         )
+
+    @model_validator(mode="after")
+    def validate_security(self) -> "Settings":
+        if self.is_production_like:
+            if self.auth_secret_key == "dev-auth-secret-key":
+                raise ValueError("legacy 'dev-auth-secret-key' value not allowed")
+            if len(self.auth_secret_key) < 32:
+                raise ValueError("AUTH_SECRET_KEY must be at least 32 characters in production")
+        return self
 
     @property
     def is_production_like(self) -> bool:

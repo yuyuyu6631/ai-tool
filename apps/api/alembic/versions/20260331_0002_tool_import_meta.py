@@ -2,6 +2,7 @@
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.engine.reflection import Inspector
 
 
 revision = "20260331_0002"
@@ -18,38 +19,44 @@ def upgrade() -> None:
     op.add_column("tools", sa.Column("platforms", sa.String(length=255), nullable=False, server_default=""))
     op.add_column("tools", sa.Column("vpn_required", sa.String(length=32), nullable=False, server_default=""))
 
-    op.execute(
-        sa.text(
-            """
-            UPDATE tools
-            SET
-              developer = CASE
-                WHEN editor_comment REGEXP 'Developer:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Developer:', -1), '|', 1))
-                ELSE developer
-              END,
-              country = CASE
-                WHEN editor_comment REGEXP 'Country:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Country:', -1), '|', 1))
-                ELSE country
-              END,
-              city = CASE
-                WHEN editor_comment REGEXP 'City:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'City:', -1), '|', 1))
-                ELSE city
-              END,
-              price = CASE
-                WHEN editor_comment REGEXP 'Price:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Price:', -1), '|', 1))
-                ELSE price
-              END,
-              platforms = CASE
-                WHEN editor_comment REGEXP 'Platforms:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Platforms:', -1), '|', 1))
-                ELSE platforms
-              END,
-              vpn_required = CASE
-                WHEN editor_comment REGEXP 'VPN required:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'VPN required:', -1), '|', 1))
-                ELSE vpn_required
-              END
-            """
+    conn = op.get_bind()
+    if conn.dialect.name == "sqlite":
+        # SQLite doesn't support REGEXP and SUBSTRING_INDEX natively without extensions
+        # Data migration skipped for sqlite tests
+        pass
+    else:
+        op.execute(
+            sa.text(
+                """
+                UPDATE tools
+                SET
+                  developer = CASE
+                    WHEN editor_comment REGEXP 'Developer:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Developer:', -1), '|', 1))
+                    ELSE developer
+                  END,
+                  country = CASE
+                    WHEN editor_comment REGEXP 'Country:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Country:', -1), '|', 1))
+                    ELSE country
+                  END,
+                  city = CASE
+                    WHEN editor_comment REGEXP 'City:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'City:', -1), '|', 1))
+                    ELSE city
+                  END,
+                  price = CASE
+                    WHEN editor_comment REGEXP 'Price:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Price:', -1), '|', 1))
+                    ELSE price
+                  END,
+                  platforms = CASE
+                    WHEN editor_comment REGEXP 'Platforms:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'Platforms:', -1), '|', 1))
+                    ELSE platforms
+                  END,
+                  vpn_required = CASE
+                    WHEN editor_comment REGEXP 'VPN required:[[:space:]]*[^|]+' THEN TRIM(SUBSTRING_INDEX(SUBSTRING_INDEX(editor_comment, 'VPN required:', -1), '|', 1))
+                    ELSE vpn_required
+                  END
+                """
+            )
         )
-    )
 
 
 def downgrade() -> None:

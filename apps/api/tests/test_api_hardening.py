@@ -30,3 +30,17 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+from app.core.config import Settings
+import pytest
+from pydantic import ValidationError
+
+def test_production_rejects_legacy_secret():
+    with pytest.raises(ValidationError) as exc:
+        Settings(auth_secret_key="dev-auth-secret-key", environment="production")
+    assert "legacy 'dev-auth-secret-key' value not allowed" in str(exc.value)
+
+def test_production_requires_long_secret():
+    with pytest.raises(ValidationError) as exc:
+        Settings(auth_secret_key="short_secret", environment="production")
+    assert "AUTH_SECRET_KEY must be at least 32 characters in production" in str(exc.value)
