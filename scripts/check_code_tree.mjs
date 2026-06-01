@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const allowedTopLevel = new Set([
+const allowedTopLevel = new Set(['.jules',
   ".github",
   ".gitattributes",
   ".githooks",
