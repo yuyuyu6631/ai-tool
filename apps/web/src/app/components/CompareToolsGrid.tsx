@@ -140,7 +140,9 @@ export default function CompareToolsGrid({
                       key={tool.slug}
                       type="button"
                       onClick={() => toggleTool(tool.slug)}
-                      className="btn-token-neutral inline-flex h-9 max-w-[150px] items-center gap-2 rounded px-3 text-xs font-medium transition"
+                      aria-label={`移除 ${tool.name}`}
+                      title={`移除 ${tool.name}`}
+                      className="btn-token-neutral inline-flex h-9 max-w-[150px] items-center gap-2 rounded px-3 text-xs font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2"
                     >
                       <span className="truncate">{tool.name}</span>
                       <X className="h-3 w-3 shrink-0" />
