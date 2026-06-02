@@ -14,7 +14,11 @@ from app.services.tool_parser_service import (
 def test_fetch_webpage_text_success(mock_urlopen, mock_getaddrinfo):
     mock_getaddrinfo.return_value = [(2, 1, 6, "", ("8.8.8.8", 0))]
     mock_response = MagicMock()
-    mock_response.read.return_value = b"<html><head><title>Test Tool AI</title><meta name='description' content='A great AI tool for text'></head><body></body></html>"
+    mock_response.read.return_value = (
+        b"<html><head><title>Test Tool AI</title>"
+        b"<meta name='description' content='A great AI tool for text'>"
+        b"</head><body></body></html>"
+    )
     mock_response.__enter__.return_value = mock_response
     mock_urlopen.return_value = mock_response
 
@@ -42,7 +46,11 @@ def test_generate_tool_metadata_success(mock_call_ai_api, mock_fetch, mock_getad
         "choices": [
             {
                 "message": {
-                    "content": '```json\n{"name": "SmartAI", "summary": "Text tool", "description": "Make text smarter using LLMs.", "category": "写作辅助", "tags": ["文本", "AI"]}\n```'
+                    "content": (
+                        '```json\n{"name": "SmartAI", "summary": "Text tool", '
+                        '"description": "Make text smarter using LLMs.", '
+                        '"category": "写作辅助", "tags": ["文本", "AI"]}\n```'
+                    )
                 }
             }
         ]
