@@ -1,10 +1,11 @@
-import json
 import ipaddress
+import json
 import logging
 import os
 import re
-from urllib.parse import urlparse
+import socket
 from urllib import request
+from urllib.parse import urlparse
 
 from app.core.config import settings
 from app.services.ai_client import _call_ai_api, _extract_json_block, _normalize_chat_url
@@ -21,23 +22,35 @@ def validate_public_url(url: str) -> str:
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError("只支持公开的 http(s) 地址")
 
+    if not hostname:
+        raise ValueError("无效的域名")
+
     if hostname in {"localhost", "0.0.0.0"} or hostname.endswith(".local"):
         raise ValueError("不允许抓取本机或局域网地址")
 
     try:
-        host_ip = ipaddress.ip_address(hostname)
-    except ValueError:
-        return parsed.geturl()
+        # Resolve all IPs for the hostname to prevent alternate encoding bypasses
+        addr_info = socket.getaddrinfo(hostname, None)
+    except socket.gaierror:
+        # Fail closed if we can't resolve the hostname
+        raise ValueError("无法解析域名")
 
-    if (
-        host_ip.is_private
-        or host_ip.is_loopback
-        or host_ip.is_link_local
-        or host_ip.is_multicast
-        or host_ip.is_reserved
-        or host_ip.is_unspecified
-    ):
-        raise ValueError("不允许抓取本机或局域网地址")
+    for info in addr_info:
+        ip_str = info[4][0]
+        try:
+            host_ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+
+        if (
+            host_ip.is_private
+            or host_ip.is_loopback
+            or host_ip.is_link_local
+            or host_ip.is_multicast
+            or host_ip.is_reserved
+            or host_ip.is_unspecified
+        ):
+            raise ValueError("不允许抓取本机或局域网地址")
 
     return parsed.geturl()
 
