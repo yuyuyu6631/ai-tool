@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Iterable, Sequence, TypeVar
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 
@@ -166,24 +166,31 @@ def upsert_match_plan(db: Session, payload: AdminMatchPlanPayload, *, plan_id: i
     if plan.status != "published":
         plan.published_at = None
 
-    for existing in db.scalars(select(MatchPlanTool).where(MatchPlanTool.match_plan_id == plan.id)).all():
-        db.delete(existing)
+    # ⚡ Bolt 优化：使用单次批量删除，消除基于循环的 db.delete 产生的 N+1 查询
+    db.execute(delete(MatchPlanTool).where(MatchPlanTool.match_plan_id == plan.id))
     db.flush()
 
-    for index, item in enumerate(payload.tools):
-        tool = db.scalar(select(Tool).where(Tool.slug == item.toolSlug))
-        if tool is None:
-            db.rollback()
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"Unknown tool slug: {item.toolSlug}")
-        db.add(
-            MatchPlanTool(
-                match_plan_id=plan.id,
-                tool_id=tool.id,
-                reason=item.reason,
-                sort_order=item.sortOrder if item.sortOrder else index,
-                weight=item.weight,
+    if payload.tools:
+        # ⚡ Bolt 优化：使用 .in_() 批量获取所有涉及的 Tool 记录，消除循环中的 db.scalar 产生的 N+1 查询
+        requested_slugs = [item.toolSlug for item in payload.tools]
+        tools_by_slug = {
+            t.slug: t for t in db.scalars(select(Tool).where(Tool.slug.in_(requested_slugs))).all()
+        }
+
+        for index, item in enumerate(payload.tools):
+            tool = tools_by_slug.get(item.toolSlug)
+            if tool is None:
+                db.rollback()
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"Unknown tool slug: {item.toolSlug}")
+            db.add(
+                MatchPlanTool(
+                    match_plan_id=plan.id,
+                    tool_id=tool.id,
+                    reason=item.reason,
+                    sort_order=item.sortOrder if item.sortOrder else index,
+                    weight=item.weight,
+                )
             )
-        )
 
     try:
         db.commit()
