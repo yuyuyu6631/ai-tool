@@ -30,3 +30,25 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+def test_parser_extract_rejects_ssrf_domains():
+    # Integer format for 127.0.0.1
+    response = client.post("/api/parser/extract", json={"url": "http://2130706433"})
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["code"] == "bad_request"
+    assert "不允许抓取本机或局域网地址" in payload["detail"]
+
+    # Octal format for 127.0.0.1
+    response = client.post("/api/parser/extract", json={"url": "http://0177.0.0.1"})
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["code"] == "bad_request"
+    assert "不允许抓取本机或局域网地址" in payload["detail"]
+
+    # domain that resolves to 127.0.0.1 (nip.io)
+    response = client.post("/api/parser/extract", json={"url": "http://127.0.0.1.nip.io"})
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["code"] == "bad_request"
+    assert "不允许抓取本机或局域网地址" in payload["detail"]
