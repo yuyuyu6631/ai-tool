@@ -7,7 +7,7 @@ from datetime import UTC, datetime
 from typing import Iterable, Sequence, TypeVar
 
 from fastapi import HTTPException, status
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session, selectinload
 
@@ -166,24 +166,28 @@ def upsert_match_plan(db: Session, payload: AdminMatchPlanPayload, *, plan_id: i
     if plan.status != "published":
         plan.published_at = None
 
-    for existing in db.scalars(select(MatchPlanTool).where(MatchPlanTool.match_plan_id == plan.id)).all():
-        db.delete(existing)
+    db.execute(delete(MatchPlanTool).where(MatchPlanTool.match_plan_id == plan.id))
     db.flush()
 
-    for index, item in enumerate(payload.tools):
-        tool = db.scalar(select(Tool).where(Tool.slug == item.toolSlug))
-        if tool is None:
-            db.rollback()
-            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"Unknown tool slug: {item.toolSlug}")
-        db.add(
-            MatchPlanTool(
-                match_plan_id=plan.id,
-                tool_id=tool.id,
-                reason=item.reason,
-                sort_order=item.sortOrder if item.sortOrder else index,
-                weight=item.weight,
+    if payload.tools:
+        tool_slugs = [item.toolSlug for item in payload.tools]
+        tools = db.scalars(select(Tool).where(Tool.slug.in_(tool_slugs))).all()
+        tool_map = {t.slug: t for t in tools}
+
+        for index, item in enumerate(payload.tools):
+            tool = tool_map.get(item.toolSlug)
+            if tool is None:
+                db.rollback()
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=f"Unknown tool slug: {item.toolSlug}")
+            db.add(
+                MatchPlanTool(
+                    match_plan_id=plan.id,
+                    tool_id=tool.id,
+                    reason=item.reason,
+                    sort_order=item.sortOrder if item.sortOrder else index,
+                    weight=item.weight,
+                )
             )
-        )
 
     try:
         db.commit()
