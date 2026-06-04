@@ -308,6 +308,7 @@ def test_admin_can_manage_tools_and_rankings():
 def test_production_like_environment_rejects_in_memory_database():
     os.environ["DATABASE_URL"] = "sqlite:///:memory:"
     os.environ["RAILWAY_ENVIRONMENT"] = "production"
+    os.environ["AUTH_SECRET_KEY"] = "long-enough-secret-key-for-testing-prod-32-chars"
 
     import app.core.config as config_module
     import app.main as main_module
