@@ -3,6 +3,7 @@ import os
 
 # Force deterministic, offline-safe AI behavior for the pytest process.
 os.environ["CODEX_TESTING"] = "1"
+os.environ.setdefault("AUTH_SECRET_KEY", "test-auth-secret")
 os.environ["AI_PROVIDER"] = "stub"
 os.environ["AI_API_KEY"] = "test-key"
 os.environ["AI_MODEL"] = "test-model"
