@@ -33,7 +33,8 @@ export default function PasswordField({ label, hint, error, id, disabled, ...pro
           onClick={() => setVisible((value) => !value)}
           disabled={disabled}
           className="absolute right-3 top-[42px] inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-900/5 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
-          aria-label={visible ? "隐藏密码" : "显示密码"}
+          aria-label="显示密码"
+          aria-pressed={visible}
           aria-controls={inputId}
         >
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
