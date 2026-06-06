@@ -72,6 +72,7 @@ LEGACY_CATEGORY_SLUGS: dict[str, list[str]] = {
     "chatbot": ["ai-chat", "general-assistants"],
     "ai-图像": ["ai-image", "image", "image-video"],
 }
+_REVERSE_CATEGORY_SLUGS = {alias: slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() for alias in [*aliases, slug]}
 HOME_SIDEBAR_ORDER = ["chatbot", "office"]
 
 PRESET_DEFINITIONS = {
@@ -614,14 +615,7 @@ def _expand_with_relaxed_query_recall(
 
 def _matches_category(tool: ToolSummary, category_slug: str) -> bool:
     normalized = _slugify(category_slug)
-    canonical_slug = next(
-        (
-            slug
-            for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
-            if normalized == slug or normalized in aliases
-        ),
-        normalized,
-    )
+    canonical_slug = _REVERSE_CATEGORY_SLUGS.get(normalized, normalized)
     category_values = {
         _slugify(tool.categorySlug or ""),
         _slugify(tool.category),
@@ -1244,14 +1238,7 @@ def list_categories(*, db, include_empty: bool = False) -> list[CategorySummary]
 
 def list_tools_by_category(*, db, category_slug: str) -> list[ToolSummary]:
     normalized = _slugify(category_slug)
-    canonical_slug = next(
-        (
-            slug
-            for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
-            if normalized == slug or normalized in aliases
-        ),
-        normalized,
-    )
+    canonical_slug = _REVERSE_CATEGORY_SLUGS.get(normalized, normalized)
     # status already filtered by _load_summaries default to PUBLIC_TOOL_STATUS
     tools = [
         tool
@@ -1289,14 +1276,7 @@ def get_home_catalog(*, db, section_size: int = 8) -> HomeCatalogResponse:
     category_sections = []
     for item in categories:
         normalized = _slugify(item.slug)
-        canonical_slug = next(
-            (
-                slug
-                for slug, aliases in LEGACY_CATEGORY_SLUGS.items()
-                if normalized == slug or normalized in aliases
-            ),
-            normalized,
-        )
+        canonical_slug = _REVERSE_CATEGORY_SLUGS.get(normalized, normalized)
         category_sections.append(
             HomeCategorySection(
                 homeSlug=item.slug,
