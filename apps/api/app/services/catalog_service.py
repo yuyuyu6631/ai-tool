@@ -72,7 +72,9 @@ LEGACY_CATEGORY_SLUGS: dict[str, list[str]] = {
     "chatbot": ["ai-chat", "general-assistants"],
     "ai-图像": ["ai-image", "image", "image-video"],
 }
-_REVERSE_CATEGORY_SLUGS = {alias: slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() for alias in [*aliases, slug]}
+_REVERSE_CATEGORY_SLUGS = {
+    alias: slug for slug, aliases in LEGACY_CATEGORY_SLUGS.items() for alias in [*aliases, slug]
+}
 HOME_SIDEBAR_ORDER = ["chatbot", "office"]
 
 PRESET_DEFINITIONS = {
