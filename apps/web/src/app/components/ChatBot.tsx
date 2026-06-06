@@ -283,7 +283,7 @@ export default function ChatBot() {
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
       {isOpen && (
-        <div className="w-[360px] md:w-[420px] h-[560px] max-h-[80vh] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl flex flex-col mb-4 overflow-hidden transition-all duration-300 animate-in slide-in-from-bottom-4 fade-in">
+        <div id="ai-chat-panel" className="w-[360px] md:w-[420px] h-[560px] max-h-[80vh] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl flex flex-col mb-4 overflow-hidden transition-all duration-300 animate-in slide-in-from-bottom-4 fade-in">
           {/* ── Header ── */}
           <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 p-4 text-white flex justify-between items-center">
             <div className="flex items-center gap-2">
@@ -426,7 +426,9 @@ export default function ChatBot() {
           ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 rotate-0"
           : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-indigo-500/30 hover:shadow-xl"
           }`}
-        aria-label={isOpen ? "关闭 AI 助手" : "打开 AI 助手"}
+        aria-label="AI 助手"
+        aria-expanded={isOpen}
+        aria-controls="ai-chat-panel"
       >
         {isOpen ? (
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">

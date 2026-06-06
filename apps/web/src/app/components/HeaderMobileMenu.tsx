@@ -39,13 +39,15 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
         type="button"
         className="header-utility-button relative z-[70] grid h-11 w-11 place-items-center rounded-full md:hidden"
         onClick={() => setOpen((value) => !value)}
-        aria-label={open ? "关闭导航" : "打开导航"}
+        aria-label="导航菜单"
+        aria-expanded={open}
+        aria-controls="mobile-menu-panel"
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
 
       {open ? (
-        <div className="fixed inset-x-0 top-[68px] z-[60] border-t border-[var(--border-default)] bg-[var(--bg-elevated)] shadow-[var(--shadow-glass)] backdrop-blur-xl md:hidden">
+        <div id="mobile-menu-panel" className="fixed inset-x-0 top-[68px] z-[60] border-t border-[var(--border-default)] bg-[var(--bg-elevated)] shadow-[var(--shadow-glass)] backdrop-blur-xl md:hidden">
           <div className="mx-auto flex max-w-[1440px] flex-col gap-2 px-4 py-4 sm:px-6">
             <div className="mb-1 flex justify-end">
               <ThemeToggle />
