@@ -30,3 +30,17 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+
+def test_parser_extract_rejects_alternate_ip_encodings():
+    alternate_ips = [
+        "http://2130706433/internal",  # 127.0.0.1 integer
+        "http://0x7f000001/internal",  # 127.0.0.1 hex
+        "http://127.1/internal",  # 127.0.0.1 shorthand
+    ]
+    for url in alternate_ips:
+        response = client.post("/api/parser/extract", json={"url": url})
+        assert response.status_code == 400
+        payload = response.json()
+        assert payload["code"] == "bad_request"
+        assert payload["detail"] == "不允许抓取本机或局域网地址", f"URL {url} failed validation"

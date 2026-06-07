@@ -3,6 +3,7 @@ import ipaddress
 import logging
 import os
 import re
+import socket
 from urllib.parse import urlparse
 from urllib import request
 
@@ -21,23 +22,35 @@ def validate_public_url(url: str) -> str:
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
         raise ValueError("只支持公开的 http(s) 地址")
 
+    if not hostname:
+        raise ValueError("URL 必须包含主机名")
+
     if hostname in {"localhost", "0.0.0.0"} or hostname.endswith(".local"):
         raise ValueError("不允许抓取本机或局域网地址")
 
     try:
-        host_ip = ipaddress.ip_address(hostname)
-    except ValueError:
-        return parsed.geturl()
+        # Resolve hostname to IPs to prevent SSRF via alternate encodings (e.g. integer IP, hex)
+        addr_info = socket.getaddrinfo(hostname, None)
+    except socket.gaierror:
+        # Fail closed on resolution errors
+        raise ValueError("无法解析目标主机名")
 
-    if (
-        host_ip.is_private
-        or host_ip.is_loopback
-        or host_ip.is_link_local
-        or host_ip.is_multicast
-        or host_ip.is_reserved
-        or host_ip.is_unspecified
-    ):
-        raise ValueError("不允许抓取本机或局域网地址")
+    for info in addr_info:
+        ip_str = info[4][0]
+        try:
+            host_ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+
+        if (
+            host_ip.is_private
+            or host_ip.is_loopback
+            or host_ip.is_link_local
+            or host_ip.is_multicast
+            or host_ip.is_reserved
+            or host_ip.is_unspecified
+        ):
+            raise ValueError("不允许抓取本机或局域网地址")
 
     return parsed.geturl()
 
