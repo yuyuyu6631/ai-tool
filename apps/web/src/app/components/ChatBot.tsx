@@ -426,7 +426,8 @@ export default function ChatBot() {
           ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300 rotate-0"
           : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-indigo-500/30 hover:shadow-xl"
           }`}
-        aria-label={isOpen ? "关闭 AI 助手" : "打开 AI 助手"}
+        aria-label="AI 助手"
+        aria-expanded={isOpen}
       >
         {isOpen ? (
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
