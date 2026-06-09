@@ -1,0 +1,4 @@
+## 2025-06-09 - [SSRF Bypass in tool_parser_service]
+**Vulnerability:** The `validate_public_url` function attempts to prevent SSRF by checking if the hostname is a private IP. However, it fails open on ValueError (which occurs when hostname is not an IP, like a domain name resolving to a local IP or alternate IP encodings). This allows SSRF via DNS rebinding/local domains (e.g. localtest.me) or alternate IP formats (e.g. 2130706433).
+**Learning:** Naive string-based or IP-only validation is insufficient to prevent SSRF because hostnames must be resolved to their final IPs before validation. Failing open when `ipaddress.ip_address()` fails allows malicious hostnames to bypass the check.
+**Prevention:** Always use `socket.getaddrinfo` to resolve the hostname to IP(s) first. Then, validate each resolved IP against the private/local/reserved ranges. Additionally, ensure the application fails securely (closed) when resolution fails.
