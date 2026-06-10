@@ -24,9 +24,16 @@ def test_http_errors_preserve_detail_and_expose_stable_error_fields():
 
 
 def test_parser_extract_rejects_localhost_targets():
-    response = client.post("/api/parser/extract", json={"url": "http://127.0.0.1/internal"})
-
-    assert response.status_code == 400
-    payload = response.json()
-    assert payload["code"] == "bad_request"
-    assert payload["detail"] == "不允许抓取本机或局域网地址"
+    test_urls = [
+        "http://127.0.0.1/internal",
+        "http://localhost/",
+        "http://0x7f000001/",
+        "http://2130706433/",
+        "http://localtest.me/"
+    ]
+    for url in test_urls:
+        response = client.post("/api/parser/extract", json={"url": url})
+        assert response.status_code == 400
+        payload = response.json()
+        assert payload["code"] == "bad_request"
+        assert payload["detail"] in ["不允许抓取本机或局域网地址", "无法解析该域名或无效地址"]
