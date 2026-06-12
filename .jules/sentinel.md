@@ -1,0 +1,4 @@
+## 2024-06-12 - [Critical] Fix SSRF Bypass via DNS Rebinding and IP Encodings
+**Vulnerability:** The `validate_public_url` function failed to resolve hostnames to IP addresses before checking against private IP ranges. It also failed open on unparseable IP encodings like `0x7f000001`. This allowed attackers to bypass SSRF protections by using malicious domains resolving to local IPs or alternate IP encodings.
+**Learning:** Naive string-based or simple `ipaddress` parsing without DNS resolution is insufficient for SSRF protection. Attackers can use alternate encodings or domains that resolve to internal IPs to bypass checks.
+**Prevention:** Always resolve hostnames to IPs via `socket.getaddrinfo` before validating against private ranges, and ensure the validation logic "fails closed" on exceptions like `socket.gaierror`.
