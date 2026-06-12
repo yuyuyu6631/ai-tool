@@ -26,6 +26,7 @@ const allowedTopLevel = new Set([
   "package.json",
   "packages",
   "scripts",
+  ".jules",
   "start.py",
   "deploy_podman_prod.sh",
   "tests",
