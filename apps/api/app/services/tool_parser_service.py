@@ -2,6 +2,7 @@ import json
 import ipaddress
 import logging
 import os
+import socket
 import re
 from urllib.parse import urlparse
 from urllib import request
@@ -26,18 +27,24 @@ def validate_public_url(url: str) -> str:
 
     try:
         host_ip = ipaddress.ip_address(hostname)
+        ips_to_check = [host_ip]
     except ValueError:
-        return parsed.geturl()
+        try:
+            addr_info = socket.getaddrinfo(hostname, None)
+            ips_to_check = [ipaddress.ip_address(info[4][0]) for info in addr_info]
+        except socket.gaierror:
+            raise ValueError("无法解析该域名的IP地址")
 
-    if (
-        host_ip.is_private
-        or host_ip.is_loopback
-        or host_ip.is_link_local
-        or host_ip.is_multicast
-        or host_ip.is_reserved
-        or host_ip.is_unspecified
-    ):
-        raise ValueError("不允许抓取本机或局域网地址")
+    for ip in ips_to_check:
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        ):
+            raise ValueError("不允许抓取本机或局域网地址")
 
     return parsed.geturl()
 
