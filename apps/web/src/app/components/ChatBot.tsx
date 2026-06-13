@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useId } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { buildApiUrl } from "../lib/api-base";
@@ -45,6 +45,7 @@ async function buildChatRequestError(response: Response): Promise<Error> {
 /** 辅助组件：渲染思维过程 */
 const ThoughtBlock = ({ content }: { content: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const id = useId();
   if (!content.trim()) return null;
 
   return (
@@ -52,6 +53,9 @@ const ThoughtBlock = ({ content }: { content: string }) => {
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 hover:text-indigo-500 transition-colors w-full"
+        aria-expanded={isExpanded}
+        aria-controls={`thought-content-chatbot-${id}`}
+        aria-label={isExpanded ? "收起思考过程" : "展开思考过程"}
       >
         <div className={`p-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}>
           <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
@@ -59,7 +63,7 @@ const ThoughtBlock = ({ content }: { content: string }) => {
         <span>{isExpanded ? "收起思考过程" : "已深度思考"}</span>
       </button>
       {isExpanded && (
-        <div className="mt-2.5 text-[12px] text-slate-500 dark:text-slate-400 italic whitespace-pre-wrap leading-relaxed border-t border-slate-200/40 dark:border-slate-700/30 pt-2.5 px-1 font-serif">
+        <div id={`thought-content-chatbot-${id}`} className="mt-2.5 text-[12px] text-slate-500 dark:text-slate-400 italic whitespace-pre-wrap leading-relaxed border-t border-slate-200/40 dark:border-slate-700/30 pt-2.5 px-1 font-serif">
           {content}
         </div>
       )}
