@@ -1,31 +1,31 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useMemo, useState } from "react";
-import { X } from "lucide-react";
-import type { ToolSummary } from "../lib/catalog-types";
-import { buildComparisonSlug } from "../lib/compare-utils";
-import { TOOL_SUBMISSION_URL, buildDecisionBadges } from "../lib/catalog-utils";
-import { rememberCatalogNavigation } from "../lib/catalog-navigation";
-import { detectPriceLabel } from "../lib/tool-display";
-import { withPublicPath } from "../lib/public-path";
-import ToolCard from "./ToolCard";
+import Link from 'next/link'
+import { useMemo, useState } from 'react'
+import { X } from 'lucide-react'
+import type { ToolSummary } from '../lib/catalog-types'
+import { buildComparisonSlug } from '../lib/compare-utils'
+import { TOOL_SUBMISSION_URL, buildDecisionBadges } from '../lib/catalog-utils'
+import { rememberCatalogNavigation } from '../lib/catalog-navigation'
+import { detectPriceLabel } from '../lib/tool-display'
+import { withPublicPath } from '../lib/public-path'
+import ToolCard from './ToolCard'
 
-const COMPARE_LIMIT = 4;
+const COMPARE_LIMIT = 4
 
 export interface CompareToolsSection {
-  id: string;
-  title?: string;
-  items: ToolSummary[];
-  emptyTitle?: string;
-  emptyDescription?: string;
+  id: string
+  title?: string
+  items: ToolSummary[]
+  emptyTitle?: string
+  emptyDescription?: string
 }
 
 interface CompareToolsGridProps {
-  items?: ToolSummary[];
-  sections?: CompareToolsSection[];
-  onToolDetailClick?: ((tool: ToolSummary) => void) | undefined;
-  rememberDetailNavigation?: boolean;
+  items?: ToolSummary[]
+  sections?: CompareToolsSection[]
+  onToolDetailClick?: ((tool: ToolSummary) => void) | undefined
+  rememberDetailNavigation?: boolean
 }
 
 export default function CompareToolsGrid({
@@ -34,43 +34,47 @@ export default function CompareToolsGrid({
   onToolDetailClick,
   rememberDetailNavigation = false,
 }: CompareToolsGridProps) {
-  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
+  const [selectedSlugs, setSelectedSlugs] = useState<string[]>([])
   const resolvedSections = useMemo<CompareToolsSection[]>(
-    () => (sections && sections.length > 0 ? sections : [{ id: "default", items }]),
+    () => (sections && sections.length > 0 ? sections : [{ id: 'default', items }]),
     [items, sections],
-  );
+  )
 
-  const comparisonSlug = useMemo(() => buildComparisonSlug(selectedSlugs), [selectedSlugs]);
-  const hasAnyItems = resolvedSections.some((section) => section.items.length > 0);
+  const comparisonSlug = useMemo(() => buildComparisonSlug(selectedSlugs), [selectedSlugs])
+  const hasAnyItems = resolvedSections.some((section) => section.items.length > 0)
 
   const toggleTool = (slug: string) => {
     setSelectedSlugs((current) => {
       if (current.includes(slug)) {
-        return current.filter((item) => item !== slug);
+        return current.filter((item) => item !== slug)
       }
       if (current.length >= COMPARE_LIMIT) {
-        return current;
+        return current
       }
-      return [...current, slug];
-    });
-  };
+      return [...current, slug]
+    })
+  }
 
   const selectedTools = useMemo(() => {
-    const toolsBySlug = new Map(resolvedSections.flatMap((section) => section.items).map((tool) => [tool.slug, tool.name]));
-    return selectedSlugs.map((slug) => ({ slug, name: toolsBySlug.get(slug) || slug }));
-  }, [resolvedSections, selectedSlugs]);
+    const toolsBySlug = new Map(
+      resolvedSections.flatMap((section) => section.items).map((tool) => [tool.slug, tool.name]),
+    )
+    return selectedSlugs.map((slug) => ({ slug, name: toolsBySlug.get(slug) || slug }))
+  }, [resolvedSections, selectedSlugs])
 
   return (
     <>
       <div className="space-y-6">
         {resolvedSections.map((section) => (
           <section key={section.id} className="space-y-4">
-            {section.title ? <h2 className="text-lg font-semibold text-slate-900">{section.title}</h2> : null}
+            {section.title ? (
+              <h2 className="text-lg font-semibold text-slate-900">{section.title}</h2>
+            ) : null}
             {section.items.length > 0 ? (
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 {section.items.map((tool) => {
-                  const selected = selectedSlugs.includes(tool.slug);
-                  const compareDisabled = selectedSlugs.length >= COMPARE_LIMIT && !selected;
+                  const selected = selectedSlugs.includes(tool.slug)
+                  const compareDisabled = selectedSlugs.length >= COMPARE_LIMIT && !selected
 
                   return (
                     <ToolCard
@@ -85,15 +89,19 @@ export default function CompareToolsGrid({
                       reviewCount={tool.reviewCount}
                       accessFlags={tool.accessFlags}
                       priceLabel={detectPriceLabel(tool)}
-                      decisionBadges={buildDecisionBadges({ price: tool.price, summary: tool.summary, tags: tool.tags })}
+                      decisionBadges={buildDecisionBadges({
+                        price: tool.price,
+                        summary: tool.summary,
+                        tags: tool.tags,
+                      })}
                       compareSelected={selected}
                       compareDisabled={compareDisabled}
                       onCompareToggle={() => toggleTool(tool.slug)}
                       onDetailClick={() => {
                         if (rememberDetailNavigation) {
-                          rememberCatalogNavigation();
+                          rememberCatalogNavigation()
                         }
-                        onToolDetailClick?.(tool);
+                        onToolDetailClick?.(tool)
                       }}
                       reason={tool.reason}
                       features={tool.features}
@@ -102,17 +110,23 @@ export default function CompareToolsGrid({
                       dealSummary={tool.dealSummary || tool.freeAllowanceText}
                       primaryMedia={tool.primaryMedia}
                     />
-                  );
+                  )
                 })}
               </div>
             ) : (
               <div className="panel-base rounded-[24px] p-6 text-center">
-                <h3 className="text-lg font-semibold text-slate-900">{section.emptyTitle || "该分组正在补充中"}</h3>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {section.emptyTitle || '该分组正在补充中'}
+                </h3>
                 <p className="mt-3 text-sm leading-7 text-slate-600">
-                  {section.emptyDescription || "你可以先去看热门工具，或者把你常用的工具提交给我们补录。"}
+                  {section.emptyDescription ||
+                    '你可以先去看热门工具，或者把你常用的工具提交给我们补录。'}
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-3">
-                  <Link href={withPublicPath("/?view=hot")} className="btn-primary rounded-full px-5 py-3 text-sm">
+                  <Link
+                    href={withPublicPath('/?view=hot')}
+                    className="btn-primary rounded-full px-5 py-3 text-sm"
+                  >
                     去看热门工具
                   </Link>
                   <Link
@@ -132,7 +146,9 @@ export default function CompareToolsGrid({
         <div className="sticky bottom-4 z-20 mt-6 hidden sm:block">
           <div className="surface-glass-panel mx-auto flex max-w-5xl flex-col gap-3 rounded-lg px-5 py-4 md:flex-row md:items-center md:justify-between">
             <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3">
-              <p className="shrink-0 text-sm font-semibold text-slate-900">工具对比 ({selectedSlugs.length}/{COMPARE_LIMIT})</p>
+              <p className="shrink-0 text-sm font-semibold text-slate-900">
+                工具对比 ({selectedSlugs.length}/{COMPARE_LIMIT})
+              </p>
               {selectedTools.length > 0 ? (
                 <div className="flex min-w-0 flex-wrap gap-2">
                   {selectedTools.map((tool) => (
@@ -140,10 +156,11 @@ export default function CompareToolsGrid({
                       key={tool.slug}
                       type="button"
                       onClick={() => toggleTool(tool.slug)}
+                      aria-label={`Remove ${tool.name}`}
                       className="btn-token-neutral inline-flex h-9 max-w-[150px] items-center gap-2 rounded px-3 text-xs font-medium transition"
                     >
                       <span className="truncate">{tool.name}</span>
-                      <X className="h-3 w-3 shrink-0" />
+                      <X className="h-3 w-3 shrink-0" aria-hidden="true" />
                     </button>
                   ))}
                 </div>
@@ -177,5 +194,5 @@ export default function CompareToolsGrid({
         </div>
       ) : null}
     </>
-  );
+  )
 }
