@@ -51,6 +51,8 @@ const ThoughtBlock = ({ content }: { content: string }) => {
     <div className="mb-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-200/60 dark:border-slate-700/50 shadow-sm transition-all animate-in fade-in slide-in-from-top-1 duration-300">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? "收起助手提示" : "展开助手提示"}
         className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 hover:text-indigo-500 transition-colors w-full"
       >
         <div className={`p-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}>
@@ -310,6 +312,7 @@ export default function ChatBot() {
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                aria-label="关闭对话"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
