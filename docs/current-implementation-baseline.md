@@ -5,11 +5,11 @@
 
 ## 摘要
 
-- 生成时间：2026-05-07T09:32:16.365Z
+- 生成时间：2026-06-18T20:37:58.381Z
 - 前端路由：20
 - API 端点：42
 - 数据模型：19
-- 测试文件：55
+- 测试文件：57
 
 ## 前端路由
 
@@ -111,7 +111,7 @@
 
 ### Web unit/integration
 
-- 数量：27
+- 数量：28
 - `apps/web/src/app/components/__tests__/BackToResultsLink.test.tsx`
 - `apps/web/src/app/components/__tests__/CommandPalette.test.tsx`
 - `apps/web/src/app/components/__tests__/CompareToolsGrid.test.tsx`
@@ -133,6 +133,7 @@
 - `apps/web/src/app/lib/__tests__/compare-utils.test.ts`
 - `apps/web/src/app/lib/__tests__/floating-chat-visibility.test.ts`
 - `apps/web/src/app/lib/__tests__/home-page-data.test.ts`
+- `apps/web/src/app/lib/__tests__/recent-tools.test.ts`
 - `apps/web/src/app/lib/__tests__/tool-display.test.ts`
 - `apps/web/src/app/pages/__tests__/HomePage.agent.test.tsx`
 - `apps/web/src/app/pages/__tests__/HomePage.test.tsx`
@@ -151,7 +152,7 @@
 
 ### API pytest
 
-- 数量：23
+- 数量：24
 - `apps/api/tests/test_ai_integration.py`
 - `apps/api/tests/test_ai_search_agent_recommendation.py`
 - `apps/api/tests/test_api_hardening.py`
@@ -173,6 +174,7 @@
 - `apps/api/tests/test_published_visibility.py`
 - `apps/api/tests/test_reviews_admin_api.py`
 - `apps/api/tests/test_search_provider.py`
+- `apps/api/tests/test_ssrf_protection.py`
 - `apps/api/tests/test_tool_elements_migration.py`
 - `apps/api/tests/test_tool_parser.py`
 
