@@ -51,7 +51,15 @@ def validate_public_url(url: str) -> str:
 
 
 def fetch_webpage_text(url: str) -> str:
-    req = request.Request(validate_public_url(url), headers={"User-Agent": "Mozilla/5.0"})
+    # Validate the URL to prevent SSRF
+    safe_url = validate_public_url(url)
+
+    # We must explicitly set the host header and use the original URL to
+    # prevent DNS rebinding issues during urlopen if we were using the IP directly,
+    # however python's urlopen handles the URL directly. The validation above is a
+    # strong first-layer defense, but a full mitigation for TOCTOU DNS rebinding
+    # would require a custom HTTPAdapter or dropping down to sockets to reuse the resolved IP.
+    req = request.Request(safe_url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with request.urlopen(req, timeout=10) as response:
             html = response.read().decode("utf-8", errors="ignore")
