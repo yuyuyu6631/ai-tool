@@ -22,6 +22,8 @@ export const ThoughtBlock = ({ content }: { content: string }) => {
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="flex w-full items-center gap-2 text-[11px] font-semibold text-cyan-100/70 transition-colors hover:text-cyan-100"
+                aria-expanded={isExpanded}
+                aria-label={isExpanded ? "收起思考过程" : "展开思考过程"}
             >
                 <span className={`grid h-4 w-4 place-items-center rounded border border-cyan-300/30 transition-transform ${isExpanded ? "rotate-90" : ""}`}>
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
