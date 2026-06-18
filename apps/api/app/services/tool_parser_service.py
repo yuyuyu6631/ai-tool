@@ -24,26 +24,42 @@ def validate_public_url(url: str) -> str:
     if hostname in {"localhost", "0.0.0.0"} or hostname.endswith(".local"):
         raise ValueError("不允许抓取本机或局域网地址")
 
+    import socket
     try:
-        host_ip = ipaddress.ip_address(hostname)
-    except ValueError:
-        return parsed.geturl()
+        addr_info = socket.getaddrinfo(hostname, None)
+    except OSError:
+        raise ValueError("无法解析域名")
 
-    if (
-        host_ip.is_private
-        or host_ip.is_loopback
-        or host_ip.is_link_local
-        or host_ip.is_multicast
-        or host_ip.is_reserved
-        or host_ip.is_unspecified
-    ):
-        raise ValueError("不允许抓取本机或局域网地址")
+    for info in addr_info:
+        ip_str = info[4][0]
+        try:
+            host_ip = ipaddress.ip_address(ip_str)
+        except ValueError:
+            continue
+
+        if (
+            host_ip.is_private
+            or host_ip.is_loopback
+            or host_ip.is_link_local
+            or host_ip.is_multicast
+            or host_ip.is_reserved
+            or host_ip.is_unspecified
+        ):
+            raise ValueError("不允许抓取本机或局域网地址")
 
     return parsed.geturl()
 
 
 def fetch_webpage_text(url: str) -> str:
-    req = request.Request(validate_public_url(url), headers={"User-Agent": "Mozilla/5.0"})
+    # Validate the URL to prevent SSRF
+    safe_url = validate_public_url(url)
+
+    # We must explicitly set the host header and use the original URL to
+    # prevent DNS rebinding issues during urlopen if we were using the IP directly,
+    # however python's urlopen handles the URL directly. The validation above is a
+    # strong first-layer defense, but a full mitigation for TOCTOU DNS rebinding
+    # would require a custom HTTPAdapter or dropping down to sockets to reuse the resolved IP.
+    req = request.Request(safe_url, headers={"User-Agent": "Mozilla/5.0"})
     try:
         with request.urlopen(req, timeout=10) as response:
             html = response.read().decode("utf-8", errors="ignore")
