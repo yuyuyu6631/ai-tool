@@ -30,3 +30,17 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+
+from unittest.mock import patch
+import socket
+
+@patch('socket.getaddrinfo')
+def test_parser_extract_rejects_dns_rebinding_localhost_targets(mock_getaddrinfo):
+    mock_getaddrinfo.return_value = [(socket.AF_INET, socket.SOCK_STREAM, 6, '', ('127.0.0.1', 80))]
+    response = client.post("/api/parser/extract", json={"url": "http://malicious.example.com/internal"})
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["code"] == "bad_request"
+    assert payload["detail"] == "不允许抓取本机或局域网地址"
