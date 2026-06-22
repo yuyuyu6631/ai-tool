@@ -81,7 +81,7 @@ export default function CommandPalette() {
 
   const nluIntent = useMemo(() => parseSearchIntent(search, categories), [search, categories]);
   const results =
-    nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
+    nluIntent.q && fuse ? fuse.search(nluIntent.q, { limit: 10 }).map((result) => result.item) : tools.slice(0, 6); // ⚡ 直接传递 limit 给 Fuse.js 以提升搜索性能
 
   const handleGlobalSearch = () => {
     setOpen(false);
