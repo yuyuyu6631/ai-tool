@@ -21,6 +21,7 @@ export const ThoughtBlock = ({ content }: { content: string }) => {
         <div className="mb-3 rounded-xl border border-cyan-300/20 bg-cyan-300/5 p-3 shadow-sm">
             <button
                 onClick={() => setIsExpanded(!isExpanded)}
+                aria-expanded={isExpanded}
                 className="flex w-full items-center gap-2 text-[11px] font-semibold text-cyan-100/70 transition-colors hover:text-cyan-100"
             >
                 <span className={`grid h-4 w-4 place-items-center rounded border border-cyan-300/30 transition-transform ${isExpanded ? "rotate-90" : ""}`}>
