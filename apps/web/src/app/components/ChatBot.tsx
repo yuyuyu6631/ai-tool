@@ -51,6 +51,8 @@ const ThoughtBlock = ({ content }: { content: string }) => {
     <div className="mb-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-200/60 dark:border-slate-700/50 shadow-sm transition-all animate-in fade-in slide-in-from-top-1 duration-300">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-expanded={isExpanded}
+        aria-label={isExpanded ? "Collapse thought process" : "Expand thought process"}
         className="flex items-center gap-2 text-[11px] font-semibold text-slate-400 hover:text-indigo-500 transition-colors w-full"
       >
         <div className={`p-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-transform duration-300 ${isExpanded ? "rotate-90" : ""}`}>
