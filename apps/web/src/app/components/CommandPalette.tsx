@@ -80,8 +80,9 @@ export default function CommandPalette() {
   };
 
   const nluIntent = useMemo(() => parseSearchIntent(search, categories), [search, categories]);
+  // ⚡ 性能优化：直接向 Fuse.js 传递 limit 参数，避免对全量数据进行打分排序
   const results =
-    nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
+    nluIntent.q && fuse ? fuse.search(nluIntent.q, { limit: 10 }).map((result) => result.item) : tools.slice(0, 6);
 
   const handleGlobalSearch = () => {
     setOpen(false);
