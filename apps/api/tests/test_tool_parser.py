@@ -1,7 +1,26 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.services.tool_parser_service import fetch_webpage_text, generate_tool_metadata
+from app.services.tool_parser_service import fetch_webpage_text, generate_tool_metadata, validate_public_url
+
+
+def test_validate_public_url_rejects_dns_rebinding():
+    with patch("socket.getaddrinfo") as mock_getaddrinfo:
+        # Simulate DNS returning a public IP and a private IP (DNS rebinding attack)
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ("8.8.8.8",)),
+            (None, None, None, None, ("127.0.0.1",))
+        ]
+        with pytest.raises(ValueError, match="不允许抓取本机或局域网地址"):
+            validate_public_url("http://malicious-site.com")
+
+
+def test_validate_public_url_accepts_valid():
+    with patch("socket.getaddrinfo") as mock_getaddrinfo:
+        mock_getaddrinfo.return_value = [
+            (None, None, None, None, ("8.8.8.8",)),
+        ]
+        assert validate_public_url("http://example.com") == "http://example.com"
 
 
 @patch("app.services.tool_parser_service.request.urlopen")
