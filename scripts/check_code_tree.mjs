@@ -9,6 +9,7 @@ const allowedTopLevel = new Set([
   ".prettierrc",
   ".railwayignore",
   ".env.example",
+  ".jules",
   "AGENTS.md",
   "CLAUDE.md",
   "Containerfile.api.prod",
