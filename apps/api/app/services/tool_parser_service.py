@@ -25,19 +25,25 @@ def validate_public_url(url: str) -> str:
         raise ValueError("不允许抓取本机或局域网地址")
 
     try:
-        host_ip = ipaddress.ip_address(hostname)
+        ips_to_check = [ipaddress.ip_address(hostname)]
     except ValueError:
-        return parsed.geturl()
+        try:
+            import socket
+            addrinfo = socket.getaddrinfo(hostname, None)
+            ips_to_check = [ipaddress.ip_address(res[4][0]) for res in addrinfo]
+        except (socket.gaierror, ValueError):
+            raise ValueError("无法解析域名或地址无效")
 
-    if (
-        host_ip.is_private
-        or host_ip.is_loopback
-        or host_ip.is_link_local
-        or host_ip.is_multicast
-        or host_ip.is_reserved
-        or host_ip.is_unspecified
-    ):
-        raise ValueError("不允许抓取本机或局域网地址")
+    for host_ip in ips_to_check:
+        if (
+            host_ip.is_private
+            or host_ip.is_loopback
+            or host_ip.is_link_local
+            or host_ip.is_multicast
+            or host_ip.is_reserved
+            or host_ip.is_unspecified
+        ):
+            raise ValueError("不允许抓取本机或局域网地址")
 
     return parsed.geturl()
 
