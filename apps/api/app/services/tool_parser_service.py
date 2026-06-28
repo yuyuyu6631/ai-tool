@@ -32,7 +32,7 @@ def validate_public_url(url: str) -> str:
             addrinfo = socket.getaddrinfo(hostname, None)
             ips_to_check = [ipaddress.ip_address(res[4][0]) for res in addrinfo]
         except (socket.gaierror, ValueError):
-            return parsed.geturl()
+            raise ValueError("无法解析域名或地址无效")
 
     for host_ip in ips_to_check:
         if (
