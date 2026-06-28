@@ -1,7 +1,9 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from app.services.tool_parser_service import fetch_webpage_text, generate_tool_metadata
+import socket
+
+from app.services.tool_parser_service import fetch_webpage_text, generate_tool_metadata, validate_public_url
 
 
 @patch("app.services.tool_parser_service.request.urlopen")
@@ -57,3 +59,16 @@ def test_generate_tool_metadata_api_failure(mock_call_ai_api, mock_fetch):
     mock_call_ai_api.side_effect = Exception("LLM Provider Error")
     result = generate_tool_metadata("http://fake.url.com")
     assert result == {}
+
+
+@patch("socket.getaddrinfo")
+def test_validate_public_url_blocks_internal_dns(mock_getaddrinfo):
+    mock_getaddrinfo.return_value = [(socket.AF_INET, socket.SOCK_STREAM, 6, '', ('127.0.0.1', 80))]
+    with pytest.raises(ValueError, match="不允许抓取本机或局域网地址"):
+        validate_public_url("http://127.0.0.1.nip.io")
+
+@patch("socket.getaddrinfo")
+def test_validate_public_url_allows_public_dns(mock_getaddrinfo):
+    mock_getaddrinfo.return_value = [(socket.AF_INET, socket.SOCK_STREAM, 6, '', ('93.184.216.34', 80))]
+    result = validate_public_url("http://example.com")
+    assert result == "http://example.com"
