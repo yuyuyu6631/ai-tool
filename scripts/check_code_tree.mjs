@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 const allowedTopLevel = new Set([
   ".github",
   ".gitattributes",
+  ".jules",
   ".githooks",
   ".gitignore",
   ".prettierrc",
