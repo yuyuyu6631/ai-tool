@@ -80,8 +80,9 @@ export default function CommandPalette() {
   };
 
   const nluIntent = useMemo(() => parseSearchIntent(search, categories), [search, categories]);
+  // ⚡ Bolt：性能优化：通过传入 { limit: 10 } 让 fuse 原生限制结果集大小，避免映射整个大数组后再 slice 的性能开销
   const results =
-    nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
+    nluIntent.q && fuse ? fuse.search(nluIntent.q, { limit: 10 }).map((result) => result.item) : tools.slice(0, 6);
 
   const handleGlobalSearch = () => {
     setOpen(false);
