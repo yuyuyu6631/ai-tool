@@ -22,6 +22,7 @@ const allowedTopLevel = new Set([
   "goal",
   "infra",
   "mcp",
+  ".jules",
   "package-lock.json",
   "package.json",
   "packages",
