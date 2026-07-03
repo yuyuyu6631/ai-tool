@@ -5,6 +5,7 @@ const allowedTopLevel = new Set([
   ".github",
   ".gitattributes",
   ".githooks",
+  ".jules",
   ".gitignore",
   ".prettierrc",
   ".railwayignore",
