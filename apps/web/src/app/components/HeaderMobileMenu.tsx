@@ -41,7 +41,7 @@ export default function HeaderMobileMenu({ currentPath, authHref }: HeaderMobile
         onClick={() => setOpen((value) => !value)}
         aria-label={open ? "关闭导航" : "打开导航"}
       >
-        {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        {open ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
       </button>
 
       {open ? (

@@ -44,7 +44,7 @@ export default function ThemeToggle({ compact = false }: { compact?: boolean }) 
       aria-label={isLight ? "切换深色模式" : "切换浅色模式"}
       title={isLight ? "切换深色模式" : "切换浅色模式"}
     >
-      {isLight ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+      {isLight ? <Moon className="h-4 w-4" aria-hidden="true" /> : <Sun className="h-4 w-4" aria-hidden="true" />}
       {compact ? null : <span>{isLight ? "深色" : "浅色"}</span>}
     </button>
   );
