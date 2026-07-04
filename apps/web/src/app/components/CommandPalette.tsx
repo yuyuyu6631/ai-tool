@@ -80,8 +80,9 @@ export default function CommandPalette() {
   };
 
   const nluIntent = useMemo(() => parseSearchIntent(search, categories), [search, categories]);
+  // ⚡ Bolt：通过直接向 Fuse 传递 limit 参数，避免对所有搜索结果进行映射和截断，从而优化搜索性能。预计将降低处理大型数据集时的内存开销和 CPU 计算时间。
   const results =
-    nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
+    nluIntent.q && fuse ? fuse.search(nluIntent.q, { limit: 10 }).map((result) => result.item) : tools.slice(0, 6);
 
   const handleGlobalSearch = () => {
     setOpen(false);
