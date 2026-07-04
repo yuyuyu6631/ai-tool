@@ -301,8 +301,9 @@ export default function ChatBot() {
                 onClick={handleReset}
                 className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
                 title="新对话"
+                aria-label="新对话"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
               </button>
@@ -310,8 +311,9 @@ export default function ChatBot() {
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-1.5 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-all"
+                aria-label="关闭对话"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
