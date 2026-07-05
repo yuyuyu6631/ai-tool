@@ -30,3 +30,12 @@ def test_parser_extract_rejects_localhost_targets():
     payload = response.json()
     assert payload["code"] == "bad_request"
     assert payload["detail"] == "不允许抓取本机或局域网地址"
+
+
+def test_parser_extract_rejects_dns_rebinding_ssrf():
+    response = client.post("/api/parser/extract", json={"url": "http://localtest.me/internal"})
+
+    assert response.status_code == 400
+    payload = response.json()
+    assert payload["code"] == "bad_request"
+    assert payload["detail"] == "不允许抓取本机或局域网地址"
