@@ -178,7 +178,7 @@ export default function FloatingChatBot() {
                                     title="恢复右下角"
                                     aria-label="恢复右下角"
                                 >
-                                    <GripHorizontal className="h-4 w-4" />
+                                    <GripHorizontal className="h-4 w-4" aria-hidden="true" />
                                 </button>
                                 <button
                                     type="button"
@@ -188,7 +188,7 @@ export default function FloatingChatBot() {
                                     title="新对话"
                                     aria-label="新对话"
                                 >
-                                    <Minus className="h-5 w-5" />
+                                    <Minus className="h-5 w-5" aria-hidden="true" />
                                 </button>
                                 <button
                                     type="button"
@@ -197,7 +197,7 @@ export default function FloatingChatBot() {
                                     className="grid h-8 w-8 place-items-center rounded-full text-slate-300 transition hover:bg-white/10 hover:text-white"
                                     aria-label="关闭 AI 助手"
                                 >
-                                    <X className="h-5 w-5" />
+                                    <X className="h-5 w-5" aria-hidden="true" />
                                 </button>
                             </div>
                         </div>
@@ -296,7 +296,7 @@ export default function FloatingChatBot() {
                                 className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[var(--color-primary-hover)] to-[var(--color-primary)] text-[#0B1020] transition hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed disabled:opacity-45"
                                 aria-label="发送消息"
                             >
-                                <Send className="h-5 w-5 fill-white" />
+                                <Send className="h-5 w-5 fill-white" aria-hidden="true" />
                             </button>
                         </form>
                         <p className="mt-2 text-center text-[11px] text-slate-500">结果仅供参考，建议结合实际场景试用</p>
