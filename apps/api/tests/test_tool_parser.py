@@ -1,7 +1,23 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
+import socket
+
 from app.services.tool_parser_service import fetch_webpage_text, generate_tool_metadata
+
+@pytest.fixture(autouse=True)
+def mock_dns():
+    original_getaddrinfo = socket.getaddrinfo
+    def mock_getaddrinfo(host, port, *args, **kwargs):
+        import ipaddress
+        try:
+            ipaddress.ip_address(host)
+            return original_getaddrinfo(host, port, *args, **kwargs)
+        except ValueError:
+            return [(socket.AF_INET, socket.SOCK_STREAM, 6, '', ('8.8.8.8', 0))]
+
+    with patch("socket.getaddrinfo", side_effect=mock_getaddrinfo):
+        yield
 
 
 @patch("app.services.tool_parser_service.request.urlopen")
