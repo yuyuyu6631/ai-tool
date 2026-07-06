@@ -35,9 +35,13 @@ export default function PasswordField({ label, hint, error, id, disabled, ...pro
           className="absolute right-3 top-[42px] inline-flex h-9 w-9 items-center justify-center rounded-xl text-slate-500 transition hover:bg-slate-900/5 hover:text-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
           aria-label={visible ? "隐藏密码" : "显示密码"}
           aria-controls={inputId}
+          aria-pressed={visible}
         >
           {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
+        <span className="sr-only" aria-live="polite">
+          {visible ? "密码已显示" : "密码已隐藏"}
+        </span>
       </div>
     </div>
   );
