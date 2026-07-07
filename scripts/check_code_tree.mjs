@@ -16,6 +16,7 @@ const allowedTopLevel = new Set([
   "README.md",
   "apps",
   "doc",
+  ".jules",
   "docs",
   "deploy.sh",
   "generate_prd.js",
