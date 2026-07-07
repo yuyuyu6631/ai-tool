@@ -24,20 +24,27 @@ def validate_public_url(url: str) -> str:
     if hostname in {"localhost", "0.0.0.0"} or hostname.endswith(".local"):
         raise ValueError("不允许抓取本机或局域网地址")
 
+    import socket
     try:
-        host_ip = ipaddress.ip_address(hostname)
-    except ValueError:
-        return parsed.geturl()
+        addrinfo = socket.getaddrinfo(hostname, None)
+    except Exception:
+        raise ValueError("无法解析该域名")
 
-    if (
-        host_ip.is_private
-        or host_ip.is_loopback
-        or host_ip.is_link_local
-        or host_ip.is_multicast
-        or host_ip.is_reserved
-        or host_ip.is_unspecified
-    ):
-        raise ValueError("不允许抓取本机或局域网地址")
+    for info in addrinfo:
+        try:
+            ip = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            continue
+
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_link_local
+            or ip.is_multicast
+            or ip.is_reserved
+            or ip.is_unspecified
+        ):
+            raise ValueError("不允许抓取本机或局域网地址")
 
     return parsed.geturl()
 

@@ -16,4 +16,3 @@ def setup_logging() -> None:
 
     logging.basicConfig(level=level, format=_LOG_FORMAT)
     logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
-

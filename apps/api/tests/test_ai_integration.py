@@ -22,11 +22,11 @@ def test_api_chat_stream_e2e(mock_stream):
     确认路由注入工作正常并且能在 StreamingResponse 里获取流式拼接项。
     """
     mock_stream.return_value = iter(["Hello", " AI", " World"])
-    
+
     resp = client.post("/api/chat", json={
         "messages": [{"role": "user", "content": "寻找一款图像生成工具"}]
     })
-    
+
     assert resp.status_code == 200
     assert resp.text == "Hello AI World"
 
@@ -37,9 +37,9 @@ def test_api_parser_extract_e2e(mock_parse):
     能够通过预期的 API 模型获取并解析到 JSON 返回体。
     """
     mock_parse.return_value = {"name": "智能PPT", "category": "幻灯片"}
-    
+
     resp = client.post("/api/parser/extract", json={"url": "https://ppt.test.example"})
-    
+
     assert resp.status_code == 200
     res_data = resp.json()
     assert res_data["success"] is True
