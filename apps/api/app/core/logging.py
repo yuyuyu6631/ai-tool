@@ -2,7 +2,6 @@ import logging
 
 from app.core.config import settings
 
-
 _LOG_FORMAT = "%(asctime)s %(levelname)s [%(name)s] %(message)s"
 
 
@@ -16,4 +15,3 @@ def setup_logging() -> None:
 
     logging.basicConfig(level=level, format=_LOG_FORMAT)
     logging.getLogger("sqlalchemy.engine").setLevel(logging.WARNING)
-

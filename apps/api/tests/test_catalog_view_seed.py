@@ -5,17 +5,18 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-os.environ["DATABASE_URL"] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_catalog_view_seed.db')}"
+os.environ["DATABASE_URL"] = (
+    f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_catalog_view_seed.db')}"
+)
 os.environ.setdefault("AI_PROVIDER", "stub")
 os.environ.setdefault("AI_API_KEY", "")
 
-import app.services.catalog_service as catalog_svc  # noqa: E402
 import app.db.session as session_mod  # noqa: E402
+import app.services.catalog_service as catalog_svc  # noqa: E402
 from app.db.session import Base, get_db  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models.models import Ranking, RankingItem, Scenario, ScenarioTool, Tool  # noqa: E402
 from app.services.catalog_views_seed import seed_catalog_views  # noqa: E402
-
 
 app = create_app()
 

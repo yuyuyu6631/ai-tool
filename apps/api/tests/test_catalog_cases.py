@@ -5,10 +5,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-os.environ["DATABASE_URL"] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_catalog_cases.db')}"
+os.environ["DATABASE_URL"] = (
+    f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_catalog_cases.db')}"
+)
 
-import app.services.catalog_service as catalog_svc  # noqa: E402
 import app.db.session as session_mod  # noqa: E402
+import app.services.catalog_service as catalog_svc  # noqa: E402
 from app.db.session import Base, get_db  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models.models import (  # noqa: E402
@@ -23,7 +25,12 @@ from app.models.models import (  # noqa: E402
     ToolReview,
     ToolTag,
 )
-from app.services.embedding_service import build_tool_embedding_source, compute_content_hash, embed_text, serialize_embedding  # noqa: E402
+from app.services.embedding_service import (  # noqa: E402
+    build_tool_embedding_source,
+    compute_content_hash,
+    embed_text,
+    serialize_embedding,
+)
 
 app = create_app()
 
@@ -329,15 +336,23 @@ def setup_module():
         ]
 
         top100 = Ranking(slug="top100", title="Top 100", description="Main ranking")
-        empty_ranking = Ranking(slug="empty-ranking", title="Empty Ranking", description="No published items")
+        empty_ranking = Ranking(
+            slug="empty-ranking", title="Empty Ranking", description="No published items"
+        )
         db.add_all([top100, empty_ranking])
         db.flush()
         db.add_all(
             [
                 RankingItem(ranking_id=top100.id, tool_id=tools[0].id, rank_order=1, reason="best"),
-                RankingItem(ranking_id=top100.id, tool_id=tools[11].id, rank_order=2, reason="draft"),
-                RankingItem(ranking_id=top100.id, tool_id=tools[2].id, rank_order=3, reason="strong"),
-                RankingItem(ranking_id=empty_ranking.id, tool_id=tools[11].id, rank_order=1, reason="draft"),
+                RankingItem(
+                    ranking_id=top100.id, tool_id=tools[11].id, rank_order=2, reason="draft"
+                ),
+                RankingItem(
+                    ranking_id=top100.id, tool_id=tools[2].id, rank_order=3, reason="strong"
+                ),
+                RankingItem(
+                    ranking_id=empty_ranking.id, tool_id=tools[11].id, rank_order=1, reason="draft"
+                ),
             ]
         )
 
@@ -575,9 +590,17 @@ def test_tools_directory_latest_and_name_sorting():
     name_response = client.get("/api/tools?sort=name&page_size=3")
 
     assert latest_response.status_code == 200
-    assert [item["slug"] for item in latest_response.json()["items"]] == ["chatgpt", "claude", "gamma"]
+    assert [item["slug"] for item in latest_response.json()["items"]] == [
+        "chatgpt",
+        "claude",
+        "gamma",
+    ]
     assert name_response.status_code == 200
-    assert [item["slug"] for item in name_response.json()["items"]] == ["agent-hub", "chatgpt", "claude"]
+    assert [item["slug"] for item in name_response.json()["items"]] == [
+        "agent-hub",
+        "chatgpt",
+        "claude",
+    ]
 
 
 def test_tools_directory_task_query_matches_data_tools():
@@ -595,7 +618,9 @@ def test_tools_directory_task_query_matches_writing_tools():
     assert response.status_code == 200
     payload = response.json()
     assert payload["total"] >= 1
-    assert {"notion-ai", "free-writer", "meeting-note"}.intersection({item["slug"] for item in payload["items"]})
+    assert {"notion-ai", "free-writer", "meeting-note"}.intersection(
+        {item["slug"] for item in payload["items"]}
+    )
 
 
 def test_tools_directory_supports_access_and_price_range_filters():
@@ -658,7 +683,10 @@ def test_rankings_hide_empty_rankings_and_unpublished_items():
     assert list_response.status_code == 200
     assert [item["slug"] for item in list_response.json()] == ["top100"]
     assert detail_response.status_code == 200
-    assert [item["tool"]["slug"] for item in detail_response.json()["items"]] == ["chatgpt", "gamma"]
+    assert [item["tool"]["slug"] for item in detail_response.json()["items"]] == [
+        "chatgpt",
+        "gamma",
+    ]
     assert empty_response.status_code == 404
 
 
@@ -693,8 +721,16 @@ def test_tool_detail_aggregates_review_content():
     assert payload["pitfalls"] == ["高级团队协作仍需自行补充流程", "复杂工作流需要二次编排"]
     assert payload["targetAudience"] == ["内容团队", "独立开发者"]
     assert payload["scenarioRecommendations"] == [
-        {"audience": "内容团队", "task": "快速起草与问答", "summary": "适合先上手，再决定是否长期使用。"},
-        {"audience": "独立开发者", "task": "高频日常生产", "summary": "适合高频通用任务，但复杂流程最好配合其他工具。"},
+        {
+            "audience": "内容团队",
+            "task": "快速起草与问答",
+            "summary": "适合先上手，再决定是否长期使用。",
+        },
+        {
+            "audience": "独立开发者",
+            "task": "高频日常生产",
+            "summary": "适合高频通用任务，但复杂流程最好配合其他工具。",
+        },
     ]
     assert payload["features"] == ["多模态问答稳定", "生态插件丰富"]
     assert payload["limitations"] == ["高级模型额度消耗快", "关键结论仍需人工复核"]
@@ -760,7 +796,11 @@ def test_tools_directory_missing_partial_embeddings_still_falls_back_to_legacy_l
 
 
 def test_tools_directory_embedding_recall_exception_still_returns_lexical_results(monkeypatch):
-    monkeypatch.setattr(catalog_svc, "recall_tool_ids_by_embedding", lambda **kwargs: (_ for _ in ()).throw(TimeoutError("boom")))
+    monkeypatch.setattr(
+        catalog_svc,
+        "recall_tool_ids_by_embedding",
+        lambda **kwargs: (_ for _ in ()).throw(TimeoutError("boom")),
+    )
 
     response = client.get("/api/tools?q=ChatGPT&page_size=24")
 
