@@ -20,6 +20,7 @@ from app.services.dev_admin_seed import (  # noqa: E402
     ensure_dev_admin_user,
 )
 
+
 _test_engine = create_engine(
     f"sqlite:///{_TEST_DB_PATH}",
     connect_args={"check_same_thread": False},

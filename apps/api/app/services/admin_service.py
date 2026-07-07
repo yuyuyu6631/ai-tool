@@ -147,7 +147,9 @@ def _commit_with_guard(
         db.rollback()
         logger.warning("%s_integrity_error error=%s", action, type(error).__name__)
         error_status = (
-            status.HTTP_409_CONFLICT if conflict_detail else status.HTTP_500_INTERNAL_SERVER_ERROR
+            status.HTTP_409_CONFLICT
+            if conflict_detail
+            else status.HTTP_500_INTERNAL_SERVER_ERROR
         )
         raise HTTPException(
             status_code=error_status,
@@ -347,7 +349,8 @@ def delete_review(db: Session, review_id: int) -> None:
     db.delete(row)
     db.flush()
     ratings = db.execute(
-        select(func.avg(ToolReview.rating), func.count(ToolReview.id)).where(
+        select(func.avg(ToolReview.rating), func.count(ToolReview.id))
+        .where(
             ToolReview.tool_id == tool_id,
             ToolReview.status == "published",
             ToolReview.rating.is_not(None),

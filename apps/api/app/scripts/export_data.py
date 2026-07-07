@@ -7,21 +7,18 @@
 from __future__ import annotations
 
 import argparse
+import csv
 import json
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session, joinedload
 
 from app.db.session import SessionLocal
 from app.models.models import (
-    Category,
-    Tool,
-    ToolCategory,
-    ToolReview,
-    ToolTag,
+    Category, Ranking, RankingItem, Source, Tag, Tool, ToolCategory, ToolReview, ToolTag, User
 )
 
 
@@ -41,7 +38,7 @@ class DataExporter:
         query = self.session.query(Tool).options(
             joinedload(Tool.categories).joinedload(ToolCategory.category),
             joinedload(Tool.tags).joinedload(ToolTag.tag),
-            joinedload(Tool.reviews),
+            joinedload(Tool.reviews)
         )
 
         if include_relations:
@@ -80,9 +77,7 @@ class DataExporter:
                 "price_max_cny": tool.price_max_cny,
                 "free_allowance_text": tool.free_allowance_text,
                 "created_on": tool.created_on.isoformat() if tool.created_on else None,
-                "last_verified_at": tool.last_verified_at.isoformat()
-                if tool.last_verified_at
-                else None,
+                "last_verified_at": tool.last_verified_at.isoformat() if tool.last_verified_at else None,
                 "created_at": tool.created_at.isoformat() if tool.created_at else None,
                 "updated_at": tool.updated_at.isoformat() if tool.updated_at else None,
             }
@@ -95,14 +90,15 @@ class DataExporter:
                 ]
 
                 # 添加标签数据
-                tool_dict["tags"] = [{"name": tag.tag.name} for tag in tool.tags]
+                tool_dict["tags"] = [
+                    {"name": tag.tag.name}
+                    for tag in tool.tags
+                ]
 
                 # 添加评论统计
                 tool_dict["reviews_summary"] = {
                     "total_reviews": len(tool.reviews),
-                    "average_rating": sum(r.rating or 0 for r in tool.reviews) / len(tool.reviews)
-                    if tool.reviews
-                    else 0,
+                    "average_rating": sum(r.rating or 0 for r in tool.reviews) / len(tool.reviews) if tool.reviews else 0
                 }
 
             tools_data.append(tool_dict)
@@ -111,7 +107,7 @@ class DataExporter:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         output_file = self.output_dir / f"tools_{timestamp}.json"
-        with open(output_file, "w", encoding="utf-8") as f:
+        with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(tools_data, f, ensure_ascii=False, indent=2)
 
         print(f"工具数据已导出到: {output_file}")
@@ -121,11 +117,9 @@ class DataExporter:
         """导出分类数据"""
         print("正在导出分类数据...")
 
-        categories = (
-            self.session.query(Category)
-            .options(joinedload(Category.tools).joinedload(ToolCategory.tool))
-            .all()
-        )
+        categories = self.session.query(Category).options(
+            joinedload(Category.tools).joinedload(ToolCategory.tool)
+        ).all()
 
         categories_data = []
         for category in categories:
@@ -143,7 +137,7 @@ class DataExporter:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         output_file = self.output_dir / f"categories_{timestamp}.json"
-        with open(output_file, "w", encoding="utf-8") as f:
+        with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(categories_data, f, ensure_ascii=False, indent=2)
 
         print(f"分类数据已导出到: {output_file}")
@@ -154,7 +148,8 @@ class DataExporter:
         print("正在导出评论数据...")
 
         query = self.session.query(ToolReview).options(
-            joinedload(ToolReview.tool), joinedload(ToolReview.user)
+            joinedload(ToolReview.tool),
+            joinedload(ToolReview.user)
         )
 
         if limit:
@@ -188,7 +183,7 @@ class DataExporter:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
         output_file = self.output_dir / f"reviews_{timestamp}.json"
-        with open(output_file, "w", encoding="utf-8") as f:
+        with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(reviews_data, f, ensure_ascii=False, indent=2)
 
         print(f"评论数据已导出到: {output_file}")
@@ -216,12 +211,30 @@ def main():
         "--type",
         choices=["tools", "categories", "reviews", "all"],
         default="all",
-        help="要导出的数据类型",
+        help="要导出的数据类型"
     )
-    parser.add_argument("--format", choices=["json"], default="json", help="导出格式（仅支持JSON）")
-    parser.add_argument("--output-dir", type=str, default="output", help="输出目录")
-    parser.add_argument("--no-relations", action="store_true", help="不包含关联数据")
-    parser.add_argument("--reviews-limit", type=int, help="限制导出的评论数量")
+    parser.add_argument(
+        "--format",
+        choices=["json"],
+        default="json",
+        help="导出格式（仅支持JSON）"
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default="output",
+        help="输出目录"
+    )
+    parser.add_argument(
+        "--no-relations",
+        action="store_true",
+        help="不包含关联数据"
+    )
+    parser.add_argument(
+        "--reviews-limit",
+        type=int,
+        help="限制导出的评论数量"
+    )
 
     args = parser.parse_args()
 

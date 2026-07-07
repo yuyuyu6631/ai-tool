@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+
 LOGO_STATUS_MATCHED = "matched"
 LOGO_STATUS_MISSING = "missing"
 LOGO_STATUS_INVALID = "invalid"

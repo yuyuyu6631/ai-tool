@@ -5,17 +5,9 @@ import json
 from sqlalchemy import select
 
 from app.db.session import SessionLocal
-from app.models.models import (
-    RankingItem,
-    ScenarioTool,
-    Source,
-    Tool,
-    ToolCategory,
-    ToolEmbedding,
-    ToolReview,
-    ToolTag,
-)
+from app.models.models import RankingItem, ScenarioTool, Source, Tool, ToolCategory, ToolEmbedding, ToolReview, ToolTag
 from app.services.logo_assets import resolve_logo_status
+
 
 KNOWN_BAD_SLUGS = {"cc-123"}
 KNOWN_BAD_NAMES = {"cc", "cc'123"}
@@ -29,13 +21,7 @@ def is_bad_tool(tool: Tool) -> bool:
         return True
     if name in KNOWN_BAD_NAMES or summary in KNOWN_BAD_NAMES:
         return True
-    return bool(
-        name
-        and name == summary
-        and not tool.official_url
-        and not tool.logo_path
-        and tool.score <= 0
-    )
+    return bool(name and name == summary and not tool.official_url and not tool.logo_path and tool.score <= 0)
 
 
 def main() -> None:
@@ -46,30 +32,16 @@ def main() -> None:
         bad_ids.update(tool.id for tool in all_tools if is_bad_tool(tool))
 
         delete_counts: dict[str, int] = {}
-        for model in (
-            RankingItem,
-            ScenarioTool,
-            Source,
-            ToolEmbedding,
-            ToolReview,
-            ToolCategory,
-            ToolTag,
-        ):
+        for model in (RankingItem, ScenarioTool, Source, ToolEmbedding, ToolReview, ToolCategory, ToolTag):
             if not bad_ids:
                 delete_counts[model.__tablename__] = 0
                 continue
-            rows = (
-                session.query(model)
-                .filter(model.tool_id.in_(bad_ids))
-                .delete(synchronize_session=False)
-            )
+            rows = session.query(model).filter(model.tool_id.in_(bad_ids)).delete(synchronize_session=False)
             delete_counts[model.__tablename__] = rows
 
         removed_tools = 0
         if bad_ids:
-            removed_tools = (
-                session.query(Tool).filter(Tool.id.in_(bad_ids)).delete(synchronize_session=False)
-            )
+            removed_tools = session.query(Tool).filter(Tool.id.in_(bad_ids)).delete(synchronize_session=False)
 
         logo_updates = 0
         for tool in session.scalars(select(Tool)).all():

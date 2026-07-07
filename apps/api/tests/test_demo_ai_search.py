@@ -5,9 +5,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-os.environ["DATABASE_URL"] = (
-    f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_demo_ai_search.db')}"
-)
+os.environ["DATABASE_URL"] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_demo_ai_search.db')}"
 
 import app.db.session as session_mod  # noqa: E402
 from app.db.session import Base, get_db  # noqa: E402
@@ -17,9 +15,7 @@ from app.models.models import Category, Tag, Tool, ToolTag  # noqa: E402
 app = create_app()
 
 _TEST_DB_PATH = os.path.join(os.path.dirname(__file__), "test_demo_ai_search.db")
-_test_engine = create_engine(
-    f"sqlite:///{_TEST_DB_PATH}", connect_args={"check_same_thread": False}
-)
+_test_engine = create_engine(f"sqlite:///{_TEST_DB_PATH}", connect_args={"check_same_thread": False})
 _TestSession = sessionmaker(bind=_test_engine, autoflush=False, autocommit=False, class_=Session)
 
 
@@ -237,9 +233,7 @@ def test_demo_search_can_prioritize_free_and_domestic_access():
     assert free_items[0]["pricingType"] in {"free", "freemium"}
     assert "免费" in free_items[0]["reason"]
 
-    domestic_response = client.get(
-        "/api/ai-search", params={"q": "国内能用的AI工具", "page_size": 5}
-    )
+    domestic_response = client.get("/api/ai-search", params={"q": "国内能用的AI工具", "page_size": 5})
     assert domestic_response.status_code == 200
     domestic_items = domestic_response.json()["directory"]["items"]
     assert domestic_items

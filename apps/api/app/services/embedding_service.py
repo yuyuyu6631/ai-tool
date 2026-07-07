@@ -14,34 +14,14 @@ from sqlalchemy import select
 from app.core.config import settings
 from app.models.models import Tool, ToolEmbedding
 
+
 STUB_PROVIDER = "stub"
 STUB_MODEL = "semantic-hash-v1"
 STUB_DIMENSIONS = 64
 REMOTE_PROVIDERS = {"openai", "openai-compatible", "volcengine", "ark"}
 SEMANTIC_ALIASES: dict[str, tuple[str, ...]] = {
-    "presentation": (
-        "ppt",
-        "slides",
-        "slide",
-        "deck",
-        "presentation",
-        "presentations",
-        "幻灯片",
-        "演示",
-        "演示文稿",
-    ),
-    "writing": (
-        "writing",
-        "copywriting",
-        "content",
-        "article",
-        "blog",
-        "email",
-        "文案",
-        "写作",
-        "文章",
-        "邮件",
-    ),
+    "presentation": ("ppt", "slides", "slide", "deck", "presentation", "presentations", "幻灯片", "演示", "演示文稿"),
+    "writing": ("writing", "copywriting", "content", "article", "blog", "email", "文案", "写作", "文章", "邮件"),
     "data": ("data", "analytics", "analysis", "dashboard", "report", "bi", "数据", "分析", "报表"),
     "image": ("image", "visual", "design", "poster", "banner", "图片", "图像", "海报", "设计"),
     "code": ("code", "coding", "developer", "engineering", "debug", "编程", "代码", "开发", "调试"),
@@ -72,13 +52,7 @@ def _get_backend() -> tuple[str, str, str, str]:
     model = (settings.embedding_model or "").strip()
     base_url = settings.embedding_openai_base_url.strip()
 
-    if (
-        provider in ("", STUB_PROVIDER)
-        or provider not in REMOTE_PROVIDERS
-        or not api_key
-        or not model
-        or not base_url
-    ):
+    if provider in ("", STUB_PROVIDER) or provider not in REMOTE_PROVIDERS or not api_key or not model or not base_url:
         return STUB_PROVIDER, "", STUB_MODEL, ""
 
     return provider, api_key, model, base_url
@@ -149,9 +123,7 @@ def _request_remote_embedding(*, api_key: str, model: str, base_url: str, text: 
 
 
 def build_tool_embedding_source(tool: Tool) -> str:
-    tags = " ".join(
-        item.tag.name for item in getattr(tool, "tags", []) if getattr(item, "tag", None)
-    )
+    tags = " ".join(item.tag.name for item in getattr(tool, "tags", []) if getattr(item, "tag", None))
     category_name = tool.category_name
     categories = getattr(tool, "categories", [])
     if categories and getattr(categories[0], "category", None):
@@ -178,13 +150,9 @@ def embed_text(text: str) -> EmbeddingResult:
 
     provider, api_key, model, base_url = _get_backend()
     if provider == STUB_PROVIDER:
-        return EmbeddingResult(
-            provider=STUB_PROVIDER, model=STUB_MODEL, vector=_build_stub_embedding(normalized)
-        )
+        return EmbeddingResult(provider=STUB_PROVIDER, model=STUB_MODEL, vector=_build_stub_embedding(normalized))
 
-    vector = _request_remote_embedding(
-        api_key=api_key, model=model, base_url=base_url, text=normalized
-    )
+    vector = _request_remote_embedding(api_key=api_key, model=model, base_url=base_url, text=normalized)
     return EmbeddingResult(provider=provider, model=model, vector=_normalize_vector(vector))
 
 
@@ -222,9 +190,7 @@ def recall_tool_ids_by_embedding(*, db, query: str, candidate_tool_ids: list[int
     if not query_embedding:
         return []
 
-    rows = db.scalars(
-        select(ToolEmbedding).where(ToolEmbedding.tool_id.in_(candidate_tool_ids))
-    ).all()
+    rows = db.scalars(select(ToolEmbedding).where(ToolEmbedding.tool_id.in_(candidate_tool_ids))).all()
     if not rows:
         return []
 

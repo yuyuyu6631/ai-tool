@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.models.models import User
 from app.services.auth_service import pwd_context
 
+
 DEV_ADMIN_USERNAME = "admin"
 DEV_ADMIN_PASSWORD = "admin123"
 DEV_ADMIN_EMAIL = "admin@xingdianping.local"

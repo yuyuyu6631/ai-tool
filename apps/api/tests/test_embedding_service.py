@@ -20,9 +20,7 @@ def test_embedding_backend_does_not_inherit_chat_ai_config(monkeypatch):
     monkeypatch.setattr(embedding_service.settings, "ai_provider", "openai")
     monkeypatch.setattr(embedding_service.settings, "ai_api_key", "chat-key")
     monkeypatch.setattr(embedding_service.settings, "ai_model", "chat-model")
-    monkeypatch.setattr(
-        embedding_service.settings, "ai_openai_base_url", "https://example.invalid/v1"
-    )
+    monkeypatch.setattr(embedding_service.settings, "ai_openai_base_url", "https://example.invalid/v1")
     monkeypatch.setattr(embedding_service.settings, "embedding_provider", "")
     monkeypatch.setattr(embedding_service.settings, "embedding_api_key", "")
     monkeypatch.setattr(embedding_service.settings, "embedding_model", "BAAI/bge-m3")

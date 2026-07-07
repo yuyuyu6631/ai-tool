@@ -2,6 +2,7 @@ import logging
 
 from app.core.config import settings
 
+
 _LOG_FORMAT = "%(asctime)s %(levelname)s [%(name)s] %(message)s"
 
 

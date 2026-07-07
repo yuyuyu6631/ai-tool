@@ -1,5 +1,6 @@
 import os
 
+
 # Force deterministic, offline-safe AI behavior for the pytest process.
 os.environ["CODEX_TESTING"] = "1"
 os.environ["AI_PROVIDER"] = "stub"

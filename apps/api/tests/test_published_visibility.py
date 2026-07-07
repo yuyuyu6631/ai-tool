@@ -4,14 +4,12 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-os.environ["DATABASE_URL"] = (
-    f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_acceptance_visibility.db')}"
-)
+os.environ["DATABASE_URL"] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'test_acceptance_visibility.db')}"
 os.environ.setdefault("AI_PROVIDER", "stub")
 os.environ.setdefault("AI_API_KEY", "")
 
-import app.db.session as session_mod  # noqa: E402
 import app.services.catalog_service as catalog_svc  # noqa: E402
+import app.db.session as session_mod  # noqa: E402
 from app.db.session import Base, get_db  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import models  # noqa: E402, F401
@@ -53,11 +51,7 @@ def setup_module():
                         editor_comment=tool.editorComment,
                         official_url=tool.officialUrl,
                         logo_path=getattr(tool, "logoPath", None),
-                        logo_status=getattr(
-                            tool,
-                            "logoStatus",
-                            "matched" if getattr(tool, "logoPath", None) else "missing",
-                        ),
+                        logo_status=getattr(tool, "logoStatus", "matched" if getattr(tool, "logoPath", None) else "missing"),
                         logo_source=getattr(tool, "logoSource", "fallback"),
                         score=tool.score,
                         status=tool.status,
@@ -111,32 +105,15 @@ def setup_module():
 
         ranking = db.query(Ranking).filter(Ranking.slug == "mixed-status").first()
         if not ranking:
-            ranking = Ranking(
-                slug="mixed-status", title="Mixed Status", description="status visibility check"
-            )
+            ranking = Ranking(slug="mixed-status", title="Mixed Status", description="status visibility check")
             db.add(ranking)
             db.flush()
             published_tool = db.query(Tool).filter(Tool.slug == TOOLS[0].slug).first()
             db.add_all(
                 [
-                    RankingItem(
-                        ranking_id=ranking.id,
-                        tool_id=published_tool.id,
-                        rank_order=1,
-                        reason="published",
-                    ),
-                    RankingItem(
-                        ranking_id=ranking.id,
-                        tool_id=db.query(Tool).filter(Tool.slug == "draft-only-tool").first().id,
-                        rank_order=1,
-                        reason="draft",
-                    ),
-                    RankingItem(
-                        ranking_id=ranking.id,
-                        tool_id=db.query(Tool).filter(Tool.slug == "archived-tool").first().id,
-                        rank_order=2,
-                        reason="archived",
-                    ),
+                    RankingItem(ranking_id=ranking.id, tool_id=published_tool.id, rank_order=1, reason="published"),
+                    RankingItem(ranking_id=ranking.id, tool_id=db.query(Tool).filter(Tool.slug == "draft-only-tool").first().id, rank_order=1, reason="draft"),
+                    RankingItem(ranking_id=ranking.id, tool_id=db.query(Tool).filter(Tool.slug == "archived-tool").first().id, rank_order=2, reason="archived"),
                 ]
             )
 

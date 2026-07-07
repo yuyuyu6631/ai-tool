@@ -124,18 +124,14 @@ def _build_rag_context(db, user_query: str) -> str:
         return "（未检索到与当前问题匹配的工具）"
 
     # 使用 joinedload 预加载关联数据，减少 N+1 查询
-    tools = (
-        db.scalars(
-            select(Tool)
-            .where(Tool.id.in_(top_ids))
-            .options(
-                joinedload(Tool.tags),
-                joinedload(Tool.categories),
-            )
+    tools = db.scalars(
+        select(Tool)
+        .where(Tool.id.in_(top_ids))
+        .options(
+            joinedload(Tool.tags),
+            joinedload(Tool.categories),
         )
-        .unique()
-        .all()
-    )
+    ).unique().all()
 
     context_lines = []
     for t in tools:
@@ -190,7 +186,11 @@ def _build_rag_context(db, user_query: str) -> str:
         if t.editor_comment and t.editor_comment.strip():
             editor_line = f"\n   编辑评语: {t.editor_comment.strip()[:200]}"
 
-        context_lines.append(f"- **{t.name}**\n   {summary_line}\n   {detail_line}{editor_line}")
+        context_lines.append(
+            f"- **{t.name}**\n"
+            f"   {summary_line}\n"
+            f"   {detail_line}{editor_line}"
+        )
 
     return "\n\n".join(context_lines)
 
@@ -226,11 +226,10 @@ def _trim_messages(messages: list[dict], max_pairs: int = MAX_CONVERSATION_PAIRS
         return messages
 
     # 保留最近 max_pairs * 2 条消息
-    return messages[-(max_pairs * 2) :]
+    return messages[-(max_pairs * 2):]
 
 
 # ─── SSE 工具函数 ────────────────────────────────────────────────────────
-
 
 def _sse_data(payload: dict) -> str:
     """将字典序列化为标准 SSE data 行。"""
@@ -264,7 +263,6 @@ def _resolve_chat_backend() -> tuple[str, str, str]:
 
 # ─── 核心流式对话生成器 ──────────────────────────────────────────────────
 
-
 def stream_chat_rag(db, messages: list[dict]):
     """
     基于 RAG 的流式对话生成器。
@@ -273,11 +271,7 @@ def stream_chat_rag(db, messages: list[dict]):
     """
     api_key, model, base_url = _resolve_chat_backend()
     if not api_key or not model or not base_url:
-        yield _sse_data(
-            {
-                "content": "系统提示：AI 服务端点未配置，目前暂不支持对话服务。请联系管理员配置 AI_API_KEY、AI_MODEL 和 AI_OPENAI_BASE_URL。"
-            }
-        )
+        yield _sse_data({"content": "系统提示：AI 服务端点未配置，目前暂不支持对话服务。请联系管理员配置 AI_API_KEY、AI_MODEL 和 AI_OPENAI_BASE_URL。"})
         yield _sse_done()
         return
 

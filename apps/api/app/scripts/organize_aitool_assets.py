@@ -13,14 +13,19 @@ from typing import Any
 from urllib.parse import urlparse
 
 from openpyxl import load_workbook
-
 from app.services.logo_assets import LOGO_SOURCE_IMPORTED, resolve_logo_status
+
 
 _SCRIPT_PATH = Path(__file__).resolve()
 _WORKSPACE_ROOT = _SCRIPT_PATH.parents[min(4, len(_SCRIPT_PATH.parents) - 1)]
 
 DEFAULT_TARGET_DIR = (
-    _WORKSPACE_ROOT / "archive" / "drawer" / "tooling-assets" / "apigetxlsx" / "aitool"
+    _WORKSPACE_ROOT
+    / "archive"
+    / "drawer"
+    / "tooling-assets"
+    / "apigetxlsx"
+    / "aitool"
 )
 
 PLACEHOLDER_LOGO_REFS = {"image.png"}
@@ -326,9 +331,7 @@ def assess_logo_risk(
         }
 
     identity_candidates = build_identity_candidates(row)
-    current_similarity = best_similarity(
-        identity_candidates, matched_entry.normalized if matched_entry else ""
-    )
+    current_similarity = best_similarity(identity_candidates, matched_entry.normalized if matched_entry else "")
     overlap = expected_tokens & matched_tokens
 
     if matched_logo and exact_logo_counter[matched_logo] > 1:
@@ -467,11 +470,7 @@ def primary_domain_token(raw_url: str) -> str:
     host = parsed.netloc.lower().replace("www.", "")
     if not host:
         return ""
-    pieces = [
-        piece
-        for piece in host.split(".")
-        if piece and piece not in {"com", "cn", "net", "org", "io", "ai"}
-    ]
+    pieces = [piece for piece in host.split(".") if piece and piece not in {"com", "cn", "net", "org", "io", "ai"}]
     if not pieces:
         return ""
     return normalize_identifier(pieces[0])
@@ -623,11 +622,7 @@ def slug_from_url(raw_url: str) -> str:
     path = parsed.path.strip("/").lower()
     path = re.sub(r"[^a-z0-9/-]+", "-", path)
     host = re.sub(r"[^a-z0-9.-]+", "-", host)
-    pieces = [
-        piece
-        for piece in [host.split(".")[0] if host else "", path.split("/")[0] if path else ""]
-        if piece
-    ]
+    pieces = [piece for piece in [host.split(".")[0] if host else "", path.split("/")[0] if path else ""] if piece]
     candidate = "-".join(pieces).strip("-")
     return candidate or ""
 
@@ -761,9 +756,7 @@ def main() -> None:
     print(f"Tool rows: {logo_summary['tool_rows']}")
     print(f"Logo files: {logo_summary['logo_files']}")
     print(f"Placeholder logo refs: {logo_summary['placeholder_logo_refs']}")
-    print(
-        f"Unresolved non-placeholder logo refs: {logo_summary['unresolved_non_placeholder_logo_refs']}"
-    )
+    print(f"Unresolved non-placeholder logo refs: {logo_summary['unresolved_non_placeholder_logo_refs']}")
     print(f"High-risk logo rows: {logo_summary['high_risk_logo_rows']}")
     print(f"DB import tools: {len(import_payload['tools'])}")
 

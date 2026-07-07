@@ -6,6 +6,7 @@ from typing import Annotated
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
+
 _CONFIG_PATH = Path(__file__).resolve()
 ROOT_DIR = _CONFIG_PATH.parents[min(4, len(_CONFIG_PATH.parents) - 1)]
 

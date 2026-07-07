@@ -37,9 +37,7 @@ def run() -> None:
                         continue
 
                     content_hash = compute_content_hash(source_text)
-                    row = session.scalar(
-                        select(ToolEmbedding).where(ToolEmbedding.tool_id == tool.id)
-                    )
+                    row = session.scalar(select(ToolEmbedding).where(ToolEmbedding.tool_id == tool.id))
                     if row and row.content_hash == content_hash:
                         skipped += 1
                         continue
@@ -68,9 +66,7 @@ def run() -> None:
                         updated += 1
             except Exception as exc:
                 failed += 1
-                print(
-                    f"Skipping tool embedding backfill for slug={tool.slug}: {type(exc).__name__}: {exc}"
-                )
+                print(f"Skipping tool embedding backfill for slug={tool.slug}: {type(exc).__name__}: {exc}")
 
         session.commit()
         print(

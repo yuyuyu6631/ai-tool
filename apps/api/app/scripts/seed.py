@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 from app.core.config import settings
 from app.db.session import Base, SessionLocal, engine
 from app.models.models import Category, Tag, Tool, ToolCategory, ToolTag
-from app.services.catalog_service import refresh_search_index
 from app.services.catalog_views_seed import seed_catalog_views
+from app.services.catalog_service import refresh_search_index
 from app.services.dev_admin_seed import ensure_admin_user, ensure_dev_admin_user
 from app.services.logo_assets import LOGO_SOURCE_FALLBACK, normalize_logo_path, resolve_logo_status
 from app.services.seed_data import CATEGORIES, TOOLS
@@ -30,11 +30,7 @@ def run() -> None:
         session.flush()
 
         for tool in TOOLS:
-            row = (
-                session.query(Tool)
-                .filter(or_(Tool.slug == tool.slug, Tool.name == tool.name))
-                .first()
-            )
+            row = session.query(Tool).filter(or_(Tool.slug == tool.slug, Tool.name == tool.name)).first()
             if row is not None:
                 continue
 
@@ -76,12 +72,7 @@ def run() -> None:
             session.flush()
 
             category = session.query(Category).filter(Category.slug == tool.categorySlug).first()
-            if (
-                category
-                and not session.query(ToolCategory)
-                .filter_by(tool_id=row.id, category_id=category.id)
-                .first()
-            ):
+            if category and not session.query(ToolCategory).filter_by(tool_id=row.id, category_id=category.id).first():
                 session.add(ToolCategory(tool_id=row.id, category_id=category.id))
 
             for tag_name in tool.tags:

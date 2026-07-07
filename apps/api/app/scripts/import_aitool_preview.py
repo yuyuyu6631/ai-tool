@@ -15,6 +15,7 @@ from app.models.models import Category, Source, Tag, Tool, ToolCategory, ToolTag
 from app.services.catalog_service import refresh_search_index
 from app.services.logo_assets import LOGO_SOURCE_IMPORTED, normalize_logo_path, resolve_logo_status
 
+
 IMPORT_MARKER = "[import-preview]"
 _SCRIPT_PATH = Path(__file__).resolve()
 _WORKSPACE_ROOT = _SCRIPT_PATH.parents[min(4, len(_SCRIPT_PATH.parents) - 1)]
@@ -109,18 +110,12 @@ def slug_from_url(raw_url: str) -> str:
     path = parsed.path.strip("/").lower()
     path = re.sub(r"[^a-z0-9/-]+", "-", path)
     host = re.sub(r"[^a-z0-9.-]+", "-", host)
-    pieces = [
-        piece
-        for piece in [host.split(".")[0] if host else "", path.split("/")[0] if path else ""]
-        if piece
-    ]
+    pieces = [piece for piece in [host.split(".")[0] if host else "", path.split("/")[0] if path else ""] if piece]
     candidate = "-".join(pieces).strip("-")
     return candidate or ""
 
 
-def build_normalized_slug(
-    raw_slug: str, name: str, raw_url: str, used_slugs: set[str]
-) -> tuple[str, bool]:
+def build_normalized_slug(raw_slug: str, name: str, raw_url: str, used_slugs: set[str]) -> tuple[str, bool]:
     candidates = [slugify_text(raw_slug), slug_from_url(raw_url), slugify_text(name)]
     base = next((candidate for candidate in candidates if candidate), "tool")
     truncated = base[:SLUG_MAX_LENGTH].rstrip("-") or "tool"
@@ -129,7 +124,7 @@ def build_normalized_slug(
     suffix_index = 2
     while slug in used_slugs:
         suffix = f"-{suffix_index}"
-        slug = f"{truncated[: SLUG_MAX_LENGTH - len(suffix)].rstrip('-')}{suffix}"
+        slug = f"{truncated[:SLUG_MAX_LENGTH - len(suffix)].rstrip('-')}{suffix}"
         changed = True
         suffix_index += 1
     used_slugs.add(slug)
@@ -255,19 +250,15 @@ def run(
             item["name"]: ensure_category(session, item) for item in categories
         }
         tag_by_name: dict[str, Tag] = {item["name"]: ensure_tag(session, item) for item in tags}
-        used_slugs = {slug for (slug,) in session.query(Tool.slug).all()}
+        used_slugs = {slug for slug, in session.query(Tool.slug).all()}
 
         for item in tools:
             tool = session.query(Tool).filter(Tool.slug == item["slug"]).first()
             if tool is None:
                 tool = session.query(Tool).filter(Tool.name == item["name"]).first()
             previous_slug = tool.slug if tool is not None else None
-            slug_pool = (
-                used_slugs if tool is None else {slug for slug in used_slugs if slug != tool.slug}
-            )
-            normalized_slug, slug_changed = build_normalized_slug(
-                item["slug"], item["name"], item["official_url"], slug_pool
-            )
+            slug_pool = used_slugs if tool is None else {slug for slug in used_slugs if slug != tool.slug}
+            normalized_slug, slug_changed = build_normalized_slug(item["slug"], item["name"], item["official_url"], slug_pool)
             if tool is None:
                 tool = session.query(Tool).filter(Tool.slug == normalized_slug).first()
             is_new = tool is None
@@ -340,9 +331,7 @@ def run(
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Import aitool JSON into the database with controllable status strategy."
-    )
+    parser = argparse.ArgumentParser(description="Import aitool JSON into the database with controllable status strategy.")
     parser.add_argument("--payload", type=Path, default=DEFAULT_PAYLOAD_PATH)
     parser.add_argument(
         "--limit",

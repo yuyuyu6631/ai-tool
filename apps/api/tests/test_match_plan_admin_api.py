@@ -145,22 +145,13 @@ def test_admin_can_preview_publish_and_drive_recommendations():
                 "status": "draft",
                 "sortOrder": 0,
                 "tools": [
-                    {
-                        "toolSlug": "paperflow",
-                        "reason": "后台策略优先推荐论文排版工具",
-                        "sortOrder": 0,
-                        "weight": 300,
-                    }
+                    {"toolSlug": "paperflow", "reason": "后台策略优先推荐论文排版工具", "sortOrder": 0, "weight": 300}
                 ],
             },
         )
         assert create_response.status_code == 201
 
-        plan = next(
-            item
-            for item in client.get("/api/admin/match-plans").json()
-            if item["slug"] == "paper-plan"
-        )
+        plan = next(item for item in client.get("/api/admin/match-plans").json() if item["slug"] == "paper-plan")
         preview_response = client.post(
             f"/api/admin/match-plans/{plan['id']}/preview",
             json={"query": "我要写论文", "scenario": "academic-writing", "tags": []},
@@ -168,31 +159,21 @@ def test_admin_can_preview_publish_and_drive_recommendations():
         assert preview_response.status_code == 200
         assert preview_response.json()["matched"] is True
 
-        before_publish = client.post(
-            "/api/recommend",
-            json={"query": "我要写论文", "scenario": "academic-writing", "tags": []},
-        )
+        before_publish = client.post("/api/recommend", json={"query": "我要写论文", "scenario": "academic-writing", "tags": []})
         assert before_publish.status_code == 200
-        assert all(
-            item["reason"] != "后台策略优先推荐论文排版工具" for item in before_publish.json()
-        )
+        assert all(item["reason"] != "后台策略优先推荐论文排版工具" for item in before_publish.json())
 
         publish_response = client.post(f"/api/admin/match-plans/{plan['id']}/publish")
         assert publish_response.status_code == 200
         assert publish_response.json()["status"] == "published"
 
-        recommend_response = client.post(
-            "/api/recommend",
-            json={"query": "我要写论文", "scenario": "academic-writing", "tags": []},
-        )
+        recommend_response = client.post("/api/recommend", json={"query": "我要写论文", "scenario": "academic-writing", "tags": []})
         assert recommend_response.status_code == 200
         recommend_payload = recommend_response.json()
         assert recommend_payload[0]["slug"] == "paperflow"
         assert recommend_payload[0]["reason"] == "后台策略优先推荐论文排版工具"
 
-        ai_search_response = client.get(
-            "/api/ai-search?q=%E6%88%91%E8%A6%81%E5%86%99%E8%AE%BA%E6%96%87&page_size=3"
-        )
+        ai_search_response = client.get("/api/ai-search?q=%E6%88%91%E8%A6%81%E5%86%99%E8%AE%BA%E6%96%87&page_size=3")
         assert ai_search_response.status_code == 200
         ai_payload = ai_search_response.json()
         assert ai_payload["results"][0]["slug"] == "paperflow"
@@ -224,20 +205,11 @@ def test_publish_rejects_unpublished_tools_and_public_boost_skips_them():
                 "status": "draft",
                 "sortOrder": 0,
                 "tools": [
-                    {
-                        "toolSlug": "draft-only",
-                        "reason": "Should not publish",
-                        "sortOrder": 0,
-                        "weight": 100,
-                    }
+                    {"toolSlug": "draft-only", "reason": "Should not publish", "sortOrder": 0, "weight": 100}
                 ],
             },
         )
         assert create_response.status_code == 201
-        plan = next(
-            item
-            for item in client.get("/api/admin/match-plans").json()
-            if item["slug"] == "invalid-tool-plan"
-        )
+        plan = next(item for item in client.get("/api/admin/match-plans").json() if item["slug"] == "invalid-tool-plan")
         publish_response = client.post(f"/api/admin/match-plans/{plan['id']}/publish")
         assert publish_response.status_code == 422

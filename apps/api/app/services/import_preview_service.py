@@ -7,6 +7,7 @@ from typing import Any
 
 from app.services.logo_assets import normalize_logo_path
 
+
 _SERVICE_PATH = Path(__file__).resolve()
 _WORKSPACE_ROOT = _SERVICE_PATH.parents[min(4, len(_SERVICE_PATH.parents) - 1)]
 
@@ -43,9 +44,7 @@ def _build_fallback_report(limit: int) -> dict[str, Any]:
     payload_tools = payload.get("tools", [])
 
     items: list[dict[str, Any]] = []
-    for index, (tool_row, payload_tool) in enumerate(
-        zip(tool_rows[:limit], payload_tools[:limit]), start=2
-    ):
+    for index, (tool_row, payload_tool) in enumerate(zip(tool_rows[:limit], payload_tools[:limit]), start=2):
         required_field_issues = _collect_required_field_issues(payload_tool)
         warnings = _collect_warnings(tool_row, payload_tool)
         logo_risk_level = str(tool_row.get("logo_risk_level", "unknown"))
@@ -87,9 +86,7 @@ def _build_fallback_report(limit: int) -> dict[str, Any]:
                 "vpnRequired": payload_tool.get("import_meta", {}).get("vpn_required", ""),
                 "detailPage": payload_tool.get("import_meta", {}).get("detail_page", ""),
                 "parentRecord": payload_tool.get("import_meta", {}).get("parent_record", ""),
-                "homepageScreenshot": payload_tool.get("import_meta", {}).get(
-                    "homepage_screenshot", ""
-                ),
+                "homepageScreenshot": payload_tool.get("import_meta", {}).get("homepage_screenshot", ""),
                 "requiredFieldIssues": sorted(set(required_field_issues)),
                 "warnings": sorted(set(warnings)),
                 "importReady": import_ready,
@@ -101,12 +98,7 @@ def _build_fallback_report(limit: int) -> dict[str, Any]:
         "workbookPath": asset_summary.get("workbook_path", ""),
         "sheetTitle": primary_sheet.get("title", ""),
         "sheetHeaders": primary_sheet.get("headers", []),
-        "stats": _build_stats(
-            items,
-            total_rows=int(
-                asset_summary.get("tool_logo_summary", {}).get("tool_rows", len(tool_rows))
-            ),
-        ),
+        "stats": _build_stats(items, total_rows=int(asset_summary.get("tool_logo_summary", {}).get("tool_rows", len(tool_rows)))),
         "sourceSummary": _build_source_summary(asset_summary),
         "items": items,
     }
@@ -133,9 +125,7 @@ def _attach_logo_paths(report: dict[str, Any]) -> dict[str, Any]:
 
         slug = str(item.get("slug", ""))
         normalized = dict(item)
-        normalized["logoPath"] = normalize_logo_path(
-            item.get("logoPath") or logo_paths_by_slug.get(slug)
-        )
+        normalized["logoPath"] = normalize_logo_path(item.get("logoPath") or logo_paths_by_slug.get(slug))
         normalized_items.append(normalized)
 
     normalized_report = dict(report)
@@ -151,9 +141,7 @@ def _build_stats(items: list[dict[str, Any]], total_rows: int) -> dict[str, int]
         "urlReachableRows": sum(1 for item in items if item["urlReachable"]),
         "urlRestrictedRows": sum(1 for item in items if item["urlCheckStatus"] == "restricted"),
         "urlErrorRows": sum(1 for item in items if item["urlCheckStatus"] in {"error", "invalid"}),
-        "highRiskLogoRows": sum(
-            1 for item in items if item["logoRiskLevel"] in {"high", "critical"}
-        ),
+        "highRiskLogoRows": sum(1 for item in items if item["logoRiskLevel"] in {"high", "critical"}),
         "missingRequiredFieldRows": sum(1 for item in items if item["requiredFieldIssues"]),
     }
 
@@ -181,10 +169,7 @@ def _collect_required_field_issues(payload_tool: dict[str, Any]) -> list[str]:
         issues.append("missing_url")
     if not payload_tool.get("summary"):
         issues.append("missing_summary")
-    if (
-        not payload_tool.get("category_name")
-        or payload_tool.get("category_name") == "uncategorized"
-    ):
+    if not payload_tool.get("category_name") or payload_tool.get("category_name") == "uncategorized":
         issues.append("missing_category")
     return issues
 

@@ -64,17 +64,7 @@ def test_build_tool_logo_report_flags_missing_placeholder_and_suspicious_matches
 
 
 def test_build_import_payload_uses_auto_matched_logo(tmp_path: Path):
-    logo_dir = (
-        tmp_path
-        / "archive"
-        / "drawer"
-        / "tooling-assets"
-        / "apigetxlsx"
-        / "aitool"
-        / "source"
-        / "logos"
-        / "log图包"
-    )
+    logo_dir = tmp_path / "archive" / "drawer" / "tooling-assets" / "apigetxlsx" / "aitool" / "source" / "logos" / "log图包"
     logo_dir.mkdir(parents=True)
     touch(logo_dir / "shipable.png")
 

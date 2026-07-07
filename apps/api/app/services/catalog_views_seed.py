@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.models.models import Ranking, RankingItem, Scenario, ScenarioTool, Tool
 
+
 PUBLIC_TOOL_STATUS = "published"
 
 
@@ -231,9 +232,7 @@ def _tool_blob(tool: Tool) -> str:
 
 
 def _sort_key(tool: Tool) -> tuple[int, float, int, int, int]:
-    last_verified = (
-        tool.last_verified_at.toordinal() if isinstance(tool.last_verified_at, date) else 0
-    )
+    last_verified = tool.last_verified_at.toordinal() if isinstance(tool.last_verified_at, date) else 0
     created_on = tool.created_on.toordinal() if isinstance(tool.created_on, date) else 0
     return (
         0 if tool.featured else 1,
@@ -253,7 +252,8 @@ def _keyword_matches(tool: Tool, keywords: tuple[str, ...]) -> bool:
     blob = _tool_blob(tool)
     compact_blob = _compact_text(blob)
     return any(
-        keyword and (_normalize_text(keyword) in blob or _compact_text(keyword) in compact_blob)
+        keyword
+        and (_normalize_text(keyword) in blob or _compact_text(keyword) in compact_blob)
         for keyword in keywords
     )
 
@@ -276,9 +276,7 @@ def _select_tools(
     keywords: tuple[str, ...],
     limit: int,
 ) -> list[Tool]:
-    exact = sorted(
-        (tool for tool in tools if _category_matches(tool, category_names)), key=_sort_key
-    )
+    exact = sorted((tool for tool in tools if _category_matches(tool, category_names)), key=_sort_key)
     fallback = sorted(
         (
             tool
@@ -363,9 +361,7 @@ def seed_catalog_views(db: Session) -> tuple[int, int]:
             limit=definition.primary_count + definition.alternative_count,
         )
         primary_tools = selected_tools[: definition.primary_count]
-        alternative_tools = selected_tools[
-            definition.primary_count : definition.primary_count + definition.alternative_count
-        ]
+        alternative_tools = selected_tools[definition.primary_count : definition.primary_count + definition.alternative_count]
         scenario.tool_count = len(primary_tools) + len(alternative_tools)
 
         db.execute(delete(ScenarioTool).where(ScenarioTool.scenario_id == scenario.id))
