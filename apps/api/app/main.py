@@ -1,6 +1,6 @@
-from contextlib import asynccontextmanager
 import logging
 import time
+from contextlib import asynccontextmanager
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import FastAPI, Request, status
@@ -66,7 +66,9 @@ def check_backend_readiness() -> tuple[bool, dict[str, object]]:
 
         return True, payload
     except Exception as exc:
-        failed_check = next((name for name, value in payload["checks"].items() if value != "ok"), "database")
+        failed_check = next(
+            (name for name, value in payload["checks"].items() if value != "ok"), "database"
+        )
         reason_map = {
             "database_config": "persistent_database_required",
             "database": "database_unavailable",
@@ -93,7 +95,9 @@ def create_app() -> FastAPI:
         config_ready, config_reason = ensure_persistent_database_config()
         if not config_ready:
             raise RuntimeError(f"Refusing to start without a persistent database: {config_reason}")
-        local_scheduler.add_job(build_mock_snapshot, "interval", minutes=60, kwargs={"source_name": "scheduled"})
+        local_scheduler.add_job(
+            build_mock_snapshot, "interval", minutes=60, kwargs={"source_name": "scheduled"}
+        )
         local_scheduler.start()
         try:
             yield

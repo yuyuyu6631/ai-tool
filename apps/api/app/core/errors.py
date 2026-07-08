@@ -5,7 +5,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -35,7 +34,9 @@ def _status_code_to_message(status_code: int) -> str:
     }.get(status_code, "请求处理失败")
 
 
-def _build_error_payload(status_code: int, detail: object, message: str | None = None) -> dict[str, object]:
+def _build_error_payload(
+    status_code: int, detail: object, message: str | None = None
+) -> dict[str, object]:
     return {
         "detail": detail,
         "code": _status_code_to_error_code(status_code),

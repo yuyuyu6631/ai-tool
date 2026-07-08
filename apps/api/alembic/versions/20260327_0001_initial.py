@@ -1,8 +1,8 @@
 """initial schema"""
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "20260327_0001"
 down_revision = None
@@ -48,8 +48,15 @@ def upgrade() -> None:
     op.create_table(
         "tool_categories",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("category_id", sa.Integer(), sa.ForeignKey("categories.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False
+        ),
+        sa.Column(
+            "category_id",
+            sa.Integer(),
+            sa.ForeignKey("categories.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.UniqueConstraint("tool_id", "category_id", name="uq_tool_category"),
     )
     op.create_table(
@@ -63,8 +70,12 @@ def upgrade() -> None:
     op.create_table(
         "tool_tags",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("tag_id", sa.Integer(), sa.ForeignKey("tags.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False
+        ),
+        sa.Column(
+            "tag_id", sa.Integer(), sa.ForeignKey("tags.id", ondelete="CASCADE"), nullable=False
+        ),
         sa.UniqueConstraint("tool_id", "tag_id", name="uq_tool_tag"),
     )
     op.create_table(
@@ -82,8 +93,15 @@ def upgrade() -> None:
     op.create_table(
         "scenario_tools",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("scenario_id", sa.Integer(), sa.ForeignKey("scenarios.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "scenario_id",
+            sa.Integer(),
+            sa.ForeignKey("scenarios.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False
+        ),
         sa.Column("is_primary", sa.Boolean(), nullable=False),
         sa.UniqueConstraint("scenario_id", "tool_id", name="uq_scenario_tool"),
     )
@@ -100,8 +118,15 @@ def upgrade() -> None:
     op.create_table(
         "ranking_items",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("ranking_id", sa.Integer(), sa.ForeignKey("rankings.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "ranking_id",
+            sa.Integer(),
+            sa.ForeignKey("rankings.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False
+        ),
         sa.Column("rank_order", sa.Integer(), nullable=False),
         sa.Column("reason", sa.String(length=255), nullable=False),
         sa.UniqueConstraint("ranking_id", "tool_id", name="uq_ranking_tool"),
@@ -109,7 +134,9 @@ def upgrade() -> None:
     op.create_table(
         "sources",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="SET NULL"), nullable=True),
+        sa.Column(
+            "tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="SET NULL"), nullable=True
+        ),
         sa.Column("source_type", sa.String(length=64), nullable=False),
         sa.Column("source_url", sa.String(length=255), nullable=False),
         sa.Column("created_at", sa.DateTime(), nullable=False),
@@ -129,7 +156,12 @@ def upgrade() -> None:
     op.create_table(
         "crawl_snapshots",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("crawl_job_id", sa.Integer(), sa.ForeignKey("crawl_jobs.id", ondelete="SET NULL"), nullable=True),
+        sa.Column(
+            "crawl_job_id",
+            sa.Integer(),
+            sa.ForeignKey("crawl_jobs.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
         sa.Column("tool_slug", sa.String(length=120), nullable=False),
         sa.Column("raw_payload", sa.Text(), nullable=False),
         sa.Column("parsed_payload", sa.Text(), nullable=False),
@@ -140,7 +172,9 @@ def upgrade() -> None:
     op.create_table(
         "tool_updates",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False
+        ),
         sa.Column("status", sa.String(length=32), nullable=False),
         sa.Column("proposed_payload", sa.Text(), nullable=False),
         sa.Column("reviewer_note", sa.Text(), nullable=True),

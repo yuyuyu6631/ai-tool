@@ -3,20 +3,19 @@ RAG 流式对话服务单元测试 —— 覆盖核心函数和异常处理。
 """
 
 import json
+from unittest.mock import MagicMock, patch
 
-import pytest
-from unittest.mock import patch, MagicMock
 from app.services.rag_chat_service import (
-    stream_chat_rag,
+    _extract_user_query,
     _sse_data,
     _sse_done,
     _sse_error,
     _trim_messages,
-    _extract_user_query,
+    stream_chat_rag,
 )
 
-
 # ─── _trim_messages 裁剪测试 ────────────────────────────────────────────
+
 
 class TestTrimMessages:
     """验证对话历史裁剪逻辑。"""
@@ -53,6 +52,7 @@ class TestTrimMessages:
 
 # ─── _extract_user_query 意图提取测试 ────────────────────────────────────
 
+
 class TestExtractUserQuery:
     """验证用户查询意图提取与降级逻辑。"""
 
@@ -88,6 +88,7 @@ class TestExtractUserQuery:
 
 # ─── SSE 辅助函数测试 ────────────────────────────────────────────────────
 
+
 def test_sse_helper_functions():
     """验证 SSE 辅助函数输出格式正确。"""
     # _sse_data
@@ -106,6 +107,7 @@ def test_sse_helper_functions():
 
 # ─── 流式输出核心测试 ────────────────────────────────────────────────────
 
+
 @patch("app.services.rag_chat_service._build_rag_context")
 @patch("app.services.rag_chat_service.request.urlopen")
 def test_stream_chat_rag_yields_sse_content(mock_urlopen, mock_context):
@@ -114,11 +116,13 @@ def test_stream_chat_rag_yields_sse_content(mock_urlopen, mock_context):
 
     mock_response = MagicMock()
     mock_response.__enter__.return_value = mock_response
-    mock_response.__iter__.return_value = iter([
-        b'data: {"choices": [{"delta": {"content": "\xe6\xb5\x8b"}}]}\n',
-        b'data: {"choices": [{"delta": {"content": "\xe8\xaf\x95"}}]}\n',
-        b'data: [DONE]\n'
-    ])
+    mock_response.__iter__.return_value = iter(
+        [
+            b'data: {"choices": [{"delta": {"content": "\xe6\xb5\x8b"}}]}\n',
+            b'data: {"choices": [{"delta": {"content": "\xe8\xaf\x95"}}]}\n',
+            b"data: [DONE]\n",
+        ]
+    )
     mock_urlopen.return_value = mock_response
 
     messages = [{"role": "user", "content": "我要找寻工具"}]
@@ -140,12 +144,14 @@ def test_stream_chat_rag_empty_choices_skipped(mock_urlopen, mock_context):
 
     mock_response = MagicMock()
     mock_response.__enter__.return_value = mock_response
-    mock_response.__iter__.return_value = iter([
-        b'data: {"choices": []}\n',                                    # 空 choices（心跳帧）
-        b'data: {"choices": [{"delta": {"role": "assistant"}}]}\n',    # 无 content 的 role 帧
-        b'data: {"choices": [{"delta": {"content": "OK"}}]}\n',        # 正常内容
-        b'data: [DONE]\n'
-    ])
+    mock_response.__iter__.return_value = iter(
+        [
+            b'data: {"choices": []}\n',  # 空 choices（心跳帧）
+            b'data: {"choices": [{"delta": {"role": "assistant"}}]}\n',  # 无 content 的 role 帧
+            b'data: {"choices": [{"delta": {"content": "OK"}}]}\n',  # 正常内容
+            b"data: [DONE]\n",
+        ]
+    )
     mock_urlopen.return_value = mock_response
 
     messages = [{"role": "user", "content": "test"}]
@@ -161,6 +167,7 @@ def test_stream_chat_rag_empty_choices_skipped(mock_urlopen, mock_context):
 def test_stream_chat_rag_network_error(mock_urlopen):
     """网络异常时应输出 SSE 格式的错误事件，而非裸露异常文本。"""
     from urllib.error import URLError
+
     mock_urlopen.side_effect = URLError("Connection refused")
 
     messages = [{"role": "user", "content": "hi"}]

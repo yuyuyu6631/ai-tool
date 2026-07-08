@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import admin, ai_search, auth, catalog, crawl, recommend, chat, parser, reviews
+from app.api.routes import admin, ai_search, auth, catalog, chat, crawl, parser, recommend, reviews
 
 api_router = APIRouter()
 api_router.include_router(auth.router, tags=["auth"])

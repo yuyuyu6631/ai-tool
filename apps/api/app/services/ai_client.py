@@ -4,7 +4,13 @@ import json
 import re
 from urllib import error, request
 
-from tenacity import RetryError, retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import (
+    RetryError,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_exponential,
+)
 
 from app.core.config import settings
 from app.schemas.recommend import RecommendRequest
@@ -99,12 +105,12 @@ def rank_with_ai(payload: RecommendRequest, candidates: list) -> tuple[list, dic
     choices = payload_data.get("choices", [])
     if not choices:
         return candidates, {}
-        
+
     message = choices[0].get("message", {})
     # Reasoning models like DeepSeek-R1 put output in reasoning_content
     # Search models like MiniMax might have search_results or specific content structure
     content = message.get("content") or message.get("reasoning_content") or ""
-    
+
     # Check for search results metadata (some proxies or model versions return this)
     search_results = payload_data.get("search_results") or message.get("search_results")
     if search_results:

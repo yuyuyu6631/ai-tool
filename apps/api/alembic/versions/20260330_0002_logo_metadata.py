@@ -1,8 +1,8 @@
 """add logo metadata columns"""
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "20260330_0002"
 down_revision = "20260327_0001"
@@ -11,8 +11,14 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("tools", sa.Column("logo_status", sa.String(length=32), nullable=False, server_default="missing"))
-    op.add_column("tools", sa.Column("logo_source", sa.String(length=32), nullable=False, server_default="imported"))
+    op.add_column(
+        "tools",
+        sa.Column("logo_status", sa.String(length=32), nullable=False, server_default="missing"),
+    )
+    op.add_column(
+        "tools",
+        sa.Column("logo_source", sa.String(length=32), nullable=False, server_default="imported"),
+    )
     op.execute(
         """
         UPDATE tools

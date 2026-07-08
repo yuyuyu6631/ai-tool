@@ -1,8 +1,8 @@
 """add tool reviews, access flags, and structured pricing"""
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "20260413_0005"
 down_revision = "20260408_0004"
@@ -12,17 +12,29 @@ depends_on = None
 
 def upgrade() -> None:
     op.add_column("tools", sa.Column("access_flags", sa.JSON(), nullable=True))
-    op.add_column("tools", sa.Column("review_count", sa.Integer(), nullable=False, server_default="0"))
-    op.add_column("tools", sa.Column("pricing_type", sa.String(length=32), nullable=False, server_default="unknown"))
+    op.add_column(
+        "tools", sa.Column("review_count", sa.Integer(), nullable=False, server_default="0")
+    )
+    op.add_column(
+        "tools",
+        sa.Column("pricing_type", sa.String(length=32), nullable=False, server_default="unknown"),
+    )
     op.add_column("tools", sa.Column("price_min_cny", sa.Integer(), nullable=True))
     op.add_column("tools", sa.Column("price_max_cny", sa.Integer(), nullable=True))
-    op.add_column("tools", sa.Column("free_allowance_text", sa.String(length=255), nullable=False, server_default=""))
+    op.add_column(
+        "tools",
+        sa.Column("free_allowance_text", sa.String(length=255), nullable=False, server_default=""),
+    )
 
     op.create_table(
         "tool_reviews",
         sa.Column("id", sa.Integer(), primary_key=True),
-        sa.Column("tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False),
-        sa.Column("user_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True),
+        sa.Column(
+            "tool_id", sa.Integer(), sa.ForeignKey("tools.id", ondelete="CASCADE"), nullable=False
+        ),
+        sa.Column(
+            "user_id", sa.Integer(), sa.ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+        ),
         sa.Column("source_type", sa.String(length=16), nullable=False, server_default="editor"),
         sa.Column("status", sa.String(length=32), nullable=False, server_default="draft"),
         sa.Column("rating", sa.Float(), nullable=True),

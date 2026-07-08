@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from collections import Counter
 import logging
+from collections import Counter
 
 from fastapi import HTTPException, status
 from sqlalchemy import func, select
@@ -16,7 +16,6 @@ from app.schemas.tool import (
     ToolReviewsResponse,
     UpsertToolReviewRequest,
 )
-
 
 PUBLIC_REVIEW_STATUS = "published"
 logger = logging.getLogger(__name__)
@@ -56,7 +55,9 @@ def _rating_summary_from_reviews(reviews: list[ToolReview]) -> ToolRatingSummary
     review_count = len(ratings)
     average = round(sum(ratings) / review_count, 2) if review_count else 0.0
     distribution = {str(score): counter.get(str(score), 0) for score in range(5, 0, -1)}
-    return ToolRatingSummary(average=average, reviewCount=review_count, ratingDistribution=distribution)
+    return ToolRatingSummary(
+        average=average, reviewCount=review_count, ratingDistribution=distribution
+    )
 
 
 def published_reviews_for_tool(db: Session, *, tool_slug: str) -> ToolReviewsResponse:
@@ -71,10 +72,14 @@ def published_reviews_for_tool(db: Session, *, tool_slug: str) -> ToolReviewsRes
     editor_reviews = [serialize_review(row) for row in rows if row.source_type == "editor"]
     user_reviews = [serialize_review(row) for row in rows if row.source_type == "user"]
     summary = _rating_summary_from_reviews(rows)
-    return ToolReviewsResponse(summary=summary, editorReviews=editor_reviews, userReviews=user_reviews)
+    return ToolReviewsResponse(
+        summary=summary, editorReviews=editor_reviews, userReviews=user_reviews
+    )
 
 
-def current_user_review_for_tool(db: Session, *, tool_slug: str, user: User) -> ToolReviewItem | None:
+def current_user_review_for_tool(
+    db: Session, *, tool_slug: str, user: User
+) -> ToolReviewItem | None:
     tool = _load_tool(db, tool_slug=tool_slug)
     review = db.scalar(
         select(ToolReview)
@@ -86,8 +91,7 @@ def current_user_review_for_tool(db: Session, *, tool_slug: str, user: User) -> 
 
 def _recalculate_tool_score(db: Session, tool_id: int) -> None:
     ratings = db.execute(
-        select(func.avg(ToolReview.rating), func.count(ToolReview.id))
-        .where(
+        select(func.avg(ToolReview.rating), func.count(ToolReview.id)).where(
             ToolReview.tool_id == tool_id,
             ToolReview.status == PUBLIC_REVIEW_STATUS,
             ToolReview.rating.is_not(None),
@@ -102,7 +106,9 @@ def _recalculate_tool_score(db: Session, tool_id: int) -> None:
     tool.review_count = count
 
 
-def upsert_user_review(db: Session, *, tool_slug: str, user: User, payload: UpsertToolReviewRequest) -> ToolReviewItem:
+def upsert_user_review(
+    db: Session, *, tool_slug: str, user: User, payload: UpsertToolReviewRequest
+) -> ToolReviewItem:
     tool = _load_tool(db, tool_slug=tool_slug)
     review = db.scalar(
         select(ToolReview)
@@ -132,6 +138,8 @@ def upsert_user_review(db: Session, *, tool_slug: str, user: User, payload: Upse
     except SQLAlchemyError as error:
         db.rollback()
         logger.exception("review_upsert_failed tool_slug=%s user_id=%s", tool_slug, user.id)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="评论保存失败，请稍后重试。") from error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="评论保存失败，请稍后重试。"
+        ) from error
     db.refresh(review)
     return serialize_review(review)

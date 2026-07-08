@@ -7,9 +7,9 @@ Create Date: 2026-05-06 00:00:00.000000
 
 from __future__ import annotations
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "20260506_0008"
 down_revision = "20260424_0007"
@@ -53,8 +53,15 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("match_plan_id", "tool_id", name="uq_match_plan_tool"),
     )
-    op.create_index(op.f("ix_match_plan_tools_match_plan_id"), "match_plan_tools", ["match_plan_id"], unique=False)
-    op.create_index(op.f("ix_match_plan_tools_tool_id"), "match_plan_tools", ["tool_id"], unique=False)
+    op.create_index(
+        op.f("ix_match_plan_tools_match_plan_id"),
+        "match_plan_tools",
+        ["match_plan_id"],
+        unique=False,
+    )
+    op.create_index(
+        op.f("ix_match_plan_tools_tool_id"), "match_plan_tools", ["tool_id"], unique=False
+    )
 
 
 def downgrade() -> None:

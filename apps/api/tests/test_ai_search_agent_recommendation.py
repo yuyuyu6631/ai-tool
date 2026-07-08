@@ -99,12 +99,21 @@ def test_ai_search_uses_configured_candidate_limit(monkeypatch):
         ai_search_service,
         "parse_ai_search_intent",
         lambda query, normalized_query: (
-            {"intent_summary": "PPT 搜索", "task": "presentation", "constraints": {}, "quick_actions": []},
+            {
+                "intent_summary": "PPT 搜索",
+                "task": "presentation",
+                "constraints": {},
+                "quick_actions": [],
+            },
             "fallback",
             False,
         ),
     )
-    monkeypatch.setattr(ai_search_service, "apply_match_plan_boost", lambda db, query, scenario, tags, items: (items, {}))
+    monkeypatch.setattr(
+        ai_search_service,
+        "apply_match_plan_boost",
+        lambda db, query, scenario, tags, items: (items, {}),
+    )
 
     response = ai_search_service.search_with_ai(
         db=object(),
@@ -131,14 +140,20 @@ def test_stub_provider_skips_llm_intent_parser(monkeypatch):
     monkeypatch.setattr(ai_search_service.settings, "ai_provider", "stub")
     monkeypatch.setattr(ai_search_service.settings, "ai_api_key", "test-key")
     monkeypatch.setattr(ai_search_service.settings, "ai_model", "test-model")
-    monkeypatch.setattr(ai_search_service.settings, "ai_openai_base_url", "https://example.invalid/v1")
+    monkeypatch.setattr(
+        ai_search_service.settings, "ai_openai_base_url", "https://example.invalid/v1"
+    )
     monkeypatch.setattr(
         ai_search_service,
         "_call_intent_llm",
-        lambda query, normalized_query: (_ for _ in ()).throw(AssertionError("LLM should not be called")),
+        lambda query, normalized_query: (_ for _ in ()).throw(
+            AssertionError("LLM should not be called")
+        ),
     )
 
-    payload, source, cache_hit = ai_search_service.parse_ai_search_intent("做PPT", "presentation ppt")
+    payload, source, cache_hit = ai_search_service.parse_ai_search_intent(
+        "做PPT", "presentation ppt"
+    )
 
     assert payload["task"] == "presentation"
     assert source == "fallback"
@@ -165,13 +180,30 @@ def test_ai_search_timeout_does_not_wait_for_slow_intent_thread(monkeypatch):
 
     def slow_intent(query: str, normalized_query: str):
         time.sleep(0.4)
-        return {"intent_summary": "慢解析", "task": "presentation", "constraints": {}, "quick_actions": []}, "llm", False
+        return (
+            {
+                "intent_summary": "慢解析",
+                "task": "presentation",
+                "constraints": {},
+                "quick_actions": [],
+            },
+            "llm",
+            False,
+        )
 
     monkeypatch.setattr(ai_search_service.settings, "ai_search_intent_timeout_seconds", 0.05)
-    monkeypatch.setattr(ai_search_service.settings, "ai_search_intent_failure_cooldown_seconds", 1.0)
-    monkeypatch.setattr(ai_search_service.catalog_service, "get_tools_directory", lambda **kwargs: directory)
+    monkeypatch.setattr(
+        ai_search_service.settings, "ai_search_intent_failure_cooldown_seconds", 1.0
+    )
+    monkeypatch.setattr(
+        ai_search_service.catalog_service, "get_tools_directory", lambda **kwargs: directory
+    )
     monkeypatch.setattr(ai_search_service, "parse_ai_search_intent", slow_intent)
-    monkeypatch.setattr(ai_search_service, "apply_match_plan_boost", lambda db, query, scenario, tags, items: (items, {}))
+    monkeypatch.setattr(
+        ai_search_service,
+        "apply_match_plan_boost",
+        lambda db, query, scenario, tags, items: (items, {}),
+    )
 
     started_at = time.perf_counter()
     response = ai_search_service.search_with_ai(

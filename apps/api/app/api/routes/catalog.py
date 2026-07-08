@@ -1,8 +1,14 @@
-from fastapi import APIRouter, HTTPException, Query, Depends
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
-from app.schemas.catalog import CategorySummary, HomeCatalogResponse, RankingSection, ScenarioSummary, ToolsDirectoryResponse
+from app.schemas.catalog import (
+    CategorySummary,
+    HomeCatalogResponse,
+    RankingSection,
+    ScenarioSummary,
+    ToolsDirectoryResponse,
+)
 from app.schemas.tool import ToolDetail, ToolSummary
 from app.services import catalog_service
 from app.services.import_preview_service import load_import_preview_validation
