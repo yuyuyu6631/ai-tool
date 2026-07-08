@@ -129,7 +129,8 @@ describe("CommandPalette", () => {
 
     fireEvent.keyDown(document, { key: "k", ctrlKey: true });
     fireEvent.change(await screen.findByRole("combobox"), { target: { value: "deep research" } });
-    fireEvent.click(await screen.findByText("在目录中搜索 “deep research”"));
+    const searchResultItem = await waitFor(() => screen.findByText("在目录中搜索 “deep research”"));
+    fireEvent.click(searchResultItem);
 
     expect(pushMock).toHaveBeenCalledWith("/tools?q=deep+research&mode=ai&page=1&page_size=24");
   });
