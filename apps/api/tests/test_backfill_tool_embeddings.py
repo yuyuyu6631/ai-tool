@@ -3,7 +3,6 @@ from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 
-import pytest
 from sqlalchemy import create_engine, func, select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -18,7 +17,6 @@ from app.db.session import Base  # noqa: E402
 from app.models.models import Tool, ToolEmbedding  # noqa: E402
 from app.scripts import backfill_tool_embeddings  # noqa: E402
 from app.services.seed_data import TOOLS  # noqa: E402
-
 
 _test_engine = create_engine(
     f"sqlite:///{_TEST_DB_PATH}",

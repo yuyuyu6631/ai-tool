@@ -2,8 +2,8 @@ import os
 from datetime import date
 from importlib import reload
 
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -109,7 +109,11 @@ def test_user_review_is_upserted_and_updates_tool_aggregate():
 
         update_response = client.put(
             "/api/tools/chatgpt/reviews/me",
-            json={"rating": 3, "title": "Updated review", "body": "Changing this to a medium score"},
+            json={
+                "rating": 3,
+                "title": "Updated review",
+                "body": "Changing this to a medium score",
+            },
         )
         assert update_response.status_code == 200
         assert update_response.json()["title"] == "Updated review"
@@ -133,7 +137,11 @@ def test_user_review_is_upserted_and_updates_tool_aggregate():
             assert tool.review_count == 2
             assert tool.score == 3.5
 
-            rows = db.scalars(select(ToolReview).where(ToolReview.tool_id == tool.id, ToolReview.user_id.is_not(None))).all()
+            rows = db.scalars(
+                select(ToolReview).where(
+                    ToolReview.tool_id == tool.id, ToolReview.user_id.is_not(None)
+                )
+            ).all()
             assert len(rows) == 1
 
     with TestClient(app) as second_client:
@@ -310,8 +318,8 @@ def test_production_like_environment_rejects_in_memory_database():
     os.environ["RAILWAY_ENVIRONMENT"] = "production"
 
     import app.core.config as config_module
-    import app.main as main_module
     import app.db.session as session_module
+    import app.main as main_module
 
     try:
         reload(config_module)

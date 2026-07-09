@@ -7,6 +7,7 @@
     B-5: Redis 不可用时正常降级（缓存层可选）
     B-6: AI Provider 可通过配置替换，不影响接口调用
 """
+
 import os
 import time
 
@@ -20,8 +21,8 @@ os.environ["DATABASE_URL"] = f"sqlite:///{_TEST_DB_PATH}"
 os.environ.setdefault("AI_PROVIDER", "stub")
 os.environ.setdefault("AI_API_KEY", "")
 
-import app.services.catalog_service as catalog_svc  # noqa: E402
 import app.db.session as session_mod  # noqa: E402
+import app.services.catalog_service as catalog_svc  # noqa: E402
 from app.db.session import Base, get_db  # noqa: E402
 from app.main import create_app  # noqa: E402
 from app.models import models  # noqa: E402, F401
@@ -50,29 +51,37 @@ def setup_test_db():
 
     db = _TestSession()
     try:
-        from app.models.models import Category as CatModel, Tool as ToolModel
+        from app.models.models import Category as CatModel
+        from app.models.models import Tool as ToolModel
+
         for cat in CATEGORIES:
             if not db.query(CatModel).filter(CatModel.slug == cat.slug).first():
                 db.add(CatModel(slug=cat.slug, name=cat.name, description=cat.description))
         for tool in TOOLS:
             if not db.query(ToolModel).filter(ToolModel.slug == tool.slug).first():
-                db.add(ToolModel(
-                    slug=tool.slug,
-                    name=tool.name,
-                    category_name=tool.category,
-                    summary=tool.summary,
-                    description=tool.description,
-                    editor_comment=tool.editorComment,
-                    official_url=tool.officialUrl,
-                    logo_path=getattr(tool, "logoPath", None),
-                    logo_status=getattr(tool, "logoStatus", "matched" if getattr(tool, "logoPath", None) else "missing"),
-                    logo_source=getattr(tool, "logoSource", "fallback"),
-                    score=tool.score,
-                    status=tool.status,
-                    featured=tool.featured,
-                    created_on=tool.createdAt,
-                    last_verified_at=tool.lastVerifiedAt,
-                ))
+                db.add(
+                    ToolModel(
+                        slug=tool.slug,
+                        name=tool.name,
+                        category_name=tool.category,
+                        summary=tool.summary,
+                        description=tool.description,
+                        editor_comment=tool.editorComment,
+                        official_url=tool.officialUrl,
+                        logo_path=getattr(tool, "logoPath", None),
+                        logo_status=getattr(
+                            tool,
+                            "logoStatus",
+                            "matched" if getattr(tool, "logoPath", None) else "missing",
+                        ),
+                        logo_source=getattr(tool, "logoSource", "fallback"),
+                        score=tool.score,
+                        status=tool.status,
+                        featured=tool.featured,
+                        created_on=tool.createdAt,
+                        last_verified_at=tool.lastVerifiedAt,
+                    )
+                )
         db.commit()
     finally:
         db.close()
@@ -137,6 +146,7 @@ def ensure_hidden_draft_tool():
 # B-1: API 可用 - 返回 200 + 正确 Content-Type
 # ---------------------------------------------------------------------------
 
+
 class TestB1_API可用:
     def test_recommend_返回200(self):
         """B-1: POST /api/recommend 状态码必须为 200"""
@@ -185,6 +195,7 @@ class TestB1_API可用:
 # B-2: 响应时间 < 3s
 # ---------------------------------------------------------------------------
 
+
 class TestB2_响应时间:
     def test_recommend_响应时间小于3秒(self):
         """B-2: stub/mock 模式响应时间阈值（验收标准注明 mock 可放宽）
@@ -212,6 +223,7 @@ class TestB2_响应时间:
 # ---------------------------------------------------------------------------
 # B-3: JSON 格式 - 每条推荐必须含 name / slug / reason / tags / url
 # ---------------------------------------------------------------------------
+
 
 class TestB3_JSON格式:
     REQUIRED_FIELDS = ("name", "slug", "reason", "tags", "url")
@@ -256,6 +268,7 @@ class TestB3_JSON格式:
 # ---------------------------------------------------------------------------
 # B-4: 异常处理 - 无效请求返回统一提示
 # ---------------------------------------------------------------------------
+
 
 class TestB4_异常处理:
     def test_query为空字符串返回422(self):
@@ -324,6 +337,7 @@ class TestB4_异常处理:
 # B-5: 缓存降级 - Redis 不可用时正常返回结果
 # ---------------------------------------------------------------------------
 
+
 class TestB5_缓存降级:
     def test_redis不可用时推荐接口正常返回(self, monkeypatch):
         """B-5: Redis 连接失败时接口不应崩溃，应正常降级返回推荐"""
@@ -341,6 +355,7 @@ class TestB5_缓存降级:
 # B-6: 可扩展性 - AI Provider 可替换，接口调用不受影响
 # ---------------------------------------------------------------------------
 
+
 class TestB6_可扩展性:
     def test_stub模式下接口正常返回(self):
         """B-6: AI_PROVIDER=stub 时接口完整可用，无需真实大模型"""
@@ -351,12 +366,15 @@ class TestB6_可扩展性:
     def test_ai_client模块存在且可导入(self):
         """B-6: ai_client 模块应独立封装，可独立导入"""
         from app.services import ai_client  # noqa: F401
+
         assert hasattr(ai_client, "rank_with_ai"), "rank_with_ai 函数未找到"
 
     def test_recommendation_service与provider解耦(self):
         """B-6: recommendation_service 必须通过 settings.ai_provider 判断，而非硬编码"""
         import inspect
+
         from app.services import recommendation_service
+
         source = inspect.getsource(recommendation_service)
         assert "ai_provider" in source, "推荐服务未通过 ai_provider 配置判断模型调用"
         # 不应当硬编码特定的模型名称

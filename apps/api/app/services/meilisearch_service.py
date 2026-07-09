@@ -65,9 +65,8 @@ class MeiliSearchResult:
 
 
 def _is_enabled() -> bool:
-    return (
-        settings.search_provider.strip().lower() == "meilisearch"
-        and bool(settings.meilisearch_url.strip())
+    return settings.search_provider.strip().lower() == "meilisearch" and bool(
+        settings.meilisearch_url.strip()
     )
 
 
@@ -266,9 +265,13 @@ def _build_filters(
     filters = ['status = "published"']
     if category_slug:
         normalized_category = _slugify(category_slug)
-        category_values = [normalized_category, *CATEGORY_FILTER_ALIASES.get(normalized_category, [])]
+        category_values = [
+            normalized_category,
+            *CATEGORY_FILTER_ALIASES.get(normalized_category, []),
+        ]
         category_filter = " OR ".join(
-            f"categorySlug = {_quote_filter_value(_slugify(value))}" for value in dict.fromkeys(category_values)
+            f"categorySlug = {_quote_filter_value(_slugify(value))}"
+            for value in dict.fromkeys(category_values)
         )
         filters.append(f"({category_filter})")
     if tag_slug:

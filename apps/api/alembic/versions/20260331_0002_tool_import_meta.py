@@ -1,8 +1,8 @@
 """add structured import metadata fields to tools"""
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 revision = "20260331_0002"
 down_revision = "20260327_0001"
@@ -11,16 +11,30 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column("tools", sa.Column("developer", sa.String(length=255), nullable=False, server_default=""))
-    op.add_column("tools", sa.Column("country", sa.String(length=64), nullable=False, server_default=""))
-    op.add_column("tools", sa.Column("city", sa.String(length=120), nullable=False, server_default=""))
-    op.add_column("tools", sa.Column("price", sa.String(length=64), nullable=False, server_default=""))
-    op.add_column("tools", sa.Column("platforms", sa.String(length=255), nullable=False, server_default=""))
-    op.add_column("tools", sa.Column("vpn_required", sa.String(length=32), nullable=False, server_default=""))
+    op.add_column(
+        "tools", sa.Column("developer", sa.String(length=255), nullable=False, server_default="")
+    )
+    op.add_column(
+        "tools", sa.Column("country", sa.String(length=64), nullable=False, server_default="")
+    )
+    op.add_column(
+        "tools", sa.Column("city", sa.String(length=120), nullable=False, server_default="")
+    )
+    op.add_column(
+        "tools", sa.Column("price", sa.String(length=64), nullable=False, server_default="")
+    )
+    op.add_column(
+        "tools", sa.Column("platforms", sa.String(length=255), nullable=False, server_default="")
+    )
+    op.add_column(
+        "tools", sa.Column("vpn_required", sa.String(length=32), nullable=False, server_default="")
+    )
 
-    op.execute(
-        sa.text(
-            """
+    bind = op.get_bind()
+    if bind.dialect.name != "sqlite":
+        op.execute(
+            sa.text(
+                """
             UPDATE tools
             SET
               developer = CASE
@@ -48,8 +62,8 @@ def upgrade() -> None:
                 ELSE vpn_required
               END
             """
+            )
         )
-    )
 
 
 def downgrade() -> None:

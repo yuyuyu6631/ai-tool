@@ -18,7 +18,6 @@ from app.db.session import get_db
 from app.models.models import User, UserSession
 from app.schemas.auth import AuthLoginRequest, AuthRegisterRequest
 
-
 logger = logging.getLogger(__name__)
 _BCRYPT_SHA256_PREFIX = "bcrypt_sha256$"
 EMAIL_PATTERN = r"^[^\s@]+@[^\s@]+\.[^\s@]+$"
@@ -202,14 +201,20 @@ def _validate_register_payload(payload: AuthRegisterRequest) -> tuple[str, str]:
 
 def _raise_duplicate_conflict(existing_user: User, username: str) -> None:
     if existing_user.username == username:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"username": "这个用户名已经被占用了。"})
-    raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail={"email": "这个邮箱已经注册过账号了。"})
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail={"username": "这个用户名已经被占用了。"}
+        )
+    raise HTTPException(
+        status_code=status.HTTP_409_CONFLICT, detail={"email": "这个邮箱已经注册过账号了。"}
+    )
 
 
 def register_user(db: Session, payload: AuthRegisterRequest, request: Request) -> AuthResult:
     username, email = _validate_register_payload(payload)
 
-    existing_user = db.scalar(select(User).where(or_(User.username == username, User.email == email)))
+    existing_user = db.scalar(
+        select(User).where(or_(User.username == username, User.email == email))
+    )
     if existing_user:
         logger.info("register_conflict username=%s", username)
         _raise_duplicate_conflict(existing_user, username)
@@ -231,15 +236,23 @@ def register_user(db: Session, payload: AuthRegisterRequest, request: Request) -
         return AuthResult(user=user, session_token=session_token)
     except IntegrityError as error:
         db.rollback()
-        logger.warning("register_integrity_error username=%s error=%s", username, type(error).__name__)
-        existing_user = db.scalar(select(User).where(or_(User.username == username, User.email == email)))
+        logger.warning(
+            "register_integrity_error username=%s error=%s", username, type(error).__name__
+        )
+        existing_user = db.scalar(
+            select(User).where(or_(User.username == username, User.email == email))
+        )
         if existing_user:
             _raise_duplicate_conflict(existing_user, username)
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="注册信息冲突，请稍后重试。") from error
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="注册信息冲突，请稍后重试。"
+        ) from error
     except SQLAlchemyError as error:
         db.rollback()
         logger.exception("register_database_error username=%s", username)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="注册失败，请稍后重试。") from error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="注册失败，请稍后重试。"
+        ) from error
 
 
 def login_user(db: Session, payload: AuthLoginRequest, request: Request) -> AuthResult:
@@ -248,12 +261,23 @@ def login_user(db: Session, payload: AuthLoginRequest, request: Request) -> Auth
 
     if not identifier or not payload.password:
         logger.info("login_invalid_input")
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail={"form": "请输入完整的登录信息。"})
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail={"form": "请输入完整的登录信息。"},
+        )
 
-    user = db.scalar(select(User).where(or_(User.username == identifier, User.email == normalized_identifier)))
-    if not user or user.status != "active" or not _verify_password(payload.password, user.password_hash):
+    user = db.scalar(
+        select(User).where(or_(User.username == identifier, User.email == normalized_identifier))
+    )
+    if (
+        not user
+        or user.status != "active"
+        or not _verify_password(payload.password, user.password_hash)
+    ):
         logger.info("login_invalid_credentials")
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=INVALID_CREDENTIALS_DETAIL)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail=INVALID_CREDENTIALS_DETAIL
+        )
 
     try:
         user.last_login_at = _now()
@@ -265,11 +289,17 @@ def login_user(db: Session, payload: AuthLoginRequest, request: Request) -> Auth
     except SQLAlchemyError as error:
         db.rollback()
         logger.exception("login_database_error")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="登录失败，请稍后重试。") from error
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="登录失败，请稍后重试。"
+        ) from error
 
 
 def revoke_session(db: Session, session_token: str) -> None:
-    session = db.scalar(select(UserSession).where(UserSession.session_token_hash == _hash_session_token(session_token)))
+    session = db.scalar(
+        select(UserSession).where(
+            UserSession.session_token_hash == _hash_session_token(session_token)
+        )
+    )
     if not session or session.revoked_at is not None:
         return
 
@@ -286,7 +316,11 @@ def get_authenticated_user(db: Session, session_token: str | None) -> User:
     if not session_token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=NOT_LOGGED_IN_DETAIL)
 
-    session = db.scalar(select(UserSession).where(UserSession.session_token_hash == _hash_session_token(session_token)))
+    session = db.scalar(
+        select(UserSession).where(
+            UserSession.session_token_hash == _hash_session_token(session_token)
+        )
+    )
     expires_at = _coerce_utc(session.expires_at) if session else None
     revoked_at = _coerce_utc(session.revoked_at) if session else None
     if not session or revoked_at is not None or expires_at is None or expires_at <= _now():

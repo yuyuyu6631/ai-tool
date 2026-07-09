@@ -80,9 +80,11 @@ def _tool(
     featured: bool = True,
     media_url: str | None = None,
 ) -> ToolDetail:
-    media_items = [
-        ToolMediaItem(type="image", url=media_url, title=f"{name} 产品演示", sourceName="官方")
-    ] if media_url else []
+    media_items = (
+        [ToolMediaItem(type="image", url=media_url, title=f"{name} 产品演示", sourceName="官方")]
+        if media_url
+        else []
+    )
     return ToolDetail(
         id=id,
         slug=slug,
@@ -131,12 +133,26 @@ def _tool(
 
 
 CATEGORIES: list[CategorySummary] = [
-    CategorySummary(slug="general-assistants", name="通用助手", description="问答、写作、总结、研究和多任务协作。"),
-    CategorySummary(slug="writing-office", name="写作办公", description="论文、文档、PPT、会议纪要和团队协作。"),
-    CategorySummary(slug="coding-dev", name="编程开发", description="代码生成、debug、测试、接口和工程提效。"),
-    CategorySummary(slug="design-media", name="图片视频", description="绘图、海报、修图、视频生成和创意素材。"),
-    CategorySummary(slug="data-analysis", name="数据分析", description="BI、SQL、报表、仪表盘和可视化分析。"),
-    CategorySummary(slug="agent-platform", name="Agent 平台", description="智能体、插件、知识库和工作流自动化。"),
+    CategorySummary(
+        slug="general-assistants",
+        name="通用助手",
+        description="问答、写作、总结、研究和多任务协作。",
+    ),
+    CategorySummary(
+        slug="writing-office", name="写作办公", description="论文、文档、PPT、会议纪要和团队协作。"
+    ),
+    CategorySummary(
+        slug="coding-dev", name="编程开发", description="代码生成、debug、测试、接口和工程提效。"
+    ),
+    CategorySummary(
+        slug="design-media", name="图片视频", description="绘图、海报、修图、视频生成和创意素材。"
+    ),
+    CategorySummary(
+        slug="data-analysis", name="数据分析", description="BI、SQL、报表、仪表盘和可视化分析。"
+    ),
+    CategorySummary(
+        slug="agent-platform", name="Agent 平台", description="智能体、插件、知识库和工作流自动化。"
+    ),
 ]
 
 
@@ -151,7 +167,11 @@ TOOLS: list[ToolDetail] = [
         summary="通用 AI 助手，适合写论文、总结资料、代码解释和多轮协作。",
         description="适合把零散想法变成提纲、初稿或分析框架，但正式引用和关键事实需要人工核验。",
         tags=["写论文", "总结", "代码", "中文写作"],
-        features=["中文写作和资料总结稳定", "覆盖问答、代码、表格和多模态任务", "生态和教程资料丰富"],
+        features=[
+            "中文写作和资料总结稳定",
+            "覆盖问答、代码、表格和多模态任务",
+            "生态和教程资料丰富",
+        ],
         limitations=["正式论文引用需要人工核验", "高阶模型和长上下文能力通常需要付费"],
         best_for=["学生", "研究人员", "内容团队", "产品经理"],
         deal_summary="免费版可用于基础问答和轻量写作，高阶能力需订阅。",
@@ -342,7 +362,10 @@ SCENARIOS: list[ScenarioSummary] = [
         description="适合先出结构、再润色成稿的内容工作流。",
         problem="关键不是替代判断，而是快速整理资料、形成提纲并暴露需要核验的位置。",
         toolCount=3,
-        primaryTools=[build_minimal_tool_summary("chatgpt"), build_minimal_tool_summary("deepseek")],
+        primaryTools=[
+            build_minimal_tool_summary("chatgpt"),
+            build_minimal_tool_summary("deepseek"),
+        ],
         alternativeTools=[build_minimal_tool_summary("gamma")],
         targetAudience=["学生", "研究人员", "内容团队"],
     ),
