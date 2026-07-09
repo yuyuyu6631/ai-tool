@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useDeferredValue } from "react";
 import { Command } from "cmdk";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import Image from "next/image";
@@ -48,6 +48,8 @@ function focusDeclaredSearchTarget() {
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  // ⚡ Bolt：优化搜索性能，延迟高频搜索意图解析以防阻塞主线程
+  const deferredSearch = useDeferredValue(search);
   const router = useRouter();
   const { tools, categories, fuse } = useClientSearch();
 
@@ -79,7 +81,7 @@ export default function CommandPalette() {
     router.push(withPublicPath(`/tools/${slug}`));
   };
 
-  const nluIntent = useMemo(() => parseSearchIntent(search, categories), [search, categories]);
+  const nluIntent = useMemo(() => parseSearchIntent(deferredSearch, categories), [deferredSearch, categories]);
   const results =
     nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
 
