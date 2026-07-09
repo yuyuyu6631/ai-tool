@@ -30,9 +30,11 @@ def upgrade() -> None:
         "tools", sa.Column("vpn_required", sa.String(length=32), nullable=False, server_default="")
     )
 
-    op.execute(
-        sa.text(
-            """
+    bind = op.get_bind()
+    if bind.dialect.name != "sqlite":
+        op.execute(
+            sa.text(
+                """
             UPDATE tools
             SET
               developer = CASE
@@ -60,8 +62,8 @@ def upgrade() -> None:
                 ELSE vpn_required
               END
             """
+            )
         )
-    )
 
 
 def downgrade() -> None:
