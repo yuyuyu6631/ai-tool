@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useDeferredValue } from "react";
 import { Command } from "cmdk";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import Image from "next/image";
@@ -48,6 +48,7 @@ function focusDeclaredSearchTarget() {
 export default function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const deferredSearch = useDeferredValue(search); // ⚡ Bolt：使用 useDeferredValue 延迟昂贵的搜索计算和组件更新，保证高频输入时的 UI 响应性
   const router = useRouter();
   const { tools, categories, fuse } = useClientSearch();
 
@@ -79,9 +80,10 @@ export default function CommandPalette() {
     router.push(withPublicPath(`/tools/${slug}`));
   };
 
-  const nluIntent = useMemo(() => parseSearchIntent(search, categories), [search, categories]);
-  const results =
-    nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
+  const nluIntent = useMemo(() => parseSearchIntent(deferredSearch, categories), [deferredSearch, categories]);
+  const results = useMemo(() => {
+    return nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
+  }, [nluIntent.q, fuse, tools]);
 
   const handleGlobalSearch = () => {
     setOpen(false);
@@ -128,10 +130,10 @@ export default function CommandPalette() {
 
           <Command.List className="max-h-[60vh] scroll-py-2 overflow-y-auto p-2">
             <Command.Empty className="py-6 text-center text-sm text-[var(--text-tertiary)]">
-              {search ? "没有找到匹配工具，试试换个任务描述或分类关键词。" : "输入任务或工具名称，快速跳到目录结果。"}
+              {deferredSearch ? "没有找到匹配工具，试试换个任务描述或分类关键词。" : "输入任务或工具名称，快速跳到目录结果。"}
             </Command.Empty>
 
-            {search && (nluIntent.category || nluIntent.price) ? (
+            {deferredSearch && (nluIntent.category || nluIntent.price) ? (
               <div className="mb-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-strong)] px-3 py-2 text-xs font-medium text-[var(--text-secondary)]">
                 <span className="mr-2 text-[var(--text-tertiary)]">已识别条件</span>
                 {nluIntent.category ? (
@@ -147,7 +149,7 @@ export default function CommandPalette() {
               </div>
             ) : null}
 
-            <Command.Group heading={search ? "匹配工具" : "热门工具"}>
+            <Command.Group heading={deferredSearch ? "匹配工具" : "热门工具"}>
               {results.map((tool) => (
                 <Command.Item
                   key={tool.slug}
@@ -170,14 +172,14 @@ export default function CommandPalette() {
               ))}
             </Command.Group>
 
-            {search ? (
+            {deferredSearch ? (
               <Command.Group heading="在完整目录中继续筛选">
                 <Command.Item
                   onSelect={handleGlobalSearch}
                   className="mt-2 flex cursor-pointer items-center gap-2 rounded-2xl border border-[var(--border-default)] bg-[var(--bg-surface-strong)] px-4 py-3 text-sm text-[var(--text-primary)] transition-colors aria-selected:bg-[var(--bg-surface-hover)]"
                 >
                   <Search className="h-4 w-4 text-[var(--color-primary)]" />
-                  <span className="font-medium">在目录中搜索 “{search}”</span>
+                  <span className="font-medium">在目录中搜索 “{deferredSearch}”</span>
                 </Command.Item>
               </Command.Group>
             ) : null}
