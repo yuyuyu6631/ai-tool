@@ -115,13 +115,16 @@ test.describe("/auth checklist", () => {
 
     await expect(passwordInput).toHaveAttribute("type", "password");
     await expect(toggleButton).toHaveAttribute("aria-label", "显示密码");
+    await expect(toggleButton).toHaveAttribute("aria-pressed", "false");
 
     await toggleButton.click({ force: true });
     await expect(toggleButton).toHaveAttribute("aria-label", "隐藏密码");
+    await expect(toggleButton).toHaveAttribute("aria-pressed", "true");
     await expect(passwordInput).toHaveAttribute("type", "text");
 
     await toggleButton.click({ force: true });
     await expect(toggleButton).toHaveAttribute("aria-label", "显示密码");
+    await expect(toggleButton).toHaveAttribute("aria-pressed", "false");
     await expect(passwordInput).toHaveAttribute("type", "password");
   });
 
