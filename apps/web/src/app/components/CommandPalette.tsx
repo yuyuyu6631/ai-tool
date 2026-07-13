@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useDeferredValue } from "react";
 import { Command } from "cmdk";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import Image from "next/image";
@@ -79,9 +79,14 @@ export default function CommandPalette() {
     router.push(withPublicPath(`/tools/${slug}`));
   };
 
-  const nluIntent = useMemo(() => parseSearchIntent(search, categories), [search, categories]);
-  const results =
-    nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6);
+  // ⚡ Bolt：性能优化 - 使用 useDeferredValue 延迟搜索值的计算，避免每次输入阻塞主线程渲染
+  const deferredSearch = useDeferredValue(search);
+
+  // ⚡ Bolt：性能优化 - 确保耗时的意图解析和模糊搜索依赖于 deferredSearch，并在 useMemo 中执行
+  const nluIntent = useMemo(() => parseSearchIntent(deferredSearch, categories), [deferredSearch, categories]);
+  const results = useMemo(() =>
+    nluIntent.q && fuse ? fuse.search(nluIntent.q).map((result) => result.item).slice(0, 10) : tools.slice(0, 6)
+  , [nluIntent, fuse, tools]);
 
   const handleGlobalSearch = () => {
     setOpen(false);
